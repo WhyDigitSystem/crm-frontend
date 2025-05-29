@@ -13,19 +13,19 @@ const App = () => {
   const customization = useSelector((state) => state.customization);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  useEffect(() => {
-    const handleSessionExpiredEvent = () => {
-      setSessionExpired(true);
-    };
+  // useEffect(() => {
+  //   const handleSessionExpiredEvent = () => {
+  //     setSessionExpired(true);
+  //   };
 
-    // Add event listener for session expired event
-    window.addEventListener('sessionExpired', handleSessionExpiredEvent);
+  //   // Add event listener for session expired event
+  //   window.addEventListener('sessionExpired', handleSessionExpiredEvent);
 
-    // Cleanup event listener on component unmount
-    return () => {
-      window.removeEventListener('sessionExpired', handleSessionExpiredEvent);
-    };
-  }, []);
+  //   // Cleanup event listener on component unmount
+  //   return () => {
+  //     window.removeEventListener('sessionExpired', handleSessionExpiredEvent);
+  //   };
+  // }, []);
 
   return (
     <StyledEngineProvider injectFirst>
