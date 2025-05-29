@@ -76,7 +76,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
           }}
         ></span>
         {/* <h6>FINANCE</h6> */}
-        <h6>EFIT</h6>
+        <h6>CRM</h6> 
       </div>
       <NotificationSection />
       <GlobalSection />

@@ -34,21 +34,7 @@ const NavCollapse = ({ menu, level }) => {
       menu?.id !== 'companySetup' &&
       menu?.id !== 'rolesAndResponsibilities' &&
       menu?.id !== 'basicMasters' &&
-      menu?.id !== 'finance' &&
-      menu?.id !== 'transaction' &&
-      menu?.id !== 'ar' &&
-      menu?.id !== 'ap' &&
-      menu?.id !== 'ops' &&
-      menu?.id !== 'purchase' &&
-      menu?.id !== 'inboundOutbound' &&
-      menu?.id !== 'inventory' &&
-      menu?.id !== 'customerEnquiry' &&
-      menu?.id !== 'production' &&
-      menu?.id !== 'subContractor' &&
-      menu?.id !== 'assembly' &&
-      menu?.id !== 'quality' &&
-      menu?.id !== 'sales' &&
-      menu?.id !== 'packaging'
+      menu?.id !== 'finance'
     ) {
       navigate(menu.children[0]?.url);
     }

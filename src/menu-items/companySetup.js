@@ -36,7 +36,7 @@ const icons2 = {
 
 const companySetup = {
   id: 'companySetup',
-  title: 'Company Setup',
+  // title: 'Company Setup',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [

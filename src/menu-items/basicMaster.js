@@ -9,13 +9,13 @@ const icons = {
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const basicMaster = {
-  id: 'basicMaster',
-  title: 'Setup',
+  id: 'basicMasters',
+  // title: 'Setup',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
     {
-      id: 'ar',
+      id: 'basicMasters',
       title: 'Basic Master',
       type: 'collapse',
       icon: icons.IconKey,
@@ -62,19 +62,19 @@ const basicMaster = {
           title: 'Region',
           type: 'item',
           url: '/basicMaster/RegionMaster'
-        }
-        // {
-        //   id: 'finYear',
-        //   title: 'FinYear',
-        //   type: 'item',
-        //   url: '/basicMaster/finYear'
-        // },
-        // {
-        //   id: 'roles',
-        //   title: 'Roles',
-        //   type: 'item',
-        //   url: '/basicMaster/roles'
-        // }
+        },
+        {
+          id: 'finYear',
+          title: 'FinYear',
+          type: 'item',
+          url: '/basicMaster/finYear'
+        },
+        {
+          id: 'roles',
+          title: 'Roles',
+          type: 'item',
+          url: '/basicMaster/roles'
+        },
       ]
     }
   ]

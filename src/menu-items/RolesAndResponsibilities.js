@@ -11,7 +11,7 @@ const icons = {
 
 const RolesAndResponsibilities = {
   id: 'rolesAndResponsibilities',
-  title: 'Roles Management',
+  // title: 'Roles Management',
   // caption: 'Company',
   type: 'group',
   children: [

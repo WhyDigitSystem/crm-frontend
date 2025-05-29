@@ -8,7 +8,7 @@ const icons = { IconUser };
 
 const admin = {
   id: 'admin',
-  title: 'Admin',
+  // title: 'Admin',
   type: 'group',
   children: [
     {
