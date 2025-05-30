@@ -2,7 +2,6 @@ import admin from './admin';
 import basicMaster from './basicMaster';
 import companySetup from './companySetup';
 import dashboard from './dashboard';
-import RolesAndResponsibilities from './RolesAndResponsibilities';
 
 // Function to get menu items based on localStorage value
 const getMenuItems = () => {
@@ -29,7 +28,6 @@ const getMenuItems = () => {
           dashboard,
           companySetup,
           admin,
-          RolesAndResponsibilities,
           basicMaster,
         ]
       };

@@ -327,7 +327,7 @@ export const Employee = () => {
           </div>
         </div>
         {listView ? (
-          <div className="">
+          <div>
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getEmployeeById} />
           </div>
         ) : (

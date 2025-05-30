@@ -18,25 +18,23 @@
 /* src/styles.css or any CSS file you are using */
 /* src/styles.css */
 .gradient-text {
-  background: linear-gradient(to right, #0061ff, #60efff); /* Gemini AI colors */
+  background: linear-gradient(to right, #0061ff, #60efff);
+  /* Gemini AI colors */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
-
-
-
 // ==============================|| PERFECT SCROLLBAR ||============================== //
-
 .scrollbar-container {
   .ps__rail-y {
-    &:hover > .ps__thumb-y,
-    &:focus > .ps__thumb-y,
+
+    &:hover>.ps__thumb-y,
+    &:focus>.ps__thumb-y,
     &.ps--clicking .ps__thumb-y {
       background-color: $grey500;
       width: 5px;
     }
   }
+
   .ps__thumb-y {
     background-color: $grey500;
     border-radius: 6px;
@@ -46,19 +44,21 @@
 }
 
 .scrollbar-container.ps,
-.scrollbar-container > .ps {
-  &.ps--active-y > .ps__rail-y {
+.scrollbar-container>.ps {
+  &.ps--active-y>.ps__rail-y {
     width: 5px;
     background-color: transparent !important;
     z-index: 999;
+
     &:hover,
     &.ps--clicking {
       width: 5px;
       background-color: transparent;
     }
   }
-  &.ps--scrolling-y > .ps__rail-y,
-  &.ps--scrolling-x > .ps__rail-x {
+
+  &.ps--scrolling-y>.ps__rail-y,
+  &.ps--scrolling-x>.ps__rail-x {
     opacity: 0.4;
     background-color: transparent;
   }
@@ -70,6 +70,7 @@
   50% {
     transform: translateY(-40px);
   }
+
   100% {
     transform: translateY(0px);
   }
@@ -79,12 +80,14 @@
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
 }
 
 @keyframes bounce {
+
   0%,
   20%,
   53%,
@@ -92,58 +95,68 @@
     animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
     transform: translateZ(0);
   }
+
   40%,
   43% {
     animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     transform: translate3d(0, -5px, 0);
   }
+
   70% {
     animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     transform: translate3d(0, -7px, 0);
   }
+
   80% {
     transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
     transform: translateZ(0);
   }
+
   90% {
     transform: translate3d(0, -2px, 0);
   }
 }
 
 @keyframes slideY {
+
   0%,
   50%,
   100% {
     transform: translateY(0px);
   }
+
   25% {
     transform: translateY(-10px);
   }
+
   75% {
     transform: translateY(10px);
   }
 }
 
 @keyframes slideX {
+
   0%,
   50%,
   100% {
     transform: translateX(0px);
   }
+
   25% {
     transform: translateX(-10px);
   }
+
   75% {
     transform: translateX(10px);
   }
 }
 
-.asterisk{
+.asterisk {
   color: red;
   font-size: large;
 }
 
-.dateErrMsg{
+.dateErrMsg {
   color: #f44336;
   font-size: 0.75rem;
   font-weight: 400;
@@ -160,9 +173,37 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0.5rem; /* Equivalent to 'px-2 py-2' */
-  border: 1px solid #dee2e6; /* Adjust this as needed */
-  text-align: center; /* For centering text */
-  background-color: #673AB7; /* For background color */
-  color: white; /* For text color */
+  padding: 0.5rem;
+  /* Equivalent to 'px-2 py-2' */
+  border: 1px solid #dee2e6;
+  /* Adjust this as needed */
+  text-align: center;
+  /* For centering text */
+  background-color: #673AB7;
+  /* For background color */
+  color: white;
+  /* For text color */
+}
+
+// sidebar 
+@media (min-width: 900px) {
+  .css-u1tokn-MuiDrawer-docked .MuiDrawer-paper {
+    top: 96px;
+  }
+}
+
+// login
+@media (min-width: 1536px) {
+  .css-1arlb8v {
+    padding: 0px;
+  }
+}
+.css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
+    padding-left: 0px !important;
+}
+.css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
+    padding-top: 0px !important;
+}
+.css-j4gh3l-MuiPaper-root-MuiCard-root {
+    border-radius: 35px !important;
 }

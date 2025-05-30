@@ -399,7 +399,7 @@ const Company = () => {
           </div>
         </div>
         {listView ? (
-          <div className="mt-4">
+          <div>
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}

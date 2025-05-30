@@ -437,7 +437,8 @@ const UserCreation = () => {
       dateOfBirth: false,
       joiningDate: false,
       password: false,
-      role: false
+      role: false,
+      email: false
     });
     setRoleTableData([{ id: 1, role: '', roleId: '', startDate: null, endDate: null }]);
     setRoleTableDataErrors('');
@@ -654,7 +655,7 @@ const UserCreation = () => {
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea"
                     label="UserName"
@@ -669,7 +670,7 @@ const UserCreation = () => {
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'This field is required' : ''}</span>}
                     inputProps={{ maxLength: 15 }}
                   />
-                </div>
+                </div> */}
 
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>

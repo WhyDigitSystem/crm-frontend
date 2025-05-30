@@ -70,12 +70,6 @@ const basicMaster = {
           url: '/basicMaster/finYear'
         },
         {
-          id: 'roles',
-          title: 'Roles',
-          type: 'item',
-          url: '/basicMaster/roles'
-        },
-        {
           id: 'department',
           title: 'Department',
           type: 'item',
@@ -86,6 +80,18 @@ const basicMaster = {
           title: 'Designation',
           type: 'item',
           url: '/basicMaster/designation'
+        },
+        {
+          id: 'roles',
+          title: 'Roles',
+          type: 'item',
+          url: '/basicMaster/roles'
+        },
+        {
+          id: 'screenNames',
+          title: 'Screen Names',
+          type: 'item',
+          url: '/basicMaster/ScreenNames'
         },
       ]
     }

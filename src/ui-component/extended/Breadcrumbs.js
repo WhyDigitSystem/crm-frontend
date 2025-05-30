@@ -113,57 +113,62 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
     // main
     if (item.breadcrumbs !== false) {
       breadcrumbContent = (
-        <Card
-          sx={{
-            marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
-            border: card === false ? 'none' : '1px solid',
-            borderColor: theme.palette.primary[200] + 75,
-            background: card === false ? 'transparent' : theme.palette.background.default
-          }}
-          {...others}
-        >
-          <Box sx={{ p: 2, pl: card === false ? 0 : 2 }}>
-            <Grid
-              container
-              direction={rightAlign ? 'row' : 'column'}
-              justifyContent={rightAlign ? 'space-between' : 'flex-start'}
-              alignItems={rightAlign ? 'center' : 'flex-start'}
-              spacing={1}
-            >
-              {title && !titleBottom && (
+        // <Card
+        //   sx={{
+        //     marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
+        //     border: card === false ? 'none' : '1px solid',
+        //     borderColor: theme.palette.primary[200] + 75,
+        //     background: card === false ? 'transparent' : theme.palette.background.default
+        //   }}
+        //   {...others}
+        // >
+        <Box sx={{ p: 0, pl: card === false ? 0 : 1, marginTop: '-20px', marginBottom: '0px' }}>
+          <Grid
+            container
+            direction={rightAlign ? 'row' : 'column'}
+            justifyContent={rightAlign ? 'space-between' : 'flex-start'}
+            alignItems={rightAlign ? 'center' : 'flex-start'}
+            spacing={1}
+          >
+            {/* {title && !titleBottom && (
                 <Grid item>
                   <Typography variant="h3" sx={{ fontWeight: 500 }}>
                     {item.title}
                   </Typography>
                 </Grid>
-              )}
-              <Grid item>
-                <MuiBreadcrumbs
-                  sx={{ '& .MuiBreadcrumbs-separator': { width: 16, ml: 1.25, mr: 1.25 } }}
-                  aria-label="breadcrumb"
-                  maxItems={maxItems || 8}
-                  separator={separatorIcon}
-                >
-                  <Typography component={Link} to="/" color="inherit" variant="subtitle1" sx={linkSX}>
-                    {icons && <HomeTwoToneIcon sx={iconStyle} />}
-                    {icon && <HomeIcon sx={{ ...iconStyle, mr: 0 }} />}
-                    {!icon && 'Dashboard'}
-                  </Typography>
-                  {mainContent}
-                  {itemContent}
-                </MuiBreadcrumbs>
-              </Grid>
-              {title && titleBottom && (
-                <Grid item>
-                  <Typography variant="h3" sx={{ fontWeight: 500 }}>
-                    {item.title}
-                  </Typography>
-                </Grid>
-              )}
+              )} */}
+            <Grid item>
+              <MuiBreadcrumbs
+                sx={{
+                  '& .MuiBreadcrumbs-separator': { width: 16, ml: 1.25, mr: 1.25 },
+                  padding: 0,
+                  lineHeight: "1.2",
+                  minHeight: "30px",
+                }}
+                aria-label="breadcrumb"
+                maxItems={maxItems || 8}
+                separator={separatorIcon}
+              >
+                <Typography component={Link} to="/" color="inherit" variant="subtitle1" sx={linkSX}>
+                  {icons && <HomeTwoToneIcon sx={iconStyle} />}
+                  {icon && <HomeIcon sx={{ ...iconStyle, mr: 0 }} />}
+                  {!icon && 'Dashboard'}
+                </Typography>
+                {mainContent}
+                {itemContent}
+              </MuiBreadcrumbs>
             </Grid>
-          </Box>
-          {card === false && divider !== false && <Divider sx={{ borderColor: theme.palette.primary.main, mb: gridSpacing }} />}
-        </Card>
+            {title && titleBottom && (
+              <Grid item>
+                <Typography variant="h3" sx={{ fontWeight: 500 }}>
+                  {item.title}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
+        </Box>
+        // {card === false && divider !== false && <Divider sx={{ borderColor: theme.palette.primary.main, mb: gridSpacing }} />}
+        // </Card>
       );
     }
   }

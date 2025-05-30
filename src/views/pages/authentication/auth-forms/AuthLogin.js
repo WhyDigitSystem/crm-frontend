@@ -1,11 +1,12 @@
 import Axios from 'axios';
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { setUserRole } from 'store/actions';
 import { encryptPassword } from 'views/utilities/passwordEnc';
+
 // material-ui
 import {
   Box,
@@ -19,13 +20,12 @@ import {
   IconButton,
   InputAdornment,
   InputLabel,
-  OutlinedInput,
+  Input,
   Stack,
-  Typography
+  Typography,
+  Paper
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
-import { useSelector } from 'react-redux';
 
 // third party
 import { Formik } from 'formik';
@@ -40,17 +40,19 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { setUser } from '../../../../redux/userSlice';
 
-// ============================|| FIREBASE - LOGIN ||============================ //
-
 const FirebaseLogin = ({ ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
   const [checked, setChecked] = useState(false);
-  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const formikRef = useRef(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const user = useSelector((state) => state.user);
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
   useEffect(() => {
     const storedCredentials = localStorage.getItem('rememberedCredentials');
@@ -61,18 +63,8 @@ const FirebaseLogin = ({ ...others }) => {
     }
   }, []);
 
-  const user = useSelector((state) => state.user);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-
-  const formikRef = useRef(null);
-  const navigate = useNavigate();
   const resetForm = () => {
-    // Check if the formikRef is defined
     if (formikRef.current) {
-      // Call the resetForm function using the ref
       formikRef.current.resetForm({
         values: {
           email: '',
@@ -83,56 +75,65 @@ const FirebaseLogin = ({ ...others }) => {
   };
 
   const loginAPICall = async (values) => {
-    // Prepare the user registration data
-
     const userData = {
       password: encryptPassword(values.password),
       userName: values.email
     };
+
     try {
       const response = await Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, userData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
 
       if (response.data.status) {
-        // Handle authentication failure, display an error message, etc.
-
-        console.log('Test1', userData);
         dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
-
-        localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
+        localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId);
         localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
         localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
-        localStorage.setItem('LoginMessage', true);
+        localStorage.setItem('employeeCode', response.data.paramObjectsMap.userVO.employeeCode);
+        localStorage.setItem('employeeName', response.data.paramObjectsMap.userVO.employeeName);
+        localStorage.setItem('branch', response.data.paramObjectsMap.userVO.branch);
+        localStorage.setItem('branchCode', response.data.paramObjectsMap.userVO.branchCode);
+        localStorage.setItem('department', response.data.paramObjectsMap.userVO.department);
+        localStorage.setItem('designation', response.data.paramObjectsMap.userVO.designation);
+
+        const userType = response.data?.paramObjectsMap?.userVO?.userType;
+        const role = response.data?.paramObjectsMap?.userVO?.roleVO?.[0]?.role;
+
+        if (userType || role) {
+          localStorage.setItem('userType', userType === 'SADMIN' || userType === 'ADMIN' ? userType : role);
+        }
+
         const userRole = response.data.paramObjectsMap.userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
+        const roleVO = response.data.paramObjectsMap.userVO.roleVO;
+        let allScreensVO = [];
+        roleVO.forEach((roleObj) => {
+          roleObj.responsibilityVO.forEach((responsibility) => {
+            if (responsibility.screensVO) {
+              allScreensVO = allScreensVO.concat(responsibility.screensVO);
+            }
+          });
+        });
+        allScreensVO = [...new Set(allScreensVO)];
+        localStorage.setItem('screens', JSON.stringify(allScreensVO));
         dispatch(setUserRole(userRole));
         resetForm();
-        // window.location.href = "/login";
-
         navigate('/dashboard/default');
+        window.location.reload();
+
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));
         } else {
-          // Clear stored credentials if "Remember Me" is unchecked
           localStorage.removeItem('rememberedCredentials');
         }
       } else {
-        // Successful registration, perform actions like storing tokens and redirecting
         toast.error(response.data.paramObjectsMap.errorMessage, {
           autoClose: 2000,
           theme: 'colored'
         });
-        // setTimeout(() => {
-        //   toast.success(response.data.paramObjectsMap.message, {
-        //     autoClose: 2000,
-        //     theme: 'colored'
-        //   });
-        // }, 2000);
       }
     } catch (error) {
       toast.error('Network Error', {
@@ -143,28 +144,18 @@ const FirebaseLogin = ({ ...others }) => {
   };
 
   return (
-    <>
-      <div>
-        <ToastContainer />
-      </div>
-      <Grid container direction="column" justifyContent="center" spacing={2}>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              alignItems: 'center',
-              display: 'flex'
-            }}
-          >
-            <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-          </Box>
-        </Grid>
-        <Grid item xs={12} container alignItems="center" justifyContent="center">
-          {/* <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">Sign in with Email address</Typography>
-          </Box> */}
-        </Grid>
-      </Grid>
-
+    <Paper
+      elevation={3}
+      sx={{
+        p: 4,
+        maxWidth: 400,
+        margin: 'auto',
+        borderRadius: 3,
+        boxShadow: 'none',
+        backgroundColor: 'transparent'
+      }}
+    >
+      <ToastContainer />
       <Formik
         innerRef={formikRef}
         initialValues={{
@@ -173,7 +164,7 @@ const FirebaseLogin = ({ ...others }) => {
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().max(255).required('UserId is required'),
+          email: Yup.string().max(255).required('Email / UserName is required'),
           password: Yup.string().max(255).required('Password is required')
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -195,29 +186,30 @@ const FirebaseLogin = ({ ...others }) => {
       >
         {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit} {...others}>
-            <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
-              <InputLabel htmlFor="outlined-adornment-email-login">Email Address / Username</InputLabel>
-              <OutlinedInput
-                id="outlined-adornment-email-login"
+            <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ mb: 2 }} variant="standard">
+              <InputLabel htmlFor="standard-adornment-email-login" sx={{ color: 'white' }}>
+                Email Address / Username
+              </InputLabel>
+              <Input
+                id="standard-adornment-email-login"
                 type="email"
                 value={values.email}
                 name="email"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                label="Email Address / Username"
-                inputProps={{}}
+                sx={{ color: 'white' }}
               />
               {touched.email && errors.email && (
-                <FormHelperText error id="standard-weight-helper-text-email-login">
-                  {errors.email}
-                </FormHelperText>
+                <FormHelperText error>{errors.email}</FormHelperText>
               )}
             </FormControl>
 
-            <FormControl fullWidth error={Boolean(touched.password && errors.password)} sx={{ ...theme.typography.customInput }}>
-              <InputLabel htmlFor="outlined-adornment-password-login">Password</InputLabel>
-              <OutlinedInput
-                id="outlined-adornment-password-login"
+            <FormControl fullWidth error={Boolean(touched.password && errors.password)} sx={{ mb: 2 }} variant="standard">
+              <InputLabel htmlFor="standard-adornment-password-login" sx={{ color: 'white' }}>
+                Password
+              </InputLabel>
+              <Input
+                id="standard-adornment-password-login"
                 type={showPassword ? 'text' : 'password'}
                 value={values.password}
                 name="password"
@@ -225,54 +217,79 @@ const FirebaseLogin = ({ ...others }) => {
                 onChange={handleChange}
                 endAdornment={
                   <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                      size="large"
-                    >
+                    <IconButton onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword} edge="end" size="large">
                       {showPassword ? <Visibility /> : <VisibilityOff />}
                     </IconButton>
                   </InputAdornment>
                 }
-                label="Password"
-                inputProps={{}}
+                sx={{ color: 'white' }}
               />
-              {touched.password && errors.password && (
-                <FormHelperText error id="standard-weight-helper-text-password-login">
-                  {errors.password}
-                </FormHelperText>
-              )}
+              {touched.password && errors.password && <FormHelperText error>{errors.password}</FormHelperText>}
             </FormControl>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+
+            <Stack direction="row" display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
               <FormControlLabel
                 control={
-                  <Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} name="checked" color="primary" />
+                  <Checkbox
+                    checked={checked}
+                    onChange={(event) => setChecked(event.target.checked)}
+                    name="checked"
+                    sx={{
+                      color: 'white',
+                      '&.Mui-checked': {
+                        color: 'white'
+                      }
+                    }}
+                  />
                 }
                 label="Remember me"
+                sx={{ color: 'white' }}
               />
-              <Typography variant="subtitle1" color="secondary" sx={{ textDecoration: 'none', cursor: 'pointer' }}>
+
+              <Typography variant="subtitle2" color="primary" sx={{ cursor: 'pointer' }}>
                 Forgot Password?
               </Typography>
             </Stack>
+
             {errors.submit && (
-              <Box sx={{ mt: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <FormHelperText error>{errors.submit}</FormHelperText>
               </Box>
             )}
 
-            <Box sx={{ mt: 2 }}>
-              <AnimateButton>
-                <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="secondary">
-                  Sign in
+            <AnimateButton>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <Button
+                  className="w-75"
+                  disableElevation
+                  disabled={isSubmitting}
+                  fullWidth
+                  size="large"
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    background: 'linear-gradient(135deg, #1d1b34 0%, #322f55 100%)',
+                    borderRadius: '20px',
+                    transition: 'all 0.4s ease',
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #322f55 0%, #322f55 100%)',
+                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+                      transform: 'translateY(-3px)'
+                    }
+                  }}
+                >
+                  Log in
                 </Button>
-              </AnimateButton>
-            </Box>
+              </Box>
+            </AnimateButton>
           </form>
         )}
       </Formik>
-    </>
+    </Paper>
   );
 };
 

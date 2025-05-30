@@ -42,7 +42,7 @@ const companySetup = {
   children: [
     {
       id: 'companySetup',
-      title: 'Company Setup',
+      title: 'Setup',
       type: 'collapse',
       icon: icons.IconCopyright,
 

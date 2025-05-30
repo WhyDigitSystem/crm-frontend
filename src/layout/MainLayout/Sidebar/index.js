@@ -33,23 +33,24 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           style={{
             height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
             paddingLeft: '16px',
-            paddingRight: '16px'
+            paddingRight: '16px',
+            marginTop: '-10px',
           }}
         >
           <MenuList />
           <MenuCard />
-          <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
+          {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
             <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
-          </Stack>
+          </Stack> */}
         </PerfectScrollbar>
       </BrowserView>
       <MobileView>
         <Box sx={{ px: 2 }}>
           <MenuList />
           <MenuCard />
-          <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
+          {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
             <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
-          </Stack>
+          </Stack> */}
         </Box>
       </MobileView>
     </>
