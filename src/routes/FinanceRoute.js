@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import PrivateRoute from '../routes/PrivateRoute';
 
 
 
@@ -42,7 +43,7 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 
 const FinanceRoute = {
   path: '/',
-  element: <MainLayout />,
+  element:<PrivateRoute> <MainLayout /></PrivateRoute>,
   children: [
     {
       path: '/',
@@ -51,7 +52,7 @@ const FinanceRoute = {
     // companysetup
     {
       path: '/companysetup/createcompany',
-      element: <CreateCompany />
+      element:<PrivateRoute> <CreateCompany /></PrivateRoute>
     },
     {
       path: '/companysetup/companysetup',
