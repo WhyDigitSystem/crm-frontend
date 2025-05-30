@@ -1,28 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import {
   Avatar,
   Box,
-  Card,
-  CardContent,
   Chip,
   ClickAwayListener,
-  Divider,
   Grid,
-  InputAdornment,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  OutlinedInput,
   Paper,
   Popper,
   Stack,
-  Switch,
   Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -45,20 +38,14 @@ const ProfileSection = () => {
   const customization = useSelector((state) => state.customization);
   const navigate = useNavigate();
 
-  const [sdm, setSdm] = useState(true);
-  const [value, setValue] = useState('');
-  const [notification, setNotification] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
-  /**
-   * anchorRef is used on different componets and specifying one type leads to other components throwing an error
-   * */
   const anchorRef = useRef(null);
 
   const handleLogout = async () => {
-    // history.push('/login');
     console.log('Logout');
     localStorage.clear();
+    navigate('/pages/login/login3');
   };
 
   const handleClose = (event) => {
@@ -71,11 +58,11 @@ const ProfileSection = () => {
   const handleListItemClick = (event, index, route = '') => {
     setSelectedIndex(index);
     handleClose(event);
-
     if (route && route !== '') {
       navigate(route);
     }
   };
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -85,9 +72,15 @@ const ProfileSection = () => {
     if (prevOpen.current === true && open === false) {
       anchorRef.current.focus();
     }
-
     prevOpen.current = open;
   }, [open]);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
 
   return (
     <>
@@ -159,13 +152,13 @@ const ProfileSection = () => {
                   <Box sx={{ p: 2 }}>
                     <Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Typography variant="h4">Good Morning,</Typography>
+                        <Typography variant="h4">{getGreeting()},</Typography>
                         <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
                           {localStorage.getItem('employeeName')}
                         </Typography>
                       </Stack>
                       <Typography variant="subtitle2">Project Admin</Typography>
-                    </Stack>  
+                    </Stack>
                   </Box>
                   <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
                     <Box sx={{ p: 1 }}>
@@ -188,17 +181,29 @@ const ProfileSection = () => {
                         <ListItemButton
                           sx={{ borderRadius: `${customization.borderRadius}px` }}
                           selected={selectedIndex === 0}
-                          onClick={(event) => handleListItemClick(event, 0, '#')}
+                          onClick={(event) => handleListItemClick(event, 0, '/profile')}
+                        >
+                          <ListItemIcon>
+                            <IconUser stroke={1.5} size="1.3rem" />
+                          </ListItemIcon>
+                          <ListItemText primary={<Typography variant="body2">Profile</Typography>} />
+                        </ListItemButton>
+
+                        <ListItemButton
+                          sx={{ borderRadius: `${customization.borderRadius}px` }}
+                          selected={selectedIndex === 1}
+                          onClick={(event) => handleListItemClick(event, 1, '#')}
                         >
                           <ListItemIcon>
                             <IconSettings stroke={1.5} size="1.3rem" />
                           </ListItemIcon>
                           <ListItemText primary={<Typography variant="body2">Account Settings</Typography>} />
                         </ListItemButton>
+
                         <ListItemButton
                           sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 1}
-                          onClick={(event) => handleListItemClick(event, 1, '#')}
+                          selected={selectedIndex === 2}
+                          onClick={(event) => handleListItemClick(event, 2, '#')}
                         >
                           <ListItemIcon>
                             <IconUser stroke={1.5} size="1.3rem" />
@@ -223,9 +228,10 @@ const ProfileSection = () => {
                             }
                           />
                         </ListItemButton>
+
                         <ListItemButton
                           sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 4}
+                          selected={selectedIndex === 3}
                           onClick={handleLogout}
                         >
                           <ListItemIcon>
@@ -233,7 +239,7 @@ const ProfileSection = () => {
                           </ListItemIcon>
                           <ListItemText
                             primary={
-                              <Typography variant="body2" component={Link} to="/pages/login/login3">
+                              <Typography variant="body2" component="span">
                                 Logout
                               </Typography>
                             }
