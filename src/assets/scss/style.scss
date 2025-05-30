@@ -23,6 +23,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 // ==============================|| PERFECT SCROLLBAR ||============================== //
 .scrollbar-container {
   .ps__rail-y {
@@ -199,11 +200,15 @@
   }
 }
 .css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
-    padding-left: 0px !important;
+  padding-left: 0px !important;
 }
+
 .css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
-    padding-top: 0px !important;
+  padding-top: 0px !important;
 }
 .css-j4gh3l-MuiPaper-root-MuiCard-root {
-    border-radius: 35px !important;
+  border-radius: 35px !important;
+}
+.css-15qvpff {
+  color: #fff !important;
 }
