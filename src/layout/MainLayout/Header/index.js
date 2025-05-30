@@ -9,6 +9,10 @@ import LogoSection from '../LogoSection';
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import SearchSection from './SearchSection';
+import LightDarkMode from './LightDarkMode/index';
+import CompanyName from './CompanyName/index';
+
+
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -59,25 +63,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/* header search */}
       <SearchSection />
       <Box sx={{ flexGrow: 1 }} />
-      {/* Remove or adjust this Box component to reduce space */}
-      {/* <Box sx={{ flexGrow: 1 }} /> */}
-
-      {/* notification & profile */}
-      <div className="mt-2" style={{ display: 'flex', alignItems: 'center' }}>
-        <span
-          style={{
-            height: '11px',
-            width: '11px',
-            backgroundColor: '#25BE2B',
-            borderRadius: '50%',
-            display: 'inline-block',
-            marginRight: '8px',
-            marginBottom: '8px'
-          }}
-        ></span>
-        {/* <h6>FINANCE</h6> */}
-        <h6>CRM</h6> 
-      </div>
+      {/* <CompanyName /> */}
+      <LightDarkMode />
       <NotificationSection />
       <GlobalSection />
       <ProfileSection />

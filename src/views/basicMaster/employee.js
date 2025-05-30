@@ -14,7 +14,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
-import apiCalls from 'apicall'; 
+import apiCalls from 'apicall';
 
 
 export const Employee = () => {
@@ -36,6 +36,7 @@ export const Employee = () => {
     designation: '',
     dob: null,
     doj: null,
+    email: null,
     active: true
   });
 
@@ -51,7 +52,8 @@ export const Employee = () => {
     department: '',
     designation: '',
     dob: '',
-    doj: ''
+    doj: '',
+    email: '',
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
@@ -59,7 +61,7 @@ export const Employee = () => {
   useEffect(() => {
     getAllBranches();
     getAllEmployees();
-  }, []); 
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
@@ -67,20 +69,21 @@ export const Employee = () => {
     const nameRegex = /^[A-Za-z ]*$/;
 
     let errorMessage = '';
- 
+
     if (name === 'empCode' && !codeRegex.test(value)) {
       errorMessage = 'Invalid Format';
-    } 
+    }
     else if (name === 'empName' && !nameRegex.test(value)) {
       errorMessage = 'Invalid Format';
     }
- 
+
+
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
 
-      if (name === 'branch') { 
+      if (name === 'branch') {
         const selectedBranch = branchList.find((br) => br.branch === value);
         if (selectedBranch) {
           setFormData((prevData) => ({
@@ -88,26 +91,26 @@ export const Employee = () => {
             branch: value,
             branchCode: selectedBranch.branchCode
           }));
-        } else { 
+        } else {
           setFormData((prevData) => ({
             ...prevData,
             branch: value,
             branchCode: ''
           }));
         }
-      } else if (type === 'checkbox') { 
+      } else if (type === 'checkbox') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
-      } else if (type === 'text' || type === 'textarea') { 
+      } else if (type === 'text' || type === 'textarea') {
         const upperCaseValue = value.toUpperCase();
         setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
- 
+
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
           if (inputElement && inputElement.setSelectionRange) {
             inputElement.setSelectionRange(selectionStart, selectionEnd);
           }
         }, 0);
-      } else { 
+      } else {
         setFormData((prevData) => ({ ...prevData, [name]: value }));
       }
     }
@@ -131,7 +134,8 @@ export const Employee = () => {
       designation: '',
       dob: null,
       doj: null,
-      active: true
+      active: true,
+      email: '',
     });
     setFieldErrors({
       empCode: '',
@@ -142,7 +146,8 @@ export const Employee = () => {
       department: '',
       designation: '',
       dob: '',
-      doj: ''
+      doj: '',
+      email: ''
     });
   };
 
@@ -204,13 +209,13 @@ export const Employee = () => {
       console.error('Error fetching data:', error);
     }
   };
-useEffect(() => {
-  getAllDepartmentByOrgId();
-  getDesignationByOrgId();
-},[])
+  useEffect(() => {
+    getAllDepartmentByOrgId();
+    getDesignationByOrgId();
+  }, [])
   const getAllDepartmentByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/efitmaster/getAllDepartmentByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/commonmaster/getDepartmentByOrgId?orgId=${orgId}`);
       setDepartment(result.paramObjectsMap.departmentVO || []);
     } catch (err) {
       console.log('error', err);
@@ -218,7 +223,7 @@ useEffect(() => {
   };
   const getDesignationByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/efitmaster/getDesignationByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/commonmaster/getDesignationByOrgId?orgId=${orgId}`);
       setDesignationList(result.paramObjectsMap.designationVO || []);
     } catch (err) {
       console.log('error', err);
@@ -251,6 +256,7 @@ useEffect(() => {
     if (!formData.doj) {
       errors.doj = 'Date of Joining is required';
     }
+    if (!formData.email) errors.email = 'Email is required';
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -401,13 +407,13 @@ useEffect(() => {
 
                     if (newValue) {
                       setFormData({
-                        ...formData, 
-                        department: newValue.departmentName,  
-                      }); 
+                        ...formData,
+                        department: newValue.departmentName,
+                      });
                     } else {
                       setFormData({
-                        ...formData, 
-                        department: '' 
+                        ...formData,
+                        department: ''
                       });
                     }
                   }}
@@ -442,27 +448,27 @@ useEffect(() => {
                   {fieldErrors.designation && <FormHelperText>{fieldErrors.designation}</FormHelperText>}
                 </FormControl>
               </div> */}
-                  <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
                   options={designationList}
-                  getOptionLabel={(option) => option?.designation || ''}
+                  getOptionLabel={(option) => option?.designationName || ''}
                   sx={{ width: '100%' }}
                   // disabled={!!editId}
                   size="small"
-                  value={designationList.find((c) => c.designation === formData.designation) || null}
+                  value={designationList.find((c) => c.designationName === formData.designation) || null}
                   onChange={(event, newValue) => {
                     console.log('Selected Value:', newValue);
 
                     if (newValue) {
                       setFormData({
-                        ...formData, 
-                        designation: newValue.designation,  
-                      }); 
+                        ...formData,
+                        designation: newValue.designationName,
+                      });
                     } else {
                       setFormData({
-                        ...formData, 
-                        designation: '' 
+                        ...formData,
+                        designation: ''
                       });
                     }
                   }}
@@ -515,6 +521,20 @@ useEffect(() => {
                     />
                   </LocalizationProvider>
                 </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Email"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.email}
+                  helperText={fieldErrors.email}
+                />
               </div>
 
               <div className="col-md-3 mb-3">

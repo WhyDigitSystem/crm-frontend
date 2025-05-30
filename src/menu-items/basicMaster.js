@@ -75,6 +75,18 @@ const basicMaster = {
           type: 'item',
           url: '/basicMaster/roles'
         },
+        {
+          id: 'department',
+          title: 'Department',
+          type: 'item',
+          url: '/basicMaster/department'
+        },
+        {
+          id: 'designation',
+          title: 'Designation',
+          type: 'item',
+          url: '/basicMaster/designation'
+        },
       ]
     }
   ]

@@ -21,6 +21,10 @@ const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
+const Department = Loadable(lazy(() => import('views/basicMaster/department')));
+const Designation = Loadable(lazy(() => import('views/basicMaster/designation')));
+
+
 
 
 // companySetup
@@ -98,6 +102,14 @@ const FinanceRoute = {
     {
       path: '/basicMaster/employee',
       element: <Employee />
+    },
+    {
+      path: '/basicMaster/department',
+      element: <Department />
+    },
+    {
+      path: '/basicMaster/designation',
+      element: <Designation />
     },
   ]
 };
