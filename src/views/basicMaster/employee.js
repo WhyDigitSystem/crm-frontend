@@ -3,7 +3,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, Autocomplete, InputLabel, MenuItem, Select } from '@mui/material';
+import { TextField, Checkbox, FormControlLabel, FormHelperText, Autocomplete, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
@@ -15,7 +15,10 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
-
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import { FaFileExcel } from 'react-icons/fa';
+import { FaFilePdf } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
 
 export const Employee = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +26,9 @@ export const Employee = () => {
   const [branchList, setBranchList] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [showForm, setShowForm] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [departmentList, setDepartment] = useState([]);
   const [designationList, setDesignationList] = useState([]);
 
@@ -36,8 +42,8 @@ export const Employee = () => {
     designation: '',
     dob: null,
     doj: null,
-    email: null,
-    active: true
+    active: true,
+    email: ''
   });
 
   const theme = useTheme();
@@ -53,69 +59,91 @@ export const Employee = () => {
     designation: '',
     dob: '',
     doj: '',
-    email: '',
+    email: ''
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
+  // const [departmentList, setDepartmentList] = useState([]);
 
   useEffect(() => {
     getAllBranches();
     getAllEmployees();
+    getAllDesignation();
+    getAllDepartment();
   }, []);
+  const getAllDesignation = async () => {
+    try {
+      const result = await apiCalls('get', `/commonmaster/getDesignationByOrgId?orgId=${orgId}`);
+      setDesignationList(result.paramObjectsMap.designationVO || []);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+  const getAllDepartment = async () => {
+    try {
+      const result = await apiCalls('get', `/commonmaster/getDepartmentByOrgId?orgId=${orgId}`);
+      setDepartment(result.paramObjectsMap.departmentVO || []);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
 
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
-
+    const codeRegex = /^[a-zA-Z0-9- ]*$/;
     let errorMessage = '';
 
     if (name === 'empCode' && !codeRegex.test(value)) {
-      errorMessage = 'Invalid Format';
+      errorMessage = 'Only AlphaNumerics are Allowed';
+    } else if (name === 'empCode' && value.length > 10) {
+      errorMessage = 'Exceeded Max Length';
+    } else if (name === 'empName' && !nameRegex.test(value)) {
+      errorMessage = 'Only Alphabets Allowed';
+    } else if (name === 'empName' && value.length > 50) {
+      errorMessage = 'Exceeded Max Length';
     }
-    else if (name === 'empName' && !nameRegex.test(value)) {
-      errorMessage = 'Invalid Format';
-    }
-
-
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
 
+      // Branch-specific logic
       if (name === 'branch') {
         const selectedBranch = branchList.find((br) => br.branch === value);
-        if (selectedBranch) {
-          setFormData((prevData) => ({
-            ...prevData,
-            branch: value,
-            branchCode: selectedBranch.branchCode
-          }));
-        } else {
-          setFormData((prevData) => ({
-            ...prevData,
-            branch: value,
-            branchCode: ''
-          }));
-        }
+        setFormData((prevData) => ({
+          ...prevData,
+          branch: value,
+          branchCode: selectedBranch ? selectedBranch.branchCode : ''
+        }));
       } else if (type === 'checkbox') {
+        // Checkbox handling
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
-      } else if (type === 'text' || type === 'textarea') {
-        const upperCaseValue = value.toUpperCase();
-        setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+      } else {
+        // Handle text or textarea
+        let inputValue = value;
 
+        if (name === 'email') {
+          // Store email in lowercase
+          inputValue = value.toLowerCase();
+        } else if (type === 'text' || type === 'textarea') {
+          // Convert other inputs to uppercase
+          inputValue = value.toUpperCase();
+        }
+
+        setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
+
+        // Maintain cursor position for seamless typing
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
           if (inputElement && inputElement.setSelectionRange) {
             inputElement.setSelectionRange(selectionStart, selectionEnd);
           }
         }, 0);
-      } else {
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
       }
     }
   };
-
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
@@ -135,7 +163,7 @@ export const Employee = () => {
       dob: null,
       doj: null,
       active: true,
-      email: '',
+      email: ''
     });
     setFieldErrors({
       empCode: '',
@@ -166,7 +194,7 @@ export const Employee = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.employeeVO);
+        setListViewData(response.paramObjectsMap.employeeVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -178,8 +206,6 @@ export const Employee = () => {
   const getEmployeeById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
-    getAllDepartmentByOrgId();
-    getDesignationByOrgId();
     try {
       const response = await apiCalls('get', `master/employee/${row.original.id}`);
       console.log('API Response:', response);
@@ -192,6 +218,7 @@ export const Employee = () => {
 
         setFormData({
           empCode: particularEmp.employeeCode,
+          email: particularEmp.email,
           empName: particularEmp.employeeName,
           gender: particularEmp.gender,
           department: particularEmp.department,
@@ -200,7 +227,7 @@ export const Employee = () => {
           branchCode: selectedBranch ? selectedBranch.branchCode : '', // Handle case where selectedBranch might be undefined
           dob: particularEmp.dateOfBirth,
           doj: particularEmp.joiningDate,
-          active: particularEmp.active === 'Active' ? true : false
+          active: particularEmp.active === 'Active' ? true : false,
         });
       } else {
         console.error('API Error:', response);
@@ -209,35 +236,22 @@ export const Employee = () => {
       console.error('Error fetching data:', error);
     }
   };
-  useEffect(() => {
-    getAllDepartmentByOrgId();
-    getDesignationByOrgId();
-  }, [])
-  const getAllDepartmentByOrgId = async () => {
-    try {
-      const result = await apiCalls('get', `/commonmaster/getDepartmentByOrgId?orgId=${orgId}`);
-      setDepartment(result.paramObjectsMap.departmentVO || []);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
-  const getDesignationByOrgId = async () => {
-    try {
-      const result = await apiCalls('get', `/commonmaster/getDesignationByOrgId?orgId=${orgId}`);
-      setDesignationList(result.paramObjectsMap.designationVO || []);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
 
   const handleSave = async () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.empCode) {
       errors.empCode = 'Employee Code is required';
+    } else if (formData.empCode.length < 2) {
+      errors.empCode = 'Min Length is 2';
     }
+
     if (!formData.empName) {
       errors.empName = 'Employee Name is required';
+    } else if (formData.empName.length < 3) {
+      errors.empName = 'Min Length is 3';
     }
+
     if (!formData.gender) {
       errors.gender = 'Gender is required';
     }
@@ -256,14 +270,17 @@ export const Employee = () => {
     if (!formData.doj) {
       errors.doj = 'Date of Joining is required';
     }
-    if (!formData.email) errors.email = 'Email is required';
-
+    if (!formData.email) {
+      errors.email = 'Email ID is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid Mail ID Format';
+    }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
         ...(editId && { id: editId }),
-        // active: formData.active,
-        active: true,
+        active: formData.active,
+        email: formData.email,
         employeeCode: formData.empCode,
         employeeName: formData.empName,
         gender: formData.gender,
@@ -308,11 +325,20 @@ export const Employee = () => {
     { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
     { accessorKey: 'employeeName', header: 'Employee', size: 140 },
     { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'department', header: 'department', size: 140 },
+    { accessorKey: 'department', header: 'Department', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },
     { accessorKey: 'joiningDate', header: 'Joining Date', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
 
   return (
     <>
@@ -320,19 +346,32 @@ export const Employee = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
-          <div>
+          <div className="">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getEmployeeById} />
           </div>
         ) : (
           <>
             <div className="row">
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Name"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="empName"
+                  value={formData.empName}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.empName}
+                  helperText={fieldErrors.empName}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Code"
@@ -347,25 +386,11 @@ export const Employee = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="empName"
-                  value={formData.empName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.empName}
-                  helperText={fieldErrors.empName}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gender}>
                   <InputLabel id="gender-label">Gender</InputLabel>
                   <Select labelId="gender-label" label="Gender" value={formData.gender} onChange={handleInputChange} name="gender">
-                    <MenuItem value="MALE">Male</MenuItem>
-                    <MenuItem value="FEMALE">Female</MenuItem>
+                    <MenuItem value="MALE">MALE</MenuItem>
+                    <MenuItem value="FEMALE">FEMALE</MenuItem>
                   </Select>
                   {fieldErrors.gender && <FormHelperText>{fieldErrors.gender}</FormHelperText>}
                 </FormControl>
@@ -383,16 +408,6 @@ export const Employee = () => {
                   {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.department}>
-                  <InputLabel id="department-label">Department</InputLabel>
-                  <Select labelId="department-label" label="Department" value={formData.department} onChange={handleInputChange} name="department">
-                    <MenuItem value="department1">department1</MenuItem>
-                    <MenuItem value="department2">department2</MenuItem>
-                  </Select>
-                  {fieldErrors.department && <FormHelperText>{fieldErrors.department}</FormHelperText>}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -432,22 +447,6 @@ export const Employee = () => {
                   )}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.designation}>
-                  <InputLabel id="designation-label">Designation</InputLabel>
-                  <Select
-                    labelId="designation-label"
-                    label="Designation"
-                    value={formData.designation}
-                    onChange={handleInputChange}
-                    name="designation"
-                  >
-                    <MenuItem value="DESIGNATION1">DESIGNATION1</MenuItem>
-                    <MenuItem value="DESIGNATION2">DESIGNATION2</MenuItem>
-                  </Select>
-                  {fieldErrors.designation && <FormHelperText>{fieldErrors.designation}</FormHelperText>}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -496,11 +495,9 @@ export const Employee = () => {
                       onChange={(date) => handleDateChange('dob', date)}
                       maxDate={maxDate}
                       slotProps={{
-                        textField: { size: 'small', clearable: true }
+                        textField: { size: 'small', clearable: true, error: fieldErrors.dob, helperText: fieldErrors.dob }
                       }}
                       format="DD-MM-YYYY"
-                      error={fieldErrors.dob}
-                      helperText={fieldErrors.dob && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -513,19 +510,16 @@ export const Employee = () => {
                       value={formData.doj ? dayjs(formData.doj, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
-                        textField: { size: 'small', clearable: true }
+                        textField: { size: 'small', clearable: true, error: fieldErrors.doj, helperText: fieldErrors.doj }
                       }}
                       format="DD-MM-YYYY"
-                      error={fieldErrors.doj}
-                      helperText={fieldErrors.doj && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Email"
+                  label="Email ID"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -536,7 +530,6 @@ export const Employee = () => {
                   helperText={fieldErrors.email}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}

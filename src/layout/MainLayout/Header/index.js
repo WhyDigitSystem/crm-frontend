@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // material-ui
-import { Avatar, Box, ButtonBase } from '@mui/material';
+import { Avatar, Box, ButtonBase,Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -9,19 +9,52 @@ import LogoSection from '../LogoSection';
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import SearchSection from './SearchSection';
-import LightDarkMode from './LightDarkMode/index';
-import CompanyName from './CompanyName/index';
-
-
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
 import GlobalSection from './GlobalSection';
+import { useEffect, useState } from 'react';
+import { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
+
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
+  const [logo, setLogo] = useState(null);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const theme = useTheme();
+
+  useEffect(() => {
+    getCompanyDetails();
+  }, []);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+      setLogo(file);
+    } else {
+      showToast('error', 'Please upload a valid image (PNG or JPEG).');
+    }
+  };
+
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+        setLogo(response.paramObjectsMap.companyVO);
+        console.log('THE LISTVIEW COMPANY IS:', particularCompany);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
 
   return (
     <>
@@ -29,6 +62,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <Box
         sx={{
           width: 228,
+          height: 40,
           display: 'flex',
           [theme.breakpoints.down('md')]: {
             width: 'auto'
@@ -63,10 +97,65 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/* header search */}
       <SearchSection />
       <Box sx={{ flexGrow: 1 }} />
-      {/* <CompanyName /> */}
-      <LightDarkMode />
+      {/* Remove or adjust this Box component to reduce space */}
+      {/* <Box sx={{ flexGrow: 1 }} /> */}
+
+      {/* notification & profile */}
+      <div className="mt-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}>
+        {/* <span
+          style={{
+            height: '11px',
+            width: '11px',
+            backgroundColor: '#25BE2B',
+            borderRadius: '50%',
+            display: 'inline-block',
+            marginRight: '8px',
+            marginBottom: '8px'
+          }}
+        ></span> */}
+        <Avatar
+          sx={{
+            fontSize: "16px",
+            width: "45px", // Adjust size as needed
+            height: "45px",
+            fontWeight: "bold",
+            border: "2px solid white",
+            // boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.15)",
+            marginRight: "5px",
+            marginTop: "-10px",
+            backgroundColor: "transparent" // Ensure no background color
+          }}
+        >
+          {logo && logo[0]?.companyLogo ? (
+            <img
+              src={`data:image/png;base64,${logo[0].companyLogo}`}
+              alt="Company Logo"
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            />
+          ) : (
+            "Upload Logo"
+          )}
+          <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+        </Avatar>
+
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+  <h6 style={{ marginTop: '-12px', marginBottom: 1 }}>
+    {localStorage.getItem('companyName')}
+  </h6>
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+  <Chip 
+    label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`} 
+    size="small" 
+    color="primary" 
+    sx={{ fontSize: '11px', height: '20px' }} 
+  />
+</div>
+
+</div>
+      </div>
       <NotificationSection />
       <GlobalSection />
+      {/* <SiteMapSection /> */}
       <ProfileSection />
     </>
   );

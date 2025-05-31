@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Company from './Company';
 import Branch from './Branch';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'; 
 
 const CompanySetup = () => {
   const [value, setValue] = React.useState(0);

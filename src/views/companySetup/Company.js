@@ -1,33 +1,32 @@
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
 import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
+import Box from '@mui/material/Box';
+import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import 'react-tabs/style/react-tabs.css';
+import 'react-toastify/dist/ReactToastify.css';
 import Checkbox from '@mui/material/Checkbox';
-import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry, getAllActiveCurrency } from 'utils/CommonFunctions';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const Company = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -36,6 +35,7 @@ const Company = () => {
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
   const [editId, setEditId] = useState('');
 
   const [formData, setFormData] = useState({
@@ -43,11 +43,13 @@ const Company = () => {
     companyName: '',
     ceo: '',
     address: '',
+    currency: '',
     country: '',
     state: '',
     city: '',
     pincode: '',
-    gst: '',
+    mobileNo: '',
+    gstIn: '',
     website: '',
     active: true
   });
@@ -56,13 +58,15 @@ const Company = () => {
     companyCode: '',
     ceo: '',
     address: '',
+    currency: '',
     country: '',
     state: '',
     city: '',
     pincode: '',
-    gst: '',
+    mobileNo: '',
+    gstIn: '',
     website: '',
-    active: ''
+    active: true
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
@@ -73,8 +77,13 @@ const Company = () => {
       size: 140
     },
     {
-      accessorKey: 'employeeName',
-      header: 'Admin',
+      accessorKey: 'ceo',
+      header: 'CEO',
+      size: 140
+    },
+    {
+      accessorKey: 'gstIn',
+      header: 'GST',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -82,17 +91,31 @@ const Company = () => {
 
   const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
-    getCompanyDetails();
-    // getCompany();
     getAllCountries();
-    if (formData.country) {
-      getAllStates();
-    }
-    if (formData.state) {
-      getAllCities();
-    }
-  }, [formData.country, formData.state]);
+    getCompanyDetails();
+    getAllCurrency();
+  }, []); // Run only once on mount
 
+  useEffect(() => {
+    if (formData.country) {
+      getAllStates(); // Fetch states only when country changes
+    }
+  }, [formData.country]); // Only depend on country change
+
+  useEffect(() => {
+    if (formData.state) {
+      getAllCities(); // Fetch cities only when state changes
+    }
+  }, [formData.state]); // Only depend on state change
+
+  const getAllCurrency = async () => {
+    try {
+      const currencyData = await getAllActiveCurrency(orgId);
+      setCurrencyList(currencyData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
   const getAllCountries = async () => {
     try {
       const countryData = await getAllActiveCountries(orgId);
@@ -118,61 +141,15 @@ const Company = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
-
-  //   if (name === 'ceo' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
-  //   } else if (name === 'pincode') {
-  //     if (!numericRegex.test(value)) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
-  //     } else if (value.length > 6) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 6 digits are allowed' });
-  //     } else {
-  //       setFieldErrors({ ...fieldErrors, [name]: '' });
-  //     }
-  //   } else if (name === 'gst') {
-  //     if (!alphanumericRegex.test(value)) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Special characters are not allowed' });
-  //     } else if (value.length > 15) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 15 characters are allowed' });
-  //     } else {
-  //       setFieldErrors({ ...fieldErrors, [name]: '' });
-  //     }
-  //   } else {
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-
-  //   // Update the form data
-  //   if (name === 'active') {
-  //     setFormData({ ...formData, [name]: checked });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //   }
-
-  //   // Update the cursor position after the input change
-  //   if (type === 'text' || type === 'textarea' || type === 'email') {
-  //     setTimeout(() => {
-  //       const inputElement = document.getElementsByName(name)[0];
-  //       if (inputElement) {
-  //         inputElement.setSelectionRange(selectionStart, selectionEnd);
-  //       }
-  //     }, 0);
-  //   }
-  // };
-
   const handleInputChange = (e) => {
-    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const { name, value, checked, type } = e.target || e;
 
     // Regular expressions for validation
-    const nameRegex = /^[A-Za-z ]*$/; // Allows only alphabetic characters and spaces
-    const numericRegex = /^[0-9]*$/; // Allows only numeric characters
-    const alphanumericRegex = /^[A-Za-z0-9]*$/; // Allows only alphanumeric characters
+    const nameRegex = /^[A-Za-z ]*$/;
+    const numericRegex = /^[0-9]*$/;
+    const alphanumericRegex = /^[A-Za-z0-9]*$/;
 
+    let newValue = value;
     let error = '';
 
     // Validation logic
@@ -186,59 +163,60 @@ const Company = () => {
       } else if (value.length > 6) {
         error = 'Only 6 digits are allowed';
       }
-    } else if (name === 'gst') {
+    } else if (name === 'mobileNo') {
       if (!alphanumericRegex.test(value)) {
         error = 'Special characters are not allowed';
-      } else if (value.length > 15) {
-        error = 'Only 15 characters are allowed';
+      } else if (value.length > 10) {
+        error = 'Only 10 characters are allowed';
       }
     }
 
-    // Handle errors if validation fails
-    if (error) {
-      setFieldErrors((prevErrors) => ({
-        ...prevErrors,
-        [name]: error
+    // Update error state
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error
+    }));
+
+    // Only update form data if there's no error
+    if (!error) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: newValue
       }));
-    } else {
-      // Clear previous error if input is valid
-      setFieldErrors((prevErrors) => ({
-        ...prevErrors,
-        [name]: ''
+    }
+
+    if (type === 'checkbox') {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: checked
       }));
+      return; // Exit here to avoid further processing for checkboxes
+    }
 
-      // Update the form data
-      let updatedValue = value;
+   
 
-      if (name !== 'active') {
-        updatedValue = value.toUpperCase();
-      }
+    // Handle dropdowns separately
+    if (type === 'select-one') {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value
+      }));
+      return;
+    }
 
-      if (type === 'checkbox') {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: checked
-        }));
-      } else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: updatedValue
-        }));
-      }
-
-      // Handle cursor position reset after input change (for text, email, and textarea)
-      if (type === 'text' || type === 'textarea' || type === 'email') {
-        setTimeout(() => {
-          const inputElement = document.getElementsByName(name)[0];
-          if (inputElement) {
-            inputElement.setSelectionRange(selectionStart, selectionEnd);
-          }
-        }, 0);
-      }
+    // If it's not a checkbox or dropdown, process the input normally
+    if (type !== 'checkbox' && type !== 'select-one') {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: newValue
+      }));
     }
   };
 
   const getCompanyById = async (row) => {
+    console.log('THE SELECTED BRANCH ID IS:', row.original.id);
+    setEditId(row.original.id);
+
     try {
       const response = await apiCalls('get', `commonmaster/company/${row.original.id}`);
       console.log('API Response:', response);
@@ -247,19 +225,23 @@ const Company = () => {
         setListView(false);
         const particularCompany = response.paramObjectsMap.companyVO[0];
         console.log('PARTICULAR COMPANY IS:', particularCompany);
-
+        setLogo(response.paramObjectsMap.companyVO[0].companyLogo);
+        
         setFormData({
           companyCode: particularCompany.companyCode,
           companyName: particularCompany.companyName,
           ceo: particularCompany.ceo,
           address: particularCompany.address,
           country: particularCompany.country,
+          currency: particularCompany.currency,
           state: particularCompany.state,
           city: particularCompany.city,
           pincode: particularCompany.zip,
-          gst: particularCompany.gst,
-          website: particularCompany.webSite
+          mobileNo: particularCompany.phone,
+          gstIn: particularCompany.gstIn,
+          website: particularCompany.website,
         });
+
       } else {
         console.error('API Error:', response);
       }
@@ -267,17 +249,27 @@ const Company = () => {
       console.error('Error fetching data:', error);
     }
   };
+
   const getCompanyDetails = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      const response = await apiCalls('get', `commonmaster/company`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        const particularCompany = response.paramObjectsMap.companyVO[0];
-        setListViewData(response.paramObjectsMap.companyVO);
-        console.log('THE LISTVIEW COMPANY IS:', particularCompany);
+        const companyList = response.paramObjectsMap.companyVO;
+        setListViewData(companyList);
 
-        setFormData({ ...formData, companyCode: particularCompany.companyCode, companyName: particularCompany.companyName });
+        console.log('THE LISTVIEW COMPANY IS:', companyList);
+
+        // Check if orgId exists and matches any company's id
+        const matchedCompany = companyList.find((company) => company.id === parseInt(orgId));
+
+        if (matchedCompany) {
+          console.log('MATCHED COMPANY ID FOUND:', matchedCompany.id);
+          await getCompanyById({ original: { id: matchedCompany.id } }); // Call getCompanyById if match is found
+        } else {
+          console.log('No matching company found for the given orgId.');
+        }
       } else {
         console.error('API Error:', response);
       }
@@ -289,13 +281,17 @@ const Company = () => {
   const handleClear = () => {
     setFormData({
       // companyCode: '',
+      companyCode: formData.companyCode,
+      companyName: formData.companyName,
       ceo: '',
       address: '',
+      currency: '',
       country: '',
       state: '',
       city: '',
       pincode: '',
-      gst: '',
+      mobileNo: '',
+      gstIn: '',
       website: '',
       active: true
     });
@@ -303,14 +299,17 @@ const Company = () => {
       // companyCode: '',
       ceo: '',
       address: '',
+      currency: '',
       country: '',
       state: '',
       city: '',
       pincode: '',
-      gst: '',
-      website: ''
+      mobileNo: '',
+      gstIn: '',
+      website: '',
     });
     setEditId('');
+    getCompanyDetails();
   };
 
   const handleSave = async () => {
@@ -330,10 +329,10 @@ const Company = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-    if (!formData.gst) {
-      errors.gst = 'GST is required';
-    } else if (formData.gst.length < 15) {
-      errors.gst = 'Invalid GST No';
+    if (!formData.mobileNo) {
+      errors.mobileNo = 'Mobile No is required';
+    } else if (formData.mobileNo.length < 10) {
+      errors.mobileNo = 'Invalid mobileNo No';
     }
     if (formData.pincode.length < 6 && formData.pincode.length >= 1) {
       errors.pincode = 'Invalid Pincode';
@@ -342,19 +341,23 @@ const Company = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
+        ...(editId && { id: editId }),
         id: orgId,
+        active: formData.active,
+        address: formData.address,
+        cancel: true,
+        ceo: formData.ceo,
+        city: formData.city,
         companyCode: formData.companyCode,
         companyName: formData.companyName,
-        ceo: formData.ceo,
-        address: formData.address,
         country: formData.country,
+        createdBy: loginUserName,
+        currency: formData.currency,
+        gstIn: formData.gstIn,
+        website: formData.website,
+        phone: formData.mobileNo,
         state: formData.state,
-        city: formData.city,
         zip: formData.pincode,
-        gst: formData.gst,
-        webSite: formData.website,
-        active: formData.active,
-        updatedBy: loginUserName
       };
       console.log('THE SAVE FORM DATA IS:', saveFormData);
 
@@ -362,8 +365,16 @@ const Company = () => {
         const response = await apiCalls('put', `commonmaster/updateCompany`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
-
-          showToast('success', ' Company updated Successfully');
+          showToast('success', 'Company updated Successfully');
+          const generatedId = response.paramObjectsMap.CompanyVO.id;
+          console.log("save", typeof logo);
+          if (generatedId && typeof logo === 'object') {
+            console.log('Generated ID:', generatedId);
+            console.log('Uploaded Item', logo);
+            handleFileUpload(generatedId);
+          } else {
+            console.log('handle Img Upload failed');
+          }
           handleClear();
           setIsLoading(false);
         } else {
@@ -380,11 +391,80 @@ const Company = () => {
       setFieldErrors(errors);
     }
   };
+  const [logo, setLogo] = useState(null);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+      setLogo(file);
+    } else {
+      showToast('error', 'Please upload a valid image (PNG or JPEG).');
+    }
+  };
+  const handleFileUpload = async (generatedId) => {
+    if (!generatedId) {
+      console.warn('Generated ID is missing');
+      showToast('error', 'Generated ID is required');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', logo);
+    try {
+      const response = await apiCalls(
+        'post',
+        `/commonmaster/uploadCompanyLogoInBloob?id=${generatedId}`,
+        formData,
+        {},
+        { 'Content-Type': 'multipart/form-data' }
+      );
+      console.log('Img Upload Response:', response);
 
+      if (response.status === true) {
+        showToast('success', response.message || 'Image Uploaded successfully!');
+      } else {
+        console.warn('Img upload failed:', response);
+        showToast('error', 'Img upload failed');
+      }
+    } catch (error) {
+      console.error('Img Upload Error:', error);
+      showToast('error', 'Failed to upload Img');
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (logo && typeof logo === 'object') {
+        URL.revokeObjectURL(logo);
+      }
+    };
+  }, [logo]);
+  const handleRemoveLogo = () => setLogo(null);
   const handleView = () => {
     console.log('LIST VIEW DATAS ARE:', listViewData);
 
-    setListView(!listView);
+    setListView(!listView); 
+  };
+
+  const handleDateChange = (field, newValue) => {
+    if (newValue.isValid()) {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: newValue
+      }));
+    }
+  };
+
+  const handleTimeChange = (fieldName, newValue) => {
+    if (!newValue) return;
+
+    const timeFormat = 'HH:mm';
+    const newTime = dayjs(newValue).format(timeFormat);
+
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: newTime
+    }));
   };
 
   return (
@@ -394,16 +474,17 @@ const Company = () => {
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            {/* <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} /> */}
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
-          <div>
+          <div className="mt-4">
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}
               // editCallback={editEmployee}
+              enableEditing={true}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
               toEdit={getCompanyById}
             />
@@ -462,16 +543,16 @@ const Company = () => {
                   helperText={fieldErrors.address}
                 />
               </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
-                  <InputLabel id="country-label">Country</InputLabel>
-                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {Array.isArray(countryList) &&
-                      countryList?.map((row) => (
-                        <MenuItem key={row.id} value={row.countryName}>
-                          {row.countryName}
-                        </MenuItem>
-                      ))}
+                  <InputLabel id="country">Country</InputLabel>
+                  <Select labelId="country" label="Country" name="country" value={formData.country} onChange={handleInputChange}>
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
@@ -479,8 +560,8 @@ const Company = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
-                  <InputLabel id="state-label">State</InputLabel>
-                  <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
+                  <InputLabel id="state">State</InputLabel>
+                  <Select labelId="state" label="State" name="state" value={formData.state} onChange={handleInputChange}>
                     {stateList?.map((row) => (
                       <MenuItem key={row.id} value={row.stateName}>
                         {row.stateName}
@@ -491,9 +572,9 @@ const Company = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
-                  <InputLabel id="city-label">City</InputLabel>
-                  <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.city}>
+                  <InputLabel id="city">City</InputLabel>
+                  <Select labelId="city" label="City" name="city" value={formData.city} onChange={handleInputChange}>
                     {cityList?.map((row) => (
                       <MenuItem key={row.id} value={row.cityName}>
                         {row.cityName}
@@ -501,6 +582,19 @@ const Company = () => {
                     ))}
                   </Select>
                   {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                  <InputLabel id="currency-label">Currency</InputLabel>
+                  <Select labelId="currency-label" label="currency" value={formData.currency} onChange={handleInputChange} name="currency">
+                    {currencyList?.map((row) => (
+                      <MenuItem key={row.id} value={row.currency}>
+                        {row.currency}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -519,15 +613,28 @@ const Company = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="GST"
+                  label="Mobile No"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="gst"
-                  value={formData.gst}
+                  name="mobileNo"
+                  value={formData.mobileNo}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.gst}
-                  helperText={fieldErrors.gst}
+                  error={!!fieldErrors.mobileNo}
+                  helperText={fieldErrors.mobileNo}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="GST In"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="gstIn"
+                  value={formData.gstIn}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.gstIn}
+                  helperText={fieldErrors.gstIn}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -542,6 +649,77 @@ const Company = () => {
                   error={!!fieldErrors.website}
                   helperText={fieldErrors.website}
                 />
+              </div>
+             
+           
+              <div className="col-md-3 mb-3">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    multiline
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  >
+                    {/* {logo ? logo.name === '' ? "Logo👉" : logo.name : 'Upload Logo'} */}
+                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Logo👉') : 'Upload Logo'}
+
+                    <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                  </Button>
+
+                  {logo && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                  <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                      Company Logo
+                    </Typography>
+                    {logo ? (
+                      <Box>
+                        <Avatar
+                          src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
+                          alt="Company Logo"
+                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                        />
+                        <Box display="flex" gap={2} mt={2}>
+                          {/* <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleRemoveLogo}
+                          >
+                            Delete
+                          </IconButton> */}
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                          <Typography variant="caption">Upload Logo</Typography>
+                        </Avatar>
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
