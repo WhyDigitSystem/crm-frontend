@@ -227,5 +227,35 @@
 }
 
 .css-1r435k1-MuiAvatar-root {
-  border-radius: 0% !important ;
+  border-radius: 0% !important;
+}
+
+.css-ftvhhb-MuiPaper-root-MuiCard-root {
+  background-color: #fff;
+  color: #000000;
+  -webkit-transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  border-radius: 4px;
+  box-shadow: none;
+  background-image: none;
+  border-radius: 55px;
+  overflow: hidden;
+  border: 1px solid;
+  border-color: #90caf925;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
 }

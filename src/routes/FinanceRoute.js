@@ -24,9 +24,11 @@ const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames'))
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 const Department = Loadable(lazy(() => import('views/basicMaster/department')));
 const Designation = Loadable(lazy(() => import('views/basicMaster/designation')));
-
-
-
+const Product = Loadable(lazy(() => import('views/basicMaster/Product')));
+const PriceMaster = Loadable(lazy(() => import('views/basicMaster/PriceMaster')));
+const UnitMaster = Loadable(lazy(() => import('views/basicMaster/UnitMaster')));
+const CategoryMaster = Loadable(lazy(() => import('views/basicMaster/CategoryMaster')));
+const SubCategory = Loadable(lazy(() => import('views/basicMaster/SubCategory')));
 
 // companySetup
 const CreateCompany = Loadable(lazy(() => import('views/companySetup/CreateCompany')));
@@ -34,6 +36,8 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 // const CompanyMain = Loadable(lazy(() => import('views/company/companyMain')));
 // const CreateCompany = Loadable(lazy(() => import('views/company/CreateCompany')));
 
+// Activities
+const Calls = Loadable(lazy(() => import('views/Activities/Calls')));
 
 
 // login option 3 routing
@@ -43,7 +47,7 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 
 const FinanceRoute = {
   path: '/',
-  element:<PrivateRoute> <MainLayout /></PrivateRoute>,
+  element: <PrivateRoute> <MainLayout /></PrivateRoute>,
   children: [
     {
       path: '/',
@@ -52,7 +56,7 @@ const FinanceRoute = {
     // companysetup
     {
       path: '/companysetup/createcompany',
-      element:<PrivateRoute> <CreateCompany /></PrivateRoute>
+      element: <PrivateRoute> <CreateCompany /></PrivateRoute>
     },
     {
       path: '/companysetup/companysetup',
@@ -111,6 +115,30 @@ const FinanceRoute = {
     {
       path: '/basicMaster/designation',
       element: <Designation />
+    },
+    {
+      path: '/basicMaster/Product',
+      element: <Product />
+    },
+    {
+      path: '/basicMaster/PriceMaster',
+      element: <PriceMaster />
+    },
+    {
+      path: '/basicMaster/UnitMaster',
+      element: <UnitMaster />
+    },
+    {
+      path: '/basicMaster/CategoryMaster',
+      element: <CategoryMaster />
+    },
+    {
+      path: '/basicMaster/SubCategory',
+      element: <SubCategory />
+    },
+    {
+      path: '/Activities/Calls',
+      element: <Calls />
     },
   ]
 };

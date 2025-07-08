@@ -93,6 +93,36 @@ const basicMaster = {
           type: 'item',
           url: '/basicMaster/ScreenNames'
         },
+        {
+          id: 'UnitMaster',
+          title: 'Unit Master',
+          type: 'item',
+          url: '/basicMaster/UnitMaster'
+        },
+        {
+          id: 'CategoryMaster',
+          title: 'Category Master',
+          type: 'item',
+          url: '/basicMaster/CategoryMaster'
+        },
+        {
+          id: 'SubCategory',
+          title: 'Sub Category',
+          type: 'item',
+          url: '/basicMaster/SubCategory'
+        },
+        {
+          id: 'Product',
+          title: 'Product',
+          type: 'item',
+          url: '/basicMaster/Product'
+        },
+        {
+          id: 'PriceMaster',
+          title: 'Price Master',
+          type: 'item',
+          url: '/basicMaster/PriceMaster'
+        },
       ]
     }
   ]

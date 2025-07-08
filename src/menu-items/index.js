@@ -2,6 +2,7 @@ import admin from './admin';
 import basicMaster from './basicMaster';
 import companySetup from './companySetup';
 import dashboard from './dashboard';
+import Activities from './Activities'
 
 // Function to get menu items based on localStorage value
 const getMenuItems = () => {
@@ -13,6 +14,7 @@ const getMenuItems = () => {
       dashboard,
       admin,
       basicMaster,
+      Activities,
     ]
   };
 
@@ -20,7 +22,7 @@ const getMenuItems = () => {
   switch (localStorageValue) {
     case 'ROLE_SUPER_ADMIN':
       return {
-        items: [dashboard, companySetup, basicMaster]
+        items: [dashboard, companySetup, basicMaster, Activities]
       };
     case 'ROLE_ADMIN':
       return {
@@ -29,6 +31,7 @@ const getMenuItems = () => {
           companySetup,
           admin,
           basicMaster,
+          // Activities,
         ]
       };
     // Add more cases as needed
