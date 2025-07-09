@@ -1,17 +1,18 @@
 // assets
 import {
-    IconKey,
-    IconPhone,
-    IconWorld,
+    IconUsers,
+    IconPhoneCall,
+    IconCalendarEvent,
     IconMap
+,
 } from '@tabler/icons-react';
 
 // constant
 const icons = {
-    IconKey,
-    IconPhone,
-    IconWorld,
-    IconMap
+    IconUsers,
+    IconPhoneCall,
+    IconCalendarEvent,
+    IconMap,
 };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -24,21 +25,21 @@ const Activities = {
             id: 'Activities',
             title: 'Activities',
             type: 'collapse',
-            icon: icons.IconKey,
+            icon: icons.IconUsers, // Group icon
             children: [
                 {
                     id: 'Calls',
                     title: 'Calls',
                     type: 'item',
                     url: '/Activities/Calls',
-                    icon: icons.IconPhone
+                    icon: icons.IconPhoneCall
                 },
                 {
                     id: 'Meeting',
                     title: 'Meeting',
                     type: 'item',
                     url: '/Activities/Meeting',
-                    icon: icons.IconWorld
+                    icon: icons.IconCalendarEvent
                 },
                 {
                     id: 'Task',

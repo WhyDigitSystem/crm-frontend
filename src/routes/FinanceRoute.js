@@ -42,6 +42,14 @@ const Meeting = Loadable(lazy(() => import('views/Activities/Meeting')));
 const Task = Loadable(lazy(() => import('views/Activities/Task')));
 
 
+
+// Transaction
+const Lead = Loadable(lazy(() => import('views/Transaction/Lead')));
+const Opportunity = Loadable(lazy(() => import('views/Transaction/Opportunity')));
+const Quotation = Loadable(lazy(() => import('views/Transaction/Quotation')));
+const SaleOrder = Loadable(lazy(() => import('views/Transaction/SaleOrder')));
+const CustomerDetails = Loadable(lazy(() => import('views/Transaction/CustomerDetails')));
+
 // login option 3 routing
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -151,6 +159,28 @@ const FinanceRoute = {
     {
       path: '/Activities/Task',
       element: <Task />
+    },
+
+    // Transaction
+    {
+      path: '/Transaction/Lead',
+      element: <Lead />
+    },
+    {
+      path: '/Transaction/Opportunity',
+      element: <Opportunity />
+    },
+    {
+      path: '/Transaction/Quotation',
+      element: <Quotation />
+    },
+    {
+      path: '/Transaction/SaleOrder',
+      element: <SaleOrder />
+    },
+    {
+      path: '/Transaction/CustomerDetails',
+      element: <CustomerDetails />
     },
   ]
 };
