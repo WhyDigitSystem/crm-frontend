@@ -23,7 +23,7 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 
-export const Calls = () => {
+export const Meeting = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [editId, setEditId] = useState('');
     const [branchList, setBranchList] = useState([]);
@@ -35,13 +35,14 @@ export const Calls = () => {
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
 
     const [formData, setFormData] = useState({
-        callDocId: '',
-        calldate: null,
+        meetingId: '',
+        meetingDate: null,
         clientName: '',
         contactName: '',
         email: '',
         mobile: '',
         Parent: '',
+        venue: '',
         branch: '',
         branchCode: '',
         dateStart: null,
@@ -50,7 +51,7 @@ export const Calls = () => {
         timeEnd: '',
         duration: '',
         description: '',
-        direction: '',
+        address: '',
         status: '',
         followUpDate: null,
         active: true
@@ -62,16 +63,16 @@ export const Calls = () => {
         email: '',
         mobile: '',
         Parent: '',
+        venue: '',
         branch: '',
         dateStart: '',
         timeStart: '',
         status: '',
-        direction: ''
     });
 
     // Status options
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
-    const directionOptions = ['Incoming', 'Outgoing'];
+    const assignToOptions = ['Incoming', 'Outgoing'];
 
     useEffect(() => {
         getAllBranches();
@@ -137,7 +138,7 @@ export const Calls = () => {
             if (response.status === true && response.paramObjectsMap.callsDocId) {
                 setFormData(prev => ({
                     ...prev,
-                    callDocId: response.paramObjectsMap.callsDocId
+                    meetingId: response.paramObjectsMap.callsDocId
                 }));
             } else {
                 // showToast('error', response.paramObjectsMap.message || 'Failed to generate document ID');
@@ -160,13 +161,14 @@ export const Calls = () => {
                 setListView(false);
 
                 setFormData({
-                    callDocId: call.callDocId,
-                    calldate: call.calldate,
+                    meetingId: call.meetingId,
+                    meetingDate: call.meetingDate,
                     clientName: call.clientName,
                     contactName: call.contactName,
                     email: call.email,
                     mobile: call.mobile,
                     Parent: call.Parent,
+                    venue: call.venue,
                     branch: call.branch,
                     branchCode: call.branchCode,
                     dateStart: call.dateStart,
@@ -175,7 +177,7 @@ export const Calls = () => {
                     timeEnd: call.timeEnd,
                     duration: call.duratrion, // Note: API has typo "duratrion"
                     description: call.description,
-                    direction: call.direction,
+                    address: call.address,
                     status: call.status,
                     followUpDate: call.follwUpDate,
                     active: call.active
@@ -238,13 +240,14 @@ export const Calls = () => {
     const handleClear = () => {
         const firstBranch = branchList[0] || null;
         setFormData({
-            callDocId: '',
-            calldate: null,
+            meetingId: '',
+            meetingDate: null,
             clientName: '',
             contactName: '',
             email: '',
             mobile: '',
             Parent: '',
+            venue: '',
             branch: firstBranch ? firstBranch.branch : '',
             branchCode: firstBranch ? firstBranch.branchCode : '',
             dateStart: null,
@@ -253,7 +256,7 @@ export const Calls = () => {
             timeEnd: '',
             duration: '',
             description: '',
-            direction: '',
+            address: '',
             status: '',
             followUpDate: null,
             active: true
@@ -265,14 +268,13 @@ export const Calls = () => {
     const handleSave = async () => {
         // Validation
         const errors = {};
-        if (!formData.calldate) errors.calldate = 'Call Date is required';
+        if (!formData.meetingDate) errors.meetingDate = 'Meeting Date is required';
         if (!formData.clientName) errors.clientName = 'Client name is required';
         if (!formData.contactName) errors.contactName = 'Contact name is required';
         if (!formData.branch) errors.branch = 'Branch is required';
         if (!formData.dateStart) errors.dateStart = 'Start date is required';
         if (!formData.timeStart) errors.timeStart = 'Start time is required';
         if (!formData.status) errors.status = 'Status is required';
-        if (!formData.direction) errors.direction = 'Direction is required';
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -318,15 +320,15 @@ export const Calls = () => {
     };
 
     const listViewColumns = [
-        { accessorKey: 'callDocId', header: 'Doc ID', size: 120 },
-        { accessorKey: 'calldate', header: 'Call Date', size: 120 },
+        { accessorKey: 'meetingId', header: 'Meeting Id', size: 120 },
+        { accessorKey: 'meetingDate', header: 'Meeting Date', size: 120 },
         { accessorKey: 'clientName', header: 'Client', size: 180 },
         { accessorKey: 'contactName', header: 'Contact', size: 150 },
         { accessorKey: 'mobile', header: 'Mobile', size: 130 },
         { accessorKey: 'Parent', header: 'Parent', size: 130 },
+        { accessorKey: 'venue', header: 'Venue', size: 130 },
         { accessorKey: 'dateStart', header: 'Date', size: 120 },
         { accessorKey: 'timeStart', header: 'Time', size: 100 },
-        { accessorKey: 'direction', header: 'Direction', size: 100 },
         { accessorKey: 'status', header: 'Status', size: 120 },
         { accessorKey: 'active', header: 'Active', size: 100 }
     ];
@@ -362,13 +364,13 @@ export const Calls = () => {
                         {/* Call ID */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Call ID"
+                                label="Meeting Id"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 disabled
-                                name="callDocId"
-                                value={isDocIdLoading ? "Generating..." : formData.callDocId}
+                                name="meetingId"
+                                value={isDocIdLoading ? "Generating..." : formData.meetingId}
                                 InputProps={{
                                     style: { backgroundColor: '#f5f5f5' }
                                 }}
@@ -380,14 +382,14 @@ export const Calls = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Call Date *"
-                                        value={formData.calldate ? dayjs(formData.calldate, 'YYYY-MM-DD') : null}
-                                        onChange={(date) => handleDateChange('calldate', date)}
+                                        label="Meeting Date *"
+                                        value={formData.meetingDate ? dayjs(formData.meetingDate, 'YYYY-MM-DD') : null}
+                                        onChange={(date) => handleDateChange('meetingDate', date)}
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                error: !!fieldErrors.calldate,
-                                                helperText: fieldErrors.calldate
+                                                error: !!fieldErrors.meetingDate,
+                                                helperText: fieldErrors.meetingDate
                                             }
                                         }}
                                         format="DD-MM-YYYY"
@@ -398,17 +400,23 @@ export const Calls = () => {
 
                         {/* Client Name */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Client Name *"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="clientName"
-                                value={formData.clientName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.clientName}
-                                helperText={fieldErrors.clientName}
-                            />
+                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
+                                <InputLabel id="assignTo-label">Client Name</InputLabel>
+                                <Select
+                                    labelId="assignTo-label"
+                                    label="Client Name"
+                                    value={formData.assignTo}
+                                    onChange={handleInputChange}
+                                    name="assignTo"
+                                >
+                                    {assignToOptions.map((dir) => (
+                                        <MenuItem key={dir} value={dir}>
+                                            {dir}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
+                            </FormControl>
                         </div>
 
                         {/* Branch */}
@@ -434,17 +442,23 @@ export const Calls = () => {
 
                         {/* Contact Name */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Contact Name *"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="contactName"
-                                value={formData.contactName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.contactName}
-                                helperText={fieldErrors.contactName}
-                            />
+                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
+                                <InputLabel id="assignTo-label">Contact Name</InputLabel>
+                                <Select
+                                    labelId="assignTo-label"
+                                    label="Contact Name"
+                                    value={formData.assignTo}
+                                    onChange={handleInputChange}
+                                    name="assignTo"
+                                >
+                                    {assignToOptions.map((dir) => (
+                                        <MenuItem key={dir} value={dir}>
+                                            {dir}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
+                            </FormControl>
                         </div>
 
                         {/* Email */}
@@ -493,38 +507,38 @@ export const Calls = () => {
                             />
                         </div>
 
-                        {/* Direction */}
+                        {/* Venue */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.direction}>
-                                <InputLabel id="direction-label">Direction *</InputLabel>
+                            <TextField
+                                label="Venue"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="venue"
+                                value={formData.venue}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        {/* Duration */}
+                        <div className="col-md-3 mb-3">
+                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
+                                <InputLabel id="assignTo-label">Duration</InputLabel>
                                 <Select
-                                    labelId="direction-label"
-                                    label="Direction *"
-                                    value={formData.direction}
+                                    labelId="assignTo-label"
+                                    label="Duration"
+                                    value={formData.assignTo}
                                     onChange={handleInputChange}
-                                    name="direction"
+                                    name="assignTo"
                                 >
-                                    {directionOptions.map((dir) => (
+                                    {assignToOptions.map((dir) => (
                                         <MenuItem key={dir} value={dir}>
                                             {dir}
                                         </MenuItem>
                                     ))}
                                 </Select>
-                                {fieldErrors.direction && <FormHelperText>{fieldErrors.direction}</FormHelperText>}
+                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
                             </FormControl>
-                        </div>
-
-                        {/* Duration */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Duration"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="duration"
-                                value={formData.duration}
-                                onChange={handleInputChange}
-                            />
                         </div>
 
                         {/* Start Date */}
@@ -648,6 +662,42 @@ export const Calls = () => {
                             />
                         </div>
 
+                        {/* Address */}
+                        <div className="col-md-6 mb-3">
+                            <TextField
+                                label="Address"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                multiline
+                                rows={3}
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        {/* Assign To */}
+                        <div className="col-md-3 mb-3">
+                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
+                                <InputLabel id="assignTo-label">Assign To </InputLabel>
+                                <Select
+                                    labelId="assignTo-label"
+                                    label="Assign To "
+                                    value={formData.assignTo}
+                                    onChange={handleInputChange}
+                                    name="assignTo"
+                                >
+                                    {assignToOptions.map((dir) => (
+                                        <MenuItem key={dir} value={dir}>
+                                            {dir}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
+                            </FormControl>
+                        </div>
+
                         {/* Active */}
                         <div className="col-md-3 mb-3 d-flex align-items-center">
                             <FormControlLabel
@@ -663,6 +713,7 @@ export const Calls = () => {
                             />
                         </div>
                     </div>
+
                 )}
             </div>
             <ToastContainer />
@@ -670,4 +721,4 @@ export const Calls = () => {
     );
 };
 
-export default Calls;
+export default Meeting;

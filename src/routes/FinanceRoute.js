@@ -38,6 +38,8 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 
 // Activities
 const Calls = Loadable(lazy(() => import('views/Activities/Calls')));
+const Meeting = Loadable(lazy(() => import('views/Activities/Meeting')));
+const Task = Loadable(lazy(() => import('views/Activities/Task')));
 
 
 // login option 3 routing
@@ -136,9 +138,19 @@ const FinanceRoute = {
       path: '/basicMaster/SubCategory',
       element: <SubCategory />
     },
+
+    // Activities
     {
       path: '/Activities/Calls',
       element: <Calls />
+    },
+    {
+      path: '/Activities/Meeting',
+      element: <Meeting />
+    },
+    {
+      path: '/Activities/Task',
+      element: <Task />
     },
   ]
 };

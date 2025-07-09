@@ -31,7 +31,7 @@ const getMenuItems = () => {
           companySetup,
           admin,
           basicMaster,
-          // Activities,
+          Activities,
         ]
       };
     // Add more cases as needed
