@@ -71,7 +71,35 @@ export const Calls = () => {
 
     // Status options
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
-    const directionOptions = ['Incoming', 'Outgoing'];
+
+    // Helper function to validate time format
+    const isValidTime = (time) => {
+        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+    };
+
+    // Calculate duration between start and end times
+    const calculateDuration = (startTime, endTime) => {
+        if (!startTime || !endTime) return '';
+        // if (!isValidTime(startTime) return 'Invalid start time';
+        if (!isValidTime(startTime)) return 'Invalid start time';
+        if (!isValidTime(endTime)) return 'Invalid end time';
+
+        const [startHours, startMinutes] = startTime.split(':').map(Number);
+        const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+
+        if (endTotalMinutes < startTotalMinutes) {
+            return 'End time before start';
+        }
+
+        const diffMinutes = endTotalMinutes - startTotalMinutes;
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
 
     useEffect(() => {
         getAllBranches();
@@ -88,6 +116,16 @@ export const Calls = () => {
             getAllCalls();
         }
     }, [formData.branchCode]);
+
+    // Recalculate duration when times change
+    useEffect(() => {
+        if (formData.timeStart && formData.timeEnd) {
+            const duration = calculateDuration(formData.timeStart, formData.timeEnd);
+            setFormData(prev => ({ ...prev, duration }));
+        } else if (!formData.timeStart || !formData.timeEnd) {
+            setFormData(prev => ({ ...prev, duration: '' }));
+        }
+    }, [formData.timeStart, formData.timeEnd]);
 
     const getAllBranches = async () => {
         try {
@@ -139,8 +177,6 @@ export const Calls = () => {
                     ...prev,
                     callDocId: response.paramObjectsMap.callsDocId
                 }));
-            } else {
-                // showToast('error', response.paramObjectsMap.message || 'Failed to generate document ID');
             }
         } catch (error) {
             console.error('Error getting document ID:', error);
@@ -152,7 +188,7 @@ export const Calls = () => {
 
     const getCallById = async (id) => {
         try {
-            const response = await apiCalls('get', `/ncontroller/getCallsById?id=${id}`);
+            const response = await apiCalls('get', `/ncontroller/getCallsyById?id=${id}`);
 
             if (response.status === true) {
                 const call = response.paramObjectsMap.callsVO;
@@ -160,25 +196,25 @@ export const Calls = () => {
                 setListView(false);
 
                 setFormData({
-                    callDocId: call.callDocId,
-                    calldate: call.calldate,
-                    clientName: call.clientName,
-                    contactName: call.contactName,
-                    email: call.email,
-                    mobile: call.mobile,
-                    Parent: call.Parent,
-                    branch: call.branch,
-                    branchCode: call.branchCode,
-                    dateStart: call.dateStart,
-                    timeStart: call.timeStart,
-                    dateEnd: call.dateEnd,
-                    timeEnd: call.timeEnd,
-                    duration: call.duratrion, // Note: API has typo "duratrion"
-                    description: call.description,
-                    direction: call.direction,
-                    status: call.status,
-                    followUpDate: call.follwUpDate,
-                    active: call.active
+                    callDocId: call.docId || '',
+                    calldate: call.docDate || null,
+                    clientName: call.clientName || '',
+                    contactName: call.contactName || '',
+                    email: call.email || '',
+                    mobile: call.mobile ? call.mobile.toString() : '',
+                    Parent: call.parent || '',
+                    branch: call.branch || '',
+                    branchCode: call.branchCode || '',
+                    dateStart: call.dateStart || null,
+                    timeStart: call.timeStart ? call.timeStart.substring(0, 5) : '', // Extract HH:mm
+                    dateEnd: call.dateEnd || null,
+                    timeEnd: call.timeEnd ? call.timeEnd.substring(0, 5) : '', // Extract HH:mm
+                    duration: call.duratrion || '', // Note: Typo in response field
+                    description: call.description || '',
+                    direction: call.direction || '',
+                    status: call.status || '',
+                    followUpDate: call.follwUpDate || null, // Note: Typo in response field
+                    active: call.active === "Active" // Convert to boolean
                 });
             } else {
                 showToast('error', response.paramObjectsMap.message || 'Failed to fetch call details');
@@ -198,10 +234,10 @@ export const Calls = () => {
             errorMessage = 'Invalid mobile number (10 digits required)';
         } else if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
             errorMessage = 'Invalid email format';
-        } else if (name === 'timeStart' && value && !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-            errorMessage = 'Invalid time format (HH:mm)';
-        } else if (name === 'timeEnd' && value && !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-            errorMessage = 'Invalid time format (HH:mm)';
+        } else if (name === 'timeStart' && value && !isValidTime(value)) {
+            errorMessage = 'Invalid time format (HH:mm required)';
+        } else if (name === 'timeEnd' && value && !isValidTime(value)) {
+            errorMessage = 'Invalid time format (HH:mm required)';
         }
 
         if (errorMessage) {
@@ -218,7 +254,7 @@ export const Calls = () => {
     };
 
     const handleDateChange = (field, date) => {
-        const formattedDate = dayjs(date).format('YYYY-MM-DD');
+        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
         setFormData(prev => ({ ...prev, [field]: formattedDate }));
     };
 
@@ -265,7 +301,7 @@ export const Calls = () => {
     const handleSave = async () => {
         // Validation
         const errors = {};
-        if (!formData.calldate) errors.calldate = 'Call Date is required';
+        // if (!formData.calldate) errors.calldate = 'Call Date is required';
         if (!formData.clientName) errors.clientName = 'Client name is required';
         if (!formData.contactName) errors.contactName = 'Contact name is required';
         if (!formData.branch) errors.branch = 'Branch is required';
@@ -274,9 +310,20 @@ export const Calls = () => {
         if (!formData.status) errors.status = 'Status is required';
         if (!formData.direction) errors.direction = 'Direction is required';
 
+        // Additional time validation
+        if (formData.timeStart && !isValidTime(formData.timeStart)) {
+            errors.timeStart = 'Invalid start time format (HH:mm)';
+        }
+        if (formData.timeEnd && !isValidTime(formData.timeEnd)) {
+            errors.timeEnd = 'Invalid end time format (HH:mm)';
+        }
+        if (formData.timeStart && formData.timeEnd && formData.duration.includes('before')) {
+            errors.timeEnd = 'End time must be after start time';
+        }
+
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
-            showToast('error', 'Please fill all required fields');
+            showToast('error', 'Please fix the validation errors');
             return;
         }
 
@@ -285,14 +332,16 @@ export const Calls = () => {
         // Prepare API payload
         const payload = {
             ...formData,
-            id: editId || 0,
+            ...(editId && { id: editId }),
             finYear: finYear,
             createdBy: loginUserName,
             orgId: parseInt(orgId),
             mobile: formData.mobile ? parseInt(formData.mobile) : null,
-            duratrion: formData.duration, // Note: API expects "duratrion"
-            follwUpDate: formData.followUpDate, // Note: API expects "follwUpDate"
-            cancel: formData.status === 'Cancelled'
+            duration: formData.duration,
+            parent: formData.Parent,
+            follwUpDate: formData.followUpDate,
+            cancel: formData.status === 'Cancelled',
+            cancelRemarks: formData.cancelRemarks
         };
 
         try {
@@ -318,17 +367,19 @@ export const Calls = () => {
     };
 
     const listViewColumns = [
-        { accessorKey: 'callDocId', header: 'Doc ID', size: 120 },
-        { accessorKey: 'calldate', header: 'Call Date', size: 120 },
+        { accessorKey: 'docId', header: 'Doc ID', size: 120 },
+        { accessorKey: 'docDate', header: 'Call Date', size: 120 },
         { accessorKey: 'clientName', header: 'Client', size: 180 },
         { accessorKey: 'contactName', header: 'Contact', size: 150 },
         { accessorKey: 'mobile', header: 'Mobile', size: 130 },
-        { accessorKey: 'Parent', header: 'Parent', size: 130 },
+        { accessorKey: 'parent', header: 'Parent', size: 130 },
         { accessorKey: 'dateStart', header: 'Date', size: 120 },
         { accessorKey: 'timeStart', header: 'Time', size: 100 },
         { accessorKey: 'direction', header: 'Direction', size: 100 },
         { accessorKey: 'status', header: 'Status', size: 120 },
-        { accessorKey: 'active', header: 'Active', size: 100 }
+        { accessorKey: 'duration', header: 'Duration', size: 100 },
+        { accessorKey: 'active', header: 'Active', size: 100 },
+
     ];
 
     return (
@@ -391,6 +442,7 @@ export const Calls = () => {
                                             }
                                         }}
                                         format="DD-MM-YYYY"
+                                        disabled
                                     />
                                 </LocalizationProvider>
                             </FormControl>
@@ -495,35 +547,16 @@ export const Calls = () => {
 
                         {/* Direction */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.direction}>
-                                <InputLabel id="direction-label">Direction *</InputLabel>
-                                <Select
-                                    labelId="direction-label"
-                                    label="Direction *"
-                                    value={formData.direction}
-                                    onChange={handleInputChange}
-                                    name="direction"
-                                >
-                                    {directionOptions.map((dir) => (
-                                        <MenuItem key={dir} value={dir}>
-                                            {dir}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.direction && <FormHelperText>{fieldErrors.direction}</FormHelperText>}
-                            </FormControl>
-                        </div>
-
-                        {/* Duration */}
-                        <div className="col-md-3 mb-3">
                             <TextField
-                                label="Duration"
+                                label="Direction"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="duration"
-                                value={formData.duration}
+                                name="direction"
+                                value={formData.direction}
                                 onChange={handleInputChange}
+                                error={!!fieldErrors.direction}
+                                helperText={fieldErrors.direction}
                             />
                         </div>
 
@@ -566,36 +599,60 @@ export const Calls = () => {
                         {/* Start Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Start Time * (HH:mm)"
+                                label="Start Time *"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 name="timeStart"
                                 value={formData.timeStart}
                                 onChange={handleInputChange}
-                                placeholder="09:30"
+                                placeholder="HH:mm (e.g., 09:30)"
                                 error={!!fieldErrors.timeStart}
-                                helperText={fieldErrors.timeStart}
+                            // helperText={fieldErrors.timeStart || "Format: HH:mm (24-hour)"}
                             />
                         </div>
 
                         {/* End Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="End Time (HH:mm)"
+                                label="End Time"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 name="timeEnd"
                                 value={formData.timeEnd}
                                 onChange={handleInputChange}
-                                placeholder="10:30"
+                                placeholder="HH:mm (e.g., 10:45)"
                                 error={!!fieldErrors.timeEnd}
-                                helperText={fieldErrors.timeEnd}
+                            // helperText={fieldErrors.timeEnd || "Format: HH:mm (24-hour)"}
                             />
                         </div>
 
-
+                        {/* Duration */}
+                        <div className="col-md-3 mb-3">
+                            <TextField
+                                label="Duration"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="duration"
+                                value={formData.duration}
+                                InputProps={{
+                                    readOnly: true,
+                                    style: {
+                                        fontWeight: 'bold',
+                                        color: formData.duration.includes('Invalid') ||
+                                            formData.duration.includes('before')
+                                            ? '#d32f2f' : '#1976d2'
+                                    }
+                                }}
+                                error={formData.duration.includes('Invalid') ||
+                                    formData.duration.includes('before')}
+                            // helperText={formData.duration.includes('Invalid') || 
+                            //            formData.duration.includes('before')
+                            //     ? formData.duration : "Calculated automatically"}
+                            />
+                        </div>
 
                         {/* Status */}
                         <div className="col-md-3 mb-3">

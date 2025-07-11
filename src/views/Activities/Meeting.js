@@ -33,62 +33,102 @@ export const Meeting = () => {
     const [listViewData, setListViewData] = useState([]);
     const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
+    const [userList, setUserList] = useState([]); // For assignTo dropdown
 
+    // Updated form structure for meetings
     const [formData, setFormData] = useState({
-        meetingId: '',
+        meetingDocId: '',
         meetingDate: null,
         clientName: '',
         contactName: '',
-        email: '',
-        mobile: '',
-        Parent: '',
-        venue: '',
+        mobileNo: '',
+        parent: '',
         branch: '',
         branchCode: '',
-        dateStart: null,
-        timeStart: '',
-        dateEnd: null,
-        timeEnd: '',
+        startDate: null,
+        startTime: '',
+        endDate: null,
+        endTime: '',
         duration: '',
         description: '',
-        address: '',
         status: '',
         followUpDate: null,
-        active: true
+        active: true,
+        venue: '',
+        address: '',
+        assignTo: '',
+        cancelRemarks: '',
     });
 
     const [fieldErrors, setFieldErrors] = useState({
         clientName: '',
         contactName: '',
-        email: '',
-        mobile: '',
-        Parent: '',
-        venue: '',
+        mobileNo: '',
         branch: '',
-        dateStart: '',
-        timeStart: '',
+        startDate: '',
+        startTime: '',
         status: '',
+        venue: '',
+        assignTo: ''
     });
 
     // Status options
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
-    const assignToOptions = ['Incoming', 'Outgoing'];
+
+    // Helper function to validate time format
+    const isValidTime = (time) => {
+        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+    };
+
+    // Calculate duration between start and end times
+    const calculateDuration = (startTime, endTime) => {
+        if (!startTime || !endTime) return '';
+        if (!isValidTime(startTime)) return 'Invalid start time';
+        if (!isValidTime(endTime)) return 'Invalid end time';
+
+        const [startHours, startMinutes] = startTime.split(':').map(Number);
+        const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+
+        if (endTotalMinutes < startTotalMinutes) {
+            return 'End time before start';
+        }
+
+        const diffMinutes = endTotalMinutes - startTotalMinutes;
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
 
     useEffect(() => {
         getAllBranches();
+        // getAllUsers(); 
     }, []);
 
     useEffect(() => {
         if (formData.branch && formData.branchCode && !editId) {
-            getCallDocId();
+            getMeetingDocId();
         }
     }, [formData.branch, formData.branchCode, editId]);
 
     useEffect(() => {
         if (formData.branchCode) {
-            getAllCalls();
+            getAllMeetings();
         }
     }, [formData.branchCode]);
+
+    // Recalculate duration when times change
+    useEffect(() => {
+        if (formData.startTime && formData.endTime) {
+            const duration = calculateDuration(formData.startTime, formData.endTime);
+            setFormData(prev => ({ ...prev, duration }));
+        } else if (!formData.startTime || !formData.endTime) {
+            setFormData(prev => ({ ...prev, duration: '' }));
+        }
+    }, [formData.startTime, formData.endTime]);
 
     const getAllBranches = async () => {
         try {
@@ -106,42 +146,57 @@ export const Meeting = () => {
             showToast('error', 'Failed to load branches');
         }
     };
+    //     try {
+    //         // Assuming you have an API to fetch active users
+    //         const response = await apiCalls(
+    //             'get',
+    //             `/user/getAllActiveUsers?orgId=${orgId}`
+    //         );
 
-    const getAllCalls = async () => {
+    //         if (response.status === true) {
+    //             setUserList(response.paramObjectsMap.users || []);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching users:', error);
+    //         showToast('error', 'Failed to load users');
+    //     }
+    // };
+
+    const getAllMeetings = async () => {
         try {
+            // Updated API endpoint for meetings
             const response = await apiCalls(
                 'get',
-                `/ncontroller/getAllCallsByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+                `/activities/getMeetingByOrgId?orgId=${orgId}`
             );
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.callsVO || []);
+                setListViewData(response.paramObjectsMap.meetingVO);
             } else {
-                showToast('error', response.paramObjectsMap.message || 'Failed to fetch calls');
+                showToast('error', response.message || 'Failed to fetch meetings');
             }
         } catch (error) {
-            console.error('Error fetching calls:', error);
-            showToast('error', 'Failed to fetch calls');
+            console.error('Error fetching meetings:', error);
+            showToast('error', 'Failed to fetch meetings');
         }
     };
 
-    const getCallDocId = async () => {
+    const getMeetingDocId = async () => {
         if (!formData.branch || !formData.branchCode) return;
 
         setIsDocIdLoading(true);
         try {
+            // Updated API endpoint for meeting doc ID
             const response = await apiCalls(
                 'get',
-                `/ncontroller/getCallsDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+                `/activities/getMetingDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
 
             if (response.status === true && response.paramObjectsMap.callsDocId) {
                 setFormData(prev => ({
                     ...prev,
-                    meetingId: response.paramObjectsMap.callsDocId
+                    meetingDocId: response.paramObjectsMap.callsDocId
                 }));
-            } else {
-                // showToast('error', response.paramObjectsMap.message || 'Failed to generate document ID');
             }
         } catch (error) {
             console.error('Error getting document ID:', error);
@@ -151,43 +206,49 @@ export const Meeting = () => {
         }
     };
 
-    const getCallById = async (id) => {
+    const getMeetingById = async (id) => {
         try {
-            const response = await apiCalls('get', `/ncontroller/getCallsById?id=${id}`);
+            const response = await apiCalls('get', `/activities/getMeetingById?id=${id}`);
 
             if (response.status === true) {
-                const call = response.paramObjectsMap.callsVO;
+                const meeting = response.paramObjectsMap.meetingVO;
                 setEditId(id);
                 setListView(false);
 
+                // Convert date strings to Dayjs objects
+                const meetingDate = meeting.docDate ? dayjs(meeting.docDate, 'YYYY-MM-DD') : null;
+                const startDate = meeting.startDate ? dayjs(meeting.startDate, 'YYYY-MM-DD') : null;
+                const endDate = meeting.endDate ? dayjs(meeting.endDate, 'YYYY-MM-DD') : null;
+                const followUpDate = meeting.followUpDate ? dayjs(meeting.followUpDate, 'YYYY-MM-DD') : null;
+
                 setFormData({
-                    meetingId: call.meetingId,
-                    meetingDate: call.meetingDate,
-                    clientName: call.clientName,
-                    contactName: call.contactName,
-                    email: call.email,
-                    mobile: call.mobile,
-                    Parent: call.Parent,
-                    venue: call.venue,
-                    branch: call.branch,
-                    branchCode: call.branchCode,
-                    dateStart: call.dateStart,
-                    timeStart: call.timeStart,
-                    dateEnd: call.dateEnd,
-                    timeEnd: call.timeEnd,
-                    duration: call.duratrion, // Note: API has typo "duratrion"
-                    description: call.description,
-                    address: call.address,
-                    status: call.status,
-                    followUpDate: call.follwUpDate,
-                    active: call.active
+                    meetingDocId: meeting.docId || '',
+                    meetingDate: meetingDate,
+                    clientName: meeting.clientName || '',
+                    contactName: meeting.contactName || '',
+                    mobileNo: meeting.mobileNo ? meeting.mobileNo.toString() : '',
+                    parent: meeting.parent || '',
+                    branch: meeting.branch || '',
+                    branchCode: meeting.branchCode || '',
+                    startDate: startDate,
+                    startTime: meeting.startTime ? meeting.startTime.substring(0, 5) : '',
+                    endDate: endDate,
+                    endTime: meeting.endTime ? meeting.endTime.substring(0, 5) : '',
+                    duration: meeting.duration || '',
+                    description: meeting.description || '',
+                    status: meeting.status || '',
+                    followUpDate: followUpDate,
+                    active: meeting.active === "Active",
+                    venue: meeting.venue || '',
+                    address: meeting.address || '',
+                    assignTo: meeting.assignTo || ''
                 });
             } else {
-                showToast('error', response.paramObjectsMap.message || 'Failed to fetch call details');
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch meeting details');
             }
         } catch (error) {
-            console.error('Error fetching call details:', error);
-            showToast('error', 'Failed to fetch call details');
+            console.error('Error fetching meeting details:', error);
+            showToast('error', 'Failed to fetch meeting details');
         }
     };
 
@@ -196,14 +257,12 @@ export const Meeting = () => {
 
         // Validation
         let errorMessage = '';
-        if (name === 'mobile' && value && !/^\d{10}$/.test(value)) {
+        if (name === 'mobileNo' && value && !/^\d{10}$/.test(value)) {
             errorMessage = 'Invalid mobile number (10 digits required)';
-        } else if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            errorMessage = 'Invalid email format';
-        } else if (name === 'timeStart' && value && !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-            errorMessage = 'Invalid time format (HH:mm)';
-        } else if (name === 'timeEnd' && value && !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-            errorMessage = 'Invalid time format (HH:mm)';
+        } else if (name === 'startTime' && value && !isValidTime(value)) {
+            errorMessage = 'Invalid time format (HH:mm required)';
+        } else if (name === 'endTime' && value && !isValidTime(value)) {
+            errorMessage = 'Invalid time format (HH:mm required)';
         }
 
         if (errorMessage) {
@@ -220,9 +279,10 @@ export const Meeting = () => {
     };
 
     const handleDateChange = (field, date) => {
-        const formattedDate = dayjs(date).format('YYYY-MM-DD');
+        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
         setFormData(prev => ({ ...prev, [field]: formattedDate }));
     };
+
 
     const handleBranchChange = (e) => {
         const branchName = e.target.value;
@@ -240,26 +300,26 @@ export const Meeting = () => {
     const handleClear = () => {
         const firstBranch = branchList[0] || null;
         setFormData({
-            meetingId: '',
+            meetingDocId: '',
             meetingDate: null,
             clientName: '',
             contactName: '',
-            email: '',
-            mobile: '',
-            Parent: '',
-            venue: '',
+            mobileNo: '',
+            parent: '',
             branch: firstBranch ? firstBranch.branch : '',
             branchCode: firstBranch ? firstBranch.branchCode : '',
-            dateStart: null,
-            timeStart: '',
-            dateEnd: null,
-            timeEnd: '',
+            startDate: null,
+            startTime: '',
+            endDate: null,
+            endTime: '',
             duration: '',
             description: '',
-            address: '',
             status: '',
             followUpDate: null,
-            active: true
+            active: true,
+            venue: '',
+            address: '',
+            assignTo: ''
         });
         setEditId('');
         setFieldErrors({});
@@ -268,17 +328,29 @@ export const Meeting = () => {
     const handleSave = async () => {
         // Validation
         const errors = {};
-        if (!formData.meetingDate) errors.meetingDate = 'Meeting Date is required';
         if (!formData.clientName) errors.clientName = 'Client name is required';
         if (!formData.contactName) errors.contactName = 'Contact name is required';
         if (!formData.branch) errors.branch = 'Branch is required';
-        if (!formData.dateStart) errors.dateStart = 'Start date is required';
-        if (!formData.timeStart) errors.timeStart = 'Start time is required';
+        if (!formData.startDate) errors.startDate = 'Start date is required';
+        if (!formData.startTime) errors.startTime = 'Start time is required';
         if (!formData.status) errors.status = 'Status is required';
+        if (!formData.venue) errors.venue = 'Venue is required';
+        if (!formData.assignTo) errors.assignTo = 'Assign To is required';
+
+        // Additional time validation
+        if (formData.timeStart && !isValidTime(formData.timeStart)) {
+            errors.timeStart = 'Invalid start time format (HH:mm)';
+        }
+        if (formData.timeEnd && !isValidTime(formData.timeEnd)) {
+            errors.timeEnd = 'Invalid end time format (HH:mm)';
+        }
+        if (formData.timeStart && formData.timeEnd && formData.duration.includes('before')) {
+            errors.timeEnd = 'End time must be after start time';
+        }
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
-            showToast('error', 'Please fill all required fields');
+            showToast('error', 'Please fix the validation errors');
             return;
         }
 
@@ -287,29 +359,39 @@ export const Meeting = () => {
         // Prepare API payload
         const payload = {
             ...formData,
-            id: editId || 0,
+            ...(editId && { id: editId }),
             finYear: finYear,
             createdBy: loginUserName,
             orgId: parseInt(orgId),
-            mobile: formData.mobile ? parseInt(formData.mobile) : null,
-            duratrion: formData.duration, // Note: API expects "duratrion"
-            follwUpDate: formData.followUpDate, // Note: API expects "follwUpDate"
-            cancel: formData.status === 'Cancelled'
+            cancel: formData.status === 'Cancelled',
+
+
+            // finYear: finYear,
+            // createdBy: loginUserName,
+            // orgId: parseInt(orgId),
+            // mobile: formData.mobile ? parseInt(formData.mobile) : null,
+            // duration: formData.duration,
+            // parent: formData.Parent,
+            // follwUpDate: formData.followUpDate,
+            // cancel: formData.status === 'Cancelled',
         };
 
         try {
-            const response = await apiCalls('put', '/ncontroller/updateCreateCalls', payload);
+            // Updated API endpoint for meetings
+            const response = await apiCalls('put', '/activities/createUpdateMetting', payload);
+
 
             if (response.status === true) {
-                showToast('success', editId ? 'Call updated successfully' : 'Call created successfully');
+                showToast('success', editId ? 'Meeting updated successfully' : 'Meeting created successfully');
                 handleClear();
-                getAllCalls();
+                getAllMeetings();
             } else {
+                // showToast('error', response.message || 'Operation failed');
                 showToast('error', response.paramObjectsMap.message || 'Operation failed');
             }
         } catch (error) {
-            console.error('Error saving call:', error);
-            showToast('error', 'Failed to save call');
+            console.error('Error saving meeting:', error);
+            showToast('error', 'Failed to save meeting');
         } finally {
             setIsLoading(false);
         }
@@ -320,17 +402,18 @@ export const Meeting = () => {
     };
 
     const listViewColumns = [
-        { accessorKey: 'meetingId', header: 'Meeting Id', size: 120 },
-        { accessorKey: 'meetingDate', header: 'Meeting Date', size: 120 },
+        { accessorKey: 'docId', header: 'Doc ID', size: 120 },
+        { accessorKey: 'docDate', header: 'Meeting Date', size: 120 },
         { accessorKey: 'clientName', header: 'Client', size: 180 },
         { accessorKey: 'contactName', header: 'Contact', size: 150 },
-        { accessorKey: 'mobile', header: 'Mobile', size: 130 },
-        { accessorKey: 'Parent', header: 'Parent', size: 130 },
-        { accessorKey: 'venue', header: 'Venue', size: 130 },
-        { accessorKey: 'dateStart', header: 'Date', size: 120 },
-        { accessorKey: 'timeStart', header: 'Time', size: 100 },
+        { accessorKey: 'mobileNo', header: 'Mobile', size: 130 },
+        { accessorKey: 'parent', header: 'Parent', size: 130 },
+        { accessorKey: 'startDate', header: 'Start Date', size: 120 },
+        { accessorKey: 'startTime', header: 'Time', size: 100 },
+        { accessorKey: 'venue', header: 'Venue', size: 150 },
         { accessorKey: 'status', header: 'Status', size: 120 },
-        { accessorKey: 'active', header: 'Active', size: 100 }
+        { accessorKey: 'duration', header: 'Duration', size: 100 },
+        { accessorKey: 'active', header: 'Active', size: 100 },
     ];
 
     return (
@@ -356,28 +439,28 @@ export const Meeting = () => {
                             data={listViewData}
                             columns={listViewColumns}
                             blockEdit={true}
-                            toEdit={(row) => getCallById(row.original.id)}
+                            toEdit={(row) => getMeetingById(row.original.id)}
                         />
                     </div>
                 ) : (
                     <div className="row">
-                        {/* Call ID */}
+                        {/* Meeting ID */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Meeting Id"
+                                label="Meeting ID"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 disabled
-                                name="meetingId"
-                                value={isDocIdLoading ? "Generating..." : formData.meetingId}
+                                name="meetingDocId"
+                                value={isDocIdLoading ? "Generating..." : formData.meetingDocId}
                                 InputProps={{
                                     style: { backgroundColor: '#f5f5f5' }
                                 }}
                             />
                         </div>
 
-                        {/* Call Date */}
+                        {/* Meeting Date */}
                         <div className="col-md-3 mb-3">
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -393,6 +476,7 @@ export const Meeting = () => {
                                             }
                                         }}
                                         format="DD-MM-YYYY"
+                                        disabled
                                     />
                                 </LocalizationProvider>
                             </FormControl>
@@ -400,23 +484,17 @@ export const Meeting = () => {
 
                         {/* Client Name */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                                <InputLabel id="assignTo-label">Client Name</InputLabel>
-                                <Select
-                                    labelId="assignTo-label"
-                                    label="Client Name"
-                                    value={formData.assignTo}
-                                    onChange={handleInputChange}
-                                    name="assignTo"
-                                >
-                                    {assignToOptions.map((dir) => (
-                                        <MenuItem key={dir} value={dir}>
-                                            {dir}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                            </FormControl>
+                            <TextField
+                                label="Client Name *"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="clientName"
+                                value={formData.clientName}
+                                onChange={handleInputChange}
+                                error={!!fieldErrors.clientName}
+                                helperText={fieldErrors.clientName}
+                            />
                         </div>
 
                         {/* Branch */}
@@ -442,37 +520,16 @@ export const Meeting = () => {
 
                         {/* Contact Name */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                                <InputLabel id="assignTo-label">Contact Name</InputLabel>
-                                <Select
-                                    labelId="assignTo-label"
-                                    label="Contact Name"
-                                    value={formData.assignTo}
-                                    onChange={handleInputChange}
-                                    name="assignTo"
-                                >
-                                    {assignToOptions.map((dir) => (
-                                        <MenuItem key={dir} value={dir}>
-                                            {dir}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                            </FormControl>
-                        </div>
-
-                        {/* Email */}
-                        <div className="col-md-3 mb-3">
                             <TextField
-                                label="Email"
+                                label="Contact Name *"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="email"
-                                value={formData.email}
+                                name="contactName"
+                                value={formData.contactName}
                                 onChange={handleInputChange}
-                                error={!!fieldErrors.email}
-                                helperText={fieldErrors.email}
+                                error={!!fieldErrors.contactName}
+                                helperText={fieldErrors.contactName}
                             />
                         </div>
 
@@ -483,11 +540,11 @@ export const Meeting = () => {
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="mobile"
-                                value={formData.mobile}
+                                name="mobileNo"
+                                value={formData.mobileNo}
                                 onChange={handleInputChange}
-                                error={!!fieldErrors.mobile}
-                                helperText={fieldErrors.mobile}
+                                error={!!fieldErrors.mobileNo}
+                                helperText={fieldErrors.mobileNo}
                                 inputProps={{ maxLength: 10 }}
                             />
                         </div>
@@ -499,46 +556,25 @@ export const Meeting = () => {
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="Parent"
-                                value={formData.Parent}
+                                name="parent"
+                                value={formData.parent}
                                 onChange={handleInputChange}
-                                error={!!fieldErrors.Parent}
-                                helperText={fieldErrors.Parent}
                             />
                         </div>
 
                         {/* Venue */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Venue"
+                                label="Venue *"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 name="venue"
                                 value={formData.venue}
                                 onChange={handleInputChange}
+                                error={!!fieldErrors.venue}
+                                helperText={fieldErrors.venue}
                             />
-                        </div>
-
-                        {/* Duration */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                                <InputLabel id="assignTo-label">Duration</InputLabel>
-                                <Select
-                                    labelId="assignTo-label"
-                                    label="Duration"
-                                    value={formData.assignTo}
-                                    onChange={handleInputChange}
-                                    name="assignTo"
-                                >
-                                    {assignToOptions.map((dir) => (
-                                        <MenuItem key={dir} value={dir}>
-                                            {dir}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                            </FormControl>
                         </div>
 
                         {/* Start Date */}
@@ -547,13 +583,13 @@ export const Meeting = () => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Start Date *"
-                                        value={formData.dateStart ? dayjs(formData.dateStart, 'YYYY-MM-DD') : null}
-                                        onChange={(date) => handleDateChange('dateStart', date)}
+                                        value={formData.startDate ? dayjs(formData.startDate, 'YYYY-MM-DD') : null}
+                                        onChange={(date) => handleDateChange('startDate', date)}
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                error: !!fieldErrors.dateStart,
-                                                helperText: fieldErrors.dateStart
+                                                error: !!fieldErrors.startDate,
+                                                helperText: fieldErrors.startDate
                                             }
                                         }}
                                         format="DD-MM-YYYY"
@@ -568,8 +604,8 @@ export const Meeting = () => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="End Date"
-                                        value={formData.dateEnd ? dayjs(formData.dateEnd, 'YYYY-MM-DD') : null}
-                                        onChange={(date) => handleDateChange('dateEnd', date)}
+                                        value={formData.endDate ? dayjs(formData.endDate, 'YYYY-MM-DD') : null}
+                                        onChange={(date) => handleDateChange('endDate', date)}
                                         slotProps={{ textField: { size: 'small' } }}
                                         format="DD-MM-YYYY"
                                     />
@@ -580,36 +616,60 @@ export const Meeting = () => {
                         {/* Start Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Start Time * (HH:mm)"
+                                label="Start Time *"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="timeStart"
-                                value={formData.timeStart}
+                                name="startTime"
+                                value={formData.startTime}
                                 onChange={handleInputChange}
-                                placeholder="09:30"
-                                error={!!fieldErrors.timeStart}
-                                helperText={fieldErrors.timeStart}
+                                placeholder="HH:mm (e.g., 09:30)"
+                                error={!!fieldErrors.startTime}
+                                // helperText={fieldErrors.startTime || "Format: HH:mm (24-hour)"}
                             />
                         </div>
 
                         {/* End Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="End Time (HH:mm)"
+                                label="End Time"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="timeEnd"
-                                value={formData.timeEnd}
+                                name="endTime"
+                                value={formData.endTime}
                                 onChange={handleInputChange}
-                                placeholder="10:30"
-                                error={!!fieldErrors.timeEnd}
-                                helperText={fieldErrors.timeEnd}
+                                placeholder="HH:mm (e.g., 10:45)"
+                                error={!!fieldErrors.endTime}
+                                // helperText={fieldErrors.endTime || "Format: HH:mm (24-hour)"}
                             />
                         </div>
 
-
+                        {/* Duration */}
+                        <div className="col-md-3 mb-3">
+                            <TextField
+                                label="Duration"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="duration"
+                                value={formData.duration}
+                                InputProps={{
+                                    readOnly: true,
+                                    style: {
+                                        fontWeight: 'bold',
+                                        color: formData.duration.includes('Invalid') ||
+                                            formData.duration.includes('before')
+                                            ? '#d32f2f' : '#1976d2'
+                                    }
+                                }}
+                                error={formData.duration.includes('Invalid') ||
+                                    formData.duration.includes('before')}
+                                // helperText={formData.duration.includes('Invalid') ||
+                                //     formData.duration.includes('before')
+                                //     ? formData.duration : "Calculated automatically"}
+                            />
+                        </div>
 
                         {/* Status */}
                         <div className="col-md-3 mb-3">
@@ -632,6 +692,40 @@ export const Meeting = () => {
                             </FormControl>
                         </div>
 
+                        {/* Assign To */}
+                        {/* <div className="col-md-3 mb-3">
+                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
+                                <InputLabel id="assignTo-label">Assign To *</InputLabel>
+                                <Select
+                                    labelId="assignTo-label"
+                                    label="Assign To *"
+                                    value={formData.assignTo}
+                                    onChange={handleInputChange}
+                                    name="assignTo"
+                                >
+                                    {userList.map((user) => (
+                                        <MenuItem key={user.id} value={user.userName}>
+                                            {user.userName}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
+                            </FormControl>
+                        </div> */}
+                        <div className="col-md-3 mb-3">
+                            <TextField
+                                label="Assign To *"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="assignTo"
+                                value={formData.assignTo}
+                                onChange={handleInputChange}
+                                error={!!fieldErrors.assignTo}
+                                helperText={fieldErrors.assignTo}
+                            />
+                        </div>
+
                         {/* Follow-up Date */}
                         <div className="col-md-3 mb-3">
                             <FormControl fullWidth variant="filled" size="small">
@@ -645,6 +739,19 @@ export const Meeting = () => {
                                     />
                                 </LocalizationProvider>
                             </FormControl>
+                        </div>
+
+                        {/* Address */}
+                        <div className="col-md-6 mb-3">
+                            <TextField
+                                label="Address"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                            />
                         </div>
 
                         {/* Description */}
@@ -662,42 +769,6 @@ export const Meeting = () => {
                             />
                         </div>
 
-                        {/* Address */}
-                        <div className="col-md-6 mb-3">
-                            <TextField
-                                label="Address"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                multiline
-                                rows={3}
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        {/* Assign To */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                                <InputLabel id="assignTo-label">Assign To </InputLabel>
-                                <Select
-                                    labelId="assignTo-label"
-                                    label="Assign To "
-                                    value={formData.assignTo}
-                                    onChange={handleInputChange}
-                                    name="assignTo"
-                                >
-                                    {assignToOptions.map((dir) => (
-                                        <MenuItem key={dir} value={dir}>
-                                            {dir}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                            </FormControl>
-                        </div>
-
                         {/* Active */}
                         <div className="col-md-3 mb-3 d-flex align-items-center">
                             <FormControlLabel
@@ -713,7 +784,6 @@ export const Meeting = () => {
                             />
                         </div>
                     </div>
-
                 )}
             </div>
             <ToastContainer />

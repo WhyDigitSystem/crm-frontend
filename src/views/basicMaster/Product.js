@@ -25,11 +25,15 @@ import CommonListViewTable from './CommonListViewTable';
 export const Product = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [orgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
-
+  const [orgId] = useState(localStorage.getItem('orgId'));
+  // const [finYear] = useState(new Date().getFullYear().toString());
+  const [isDocIdLoading, setIsDocIdLoading] = useState(false);
+  const [finYear] = useState(() => new Date().getFullYear().toString());
+  const branch = localStorage.getItem('branch') || '';
+  const branchCode = localStorage.getItem('branchCode') || '';
   const [formData, setFormData] = useState({
-    docId:'',
+    docId: '',
     productName: '',
     type: '',
     brand: '',
@@ -47,12 +51,35 @@ export const Product = () => {
   const [unitList, setUnitList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
 
+  // Function to fetch product docId
+  const getProductDocId = async () => {
+    if (editId) return;
+    try {
+      const res = await apiCalls(
+        'get',
+        `/master/getProductDocId?branch=BANGALORE&branchCode=BLR&finYear=${finYear}&orgId=${orgId}`
+      );
+      if (res.status) {
+        setFormData(prev => ({
+          ...prev,
+          docId: res.paramObjectsMap.callsDocId
+        }));
+      }
+    } catch (err) {
+      console.error('Error fetching product docId:', err);
+      showToast('error', 'Failed to generate product code');
+    }
+  };
+
   useEffect(() => {
     getAllCategories();
     getAllUnits();
     getAllSubCategories();
     getAllProducts();
+    getProductDocId(); // Generate initial docId
   }, []);
+
+
 
   const getAllCategories = async () => {
     try {
@@ -98,7 +125,7 @@ export const Product = () => {
         const data = res.paramObjectsMap.productVO;
         setFormData({
           brand: data.brand,
-          docId:data.docId,
+          docId: data.docId,
           productName: data.productName,
           subCategory: data.subCategory,
           category: data.category,
@@ -118,7 +145,7 @@ export const Product = () => {
     const errors = {};
     if (!formData.brand) errors.brand = 'Brand is required';
     if (!formData.productName) errors.productName = 'Product Name is required';
-    if (!formData.docId) errors.docId = 'Product Name is required';
+    if (!formData.docId) errors.docId = 'Product Code is required';
     if (!formData.category) errors.category = 'Category is required';
     if (!formData.unit) errors.unit = 'Unit is required';
     if (!formData.subCategory) errors.subCategory = 'Sub Category is required';
@@ -132,13 +159,15 @@ export const Product = () => {
         category: formData.category,
         createdBy: loginUserName,
         description: formData.description,
-        docId: '',
+        docId: formData.docId,
         orgId: orgId,
         productName: formData.productName,
-        docId:formData.docId,
         subCategory: formData.subCategory,
         type: formData.type,
         unit: formData.unit,
+        branch: "BANGALORE",
+        branchCode: "BLR",
+        finYear: "2025"
       };
 
       try {
@@ -173,7 +202,7 @@ export const Product = () => {
     setFormData({
       brand: '',
       productName: '',
-      docId:'',
+      docId: '',
       subCategory: '',
       category: '',
       unit: '',
@@ -183,6 +212,7 @@ export const Product = () => {
     });
     setFieldErrors({});
     setEditId('');
+    getProductDocId(); // Regenerate new docId after clear
   };
 
   const handleView = () => setListView(!listView);
@@ -195,7 +225,12 @@ export const Product = () => {
     { accessorKey: 'unit', header: 'Unit', size: 140 },
     { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'subCategory', header: 'Sub Category', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 },
+    {
+      accessorKey: 'active',
+      header: 'Active',
+      size: 140,
+      Cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive'
+    },
   ];
 
   return (
@@ -213,7 +248,7 @@ export const Product = () => {
         ) : (
           <div className="row">
 
-            {/* Product Name */}
+            {/* Product Code */}
             <div className="col-md-3 mb-3">
               <TextField
                 label="Product Code"
@@ -224,7 +259,8 @@ export const Product = () => {
                 value={formData.docId}
                 onChange={handleInputChange}
                 error={!!fieldErrors.docId}
-                helperText={fieldErrors.docId}
+                // helperText={fieldErrors.docId || "Auto-generated code"}
+                disabled
               />
             </div>
 

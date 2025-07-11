@@ -10,125 +10,258 @@ import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
-import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import ControlCameraIcon from '@mui/icons-material/ControlCamera';
-import 'react-tabs/style/react-tabs.css';
+import { FormHelperText, Button, Checkbox, FormControlLabel } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry, getAllActiveCurrency } from 'utils/CommonFunctions';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
 const Task = () => {
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [orgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
-  const [countryList, setCountryList] = useState([]);
-  const [stateList, setStateList] = useState([]);
-  const [cityList, setCityList] = useState([]);
-  const [currencyList, setCurrencyList] = useState([]);
+  const [branchList, setBranchList] = useState([]);
   const [editId, setEditId] = useState('');
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [finYear] = useState(new Date().getFullYear().toString());
-  const [branchList, setBranchList] = useState([]);
-
-
-  const [formData, setFormData] = useState({
-    companyCode: '',
-    companyName: '',
-    ceo: '',
-    address: '',
-    currency: '',
-    country: '',
-    state: '',
-    city: '',
-    pincode: '',
-    mobileNo: '',
-    gstIn: '',
-    website: '',
-    active: true
-  });
-
-  const [fieldErrors, setFieldErrors] = useState({
-    companyCode: '',
-    ceo: '',
-    address: '',
-    currency: '',
-    country: '',
-    state: '',
-    city: '',
-    pincode: '',
-    mobileNo: '',
-    gstIn: '',
-    website: '',
-    active: true
-  });
   const [listView, setListView] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    taskId: '',
+    taskDate: null,
+    taskName: '',
+    taskType: 'General',
+    clientName: '',
+    customerName: '',
+    branch: '',
+    branchCode: '',
+    priority: 'Medium',
+    startDate: null,
+    startTime: '',
+    endDate: null,
+    endTime: '',
+    duration: '',
+    status: 'Pending',
+    assignedTo: '',
+    description: '',
+    active: true
+  });
+
+  // Validation errors
+  const [fieldErrors, setFieldErrors] = useState({
+    taskDate: '',
+    taskName: '',
+    branch: '',
+    startDate: '',
+    startTime: '',
+    status: '',
+    assignedTo: ''
+  });
+
+  // Column definitions for list view
   const listViewColumns = [
-    { accessorKey: 'companyCode', header: 'Company Code', size: 140 },
-    {
-      accessorKey: 'companyName',
-      header: 'Company',
-      size: 140
-    },
-    {
-      accessorKey: 'ceo',
-      header: 'CEO',
-      size: 140
-    },
-    {
-      accessorKey: 'gstIn',
-      header: 'GST',
-      size: 140
-    },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'docId', header: 'Task ID', size: 120 },
+    { accessorKey: 'taskDate', header: 'Task Date', size: 120 },
+    { accessorKey: 'taskName', header: 'Task Name', size: 180 },
+    { accessorKey: 'taskType', header: 'Type', size: 100 },
+    { accessorKey: 'priority', header: 'Priority', size: 100 },
+    { accessorKey: 'startDate', header: 'Start Date', size: 120 },
+    { accessorKey: 'status', header: 'Status', size: 120 },
+    { accessorKey: 'assignedTo', header: 'Assigned To', size: 150 },
+    { accessorKey: 'active', header: 'Active', size: 100 },
   ];
 
-  const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
-    getAllCountries();
-    getCompanyDetails();
-    getAllCurrency();
-  }, []); // Run only once on mount
+    getAllBranches();
+    getAllTasks();
+  }, []);
 
   useEffect(() => {
-    if (formData.country) {
-      getAllStates(); // Fetch states only when country changes
+    if (formData.branch && formData.branchCode && !editId) {
+      getTaskDocId();
     }
-  }, [formData.country]); // Only depend on country change
+  }, [formData.branch, formData.branchCode, editId]);
 
   useEffect(() => {
-    if (formData.state) {
-      getAllCities(); // Fetch cities only when state changes
+    if (formData.startTime && formData.endTime) {
+      const duration = calculateDuration(formData.startTime, formData.endTime);
+      setFormData(prev => ({ ...prev, duration }));
+    } else if (!formData.startTime || !formData.endTime) {
+      setFormData(prev => ({ ...prev, duration: '' }));
     }
-  }, [formData.state]); // Only depend on state change
+  }, [formData.startTime, formData.endTime]);
 
-  const getAllCurrency = async () => {
+  const getAllBranches = async () => {
     try {
-      const currencyData = await getAllActiveCurrency(orgId);
-      setCurrencyList(currencyData);
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+      if (branchData.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          branch: branchData[0].branch,
+          branchCode: branchData[0].branchCode
+        }));
+      }
     } catch (error) {
-      console.error('Error fetching country data:', error);
+      console.error('Error fetching branches:', error);
+      showToast('error', 'Failed to load branches');
     }
   };
-  const getAllCountries = async () => {
+
+  const getAllTasks = async () => {
     try {
-      const countryData = await getAllActiveCountries(orgId);
-      setCountryList(countryData);
+      const response = await apiCalls(
+        'get', `/activities/getAllTaskByOrgId?orgId=${orgId}`
+      );
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.taskVO);
+      } else {
+        showToast('error', response.message || 'Failed to fetch tasks');
+      }
     } catch (error) {
-      console.error('Error fetching country data:', error);
+      console.error('Error fetching tasks:', error);
+      showToast('error', 'Failed to fetch tasks');
     }
   };
 
+  const getTaskDocId = async () => {
+    if (!formData.branch || !formData.branchCode) return;
+
+    setIsDocIdLoading(true);
+    try {
+      const response = await apiCalls(
+        'get',
+        `/activities/getTaskDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+
+      if (response.status === true && response.paramObjectsMap.callsDocId) {
+        setFormData(prev => ({
+          ...prev,
+          taskId: response.paramObjectsMap.callsDocId
+        }));
+      }
+    } catch (error) {
+      console.error('Error getting document ID:', error);
+      showToast('error', 'Failed to generate document ID');
+    } finally {
+      setIsDocIdLoading(false);
+    }
+  };
+
+  const getTaskById = async (id) => {
+    try {
+      const response = await apiCalls('get', `/activities/getTaskById?id=${id}`);
+
+      console.log('Editing task ID:', id);
+      if (response.status === true) {
+        const task = response.paramObjectsMap.taskVO;
+        setEditId(id);
+        setListView(false);
+
+
+        // Handle date formatting correctly
+        const formatDate = (dateString) => {
+          if (!dateString) return null;
+          // Ensure date is in YYYY-MM-DD format
+          return dayjs(dateString).format('YYYY-MM-DD');
+        };
+
+        setFormData({
+          taskId: task.docId || '',
+          // taskDate: formatDate(task.docDate),
+          // taskDate: task.docDate || null,
+          taskDate: task.docDate ? dayjs(task.docDate).format('YYYY-MM-DD') : null,
+          taskName: task.taskName || '',
+          taskType: task.taskType || 'General',
+          clientName: task.clientName || '',
+          customerName: task.customerName || '',
+          branch: task.branch || '',
+          branchCode: task.branchCode || '',
+          priority: task.priority || 'Medium',
+          startDate: formatDate(task.startDate),
+          startTime: task.startTime ? task.startTime.slice(0, 5) : '', // Ensure HH:mm format
+          endDate: formatDate(task.endDate),
+          endTime: task.endTime ? task.endTime.slice(0, 5) : '', // Ensure HH:mm format
+          duration: task.duration || '',
+          status: task.status || 'Pending',
+          assignedTo: task.assignedTo || '',
+          description: task.description || '',
+          active: task.active !== undefined ? task.active : true
+        });
+      } else {
+        showToast('error', response.message || 'Failed to fetch task details');
+      }
+    } catch (error) {
+      console.error('Error fetching task details:', error);
+      showToast('error', 'Failed to fetch task details');
+    }
+  };
+
+  // Helper function to validate time format
+  const isValidTime = (time) => {
+    return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+  };
+
+  // Calculate duration between start and end times
+  const calculateDuration = (startTime, endTime) => {
+    if (!startTime || !endTime) return '';
+    if (!isValidTime(startTime)) return 'Invalid start time';
+    if (!isValidTime(endTime)) return 'Invalid end time';
+
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+
+    if (endTotalMinutes < startTotalMinutes) {
+      return 'End time before start';
+    }
+
+    const diffMinutes = endTotalMinutes - startTotalMinutes;
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, type } = e.target;
+
+    // Validation
+    let errorMessage = '';
+    if (name === 'startTime' && value && !isValidTime(value)) {
+      errorMessage = 'Invalid time format (HH:mm required)';
+    } else if (name === 'endTime' && value && !isValidTime(value)) {
+      errorMessage = 'Invalid time format (HH:mm required)';
+    }
+
+    if (errorMessage) {
+      setFieldErrors(prev => ({ ...prev, [name]: errorMessage }));
+    } else {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleDateChange = (field, date) => {
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+    setFormData(prev => ({ ...prev, [field]: formattedDate }));
+  };
 
   const handleBranchChange = (e) => {
     const branchName = e.target.value;
@@ -143,377 +276,105 @@ const Task = () => {
     }
   };
 
-  // Status options
-  const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
-  const assignToOptions = ['Incoming', 'Outgoing'];
-
-  const getCallDocId = async () => {
-    if (!formData.branch || !formData.branchCode) return;
-
-    setIsDocIdLoading(true);
-    try {
-      const response = await apiCalls(
-        'get',
-        `/ncontroller/getCallsDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
-      );
-
-      if (response.status === true && response.paramObjectsMap.callsDocId) {
-        setFormData(prev => ({
-          ...prev,
-          taskId: response.paramObjectsMap.callsDocId
-        }));
-      } else {
-        // showToast('error', response.paramObjectsMap.message || 'Failed to generate document ID');
-      }
-    } catch (error) {
-      console.error('Error getting document ID:', error);
-      showToast('error', 'Failed to generate document ID');
-    } finally {
-      setIsDocIdLoading(false);
-    }
-  };
-  const getAllStates = async () => {
-    try {
-      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
-      setStateList(stateData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getAllCities = async () => {
-    try {
-      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
-      setCityList(cityData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value, checked, type } = e.target || e;
-
-    // Regular expressions for validation
-    const nameRegex = /^[A-Za-z ]*$/;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-
-    let newValue = value;
-    let error = '';
-
-    // Validation logic
-    if (name === 'ceo') {
-      if (!nameRegex.test(value)) {
-        error = 'Only alphabetic characters are allowed';
-      }
-    } else if (name === 'pincode') {
-      if (!numericRegex.test(value)) {
-        error = 'Only numeric characters are allowed';
-      } else if (value.length > 6) {
-        error = 'Only 6 digits are allowed';
-      }
-    } else if (name === 'mobileNo') {
-      if (!alphanumericRegex.test(value)) {
-        error = 'Special characters are not allowed';
-      } else if (value.length > 10) {
-        error = 'Only 10 characters are allowed';
-      }
-    }
-
-    // Update error state
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: error
-    }));
-
-    // Only update form data if there's no error
-    if (!error) {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: newValue
-      }));
-    }
-
-    if (type === 'checkbox') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: checked
-      }));
-      return; // Exit here to avoid further processing for checkboxes
-    }
-
-
-
-    // Handle dropdowns separately
-    if (type === 'select-one') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value
-      }));
-      return;
-    }
-
-    // If it's not a checkbox or dropdown, process the input normally
-    if (type !== 'checkbox' && type !== 'select-one') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: newValue
-      }));
-    }
-  };
-
-  const getCompanyById = async (row) => {
-    console.log('THE SELECTED BRANCH ID IS:', row.original.id);
-    setEditId(row.original.id);
-
-    try {
-      const response = await apiCalls('get', `commonmaster/company/${row.original.id}`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        setListView(false);
-        const particularCompany = response.paramObjectsMap.companyVO[0];
-        console.log('PARTICULAR COMPANY IS:', particularCompany);
-        setLogo(response.paramObjectsMap.companyVO[0].companyLogo);
-
-        setFormData({
-          companyCode: particularCompany.companyCode,
-          companyName: particularCompany.companyName,
-          ceo: particularCompany.ceo,
-          address: particularCompany.address,
-          country: particularCompany.country,
-          currency: particularCompany.currency,
-          state: particularCompany.state,
-          city: particularCompany.city,
-          pincode: particularCompany.zip,
-          mobileNo: particularCompany.phone,
-          gstIn: particularCompany.gstIn,
-          website: particularCompany.website,
-        });
-
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const getCompanyDetails = async () => {
-    try {
-      const response = await apiCalls('get', `commonmaster/company`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        const companyList = response.paramObjectsMap.companyVO;
-        setListViewData(companyList);
-
-        console.log('THE LISTVIEW COMPANY IS:', companyList);
-
-        // Check if orgId exists and matches any company's id
-        const matchedCompany = companyList.find((company) => company.id === parseInt(orgId));
-
-        if (matchedCompany) {
-          console.log('MATCHED COMPANY ID FOUND:', matchedCompany.id);
-          await getCompanyById({ original: { id: matchedCompany.id } }); // Call getCompanyById if match is found
-        } else {
-          console.log('No matching company found for the given orgId.');
-        }
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   const handleClear = () => {
+    const firstBranch = branchList[0] || null;
     setFormData({
-      // companyCode: '',
-      companyCode: formData.companyCode,
-      companyName: formData.companyName,
-      ceo: '',
-      address: '',
-      currency: '',
-      country: '',
-      state: '',
-      city: '',
-      pincode: '',
-      mobileNo: '',
-      gstIn: '',
-      website: '',
+      taskId: '',
+      taskDate: null,
+      taskName: '',
+      taskType: 'General',
+      clientName: '',
+      customerName: '',
+      branch: firstBranch ? firstBranch.branch : '',
+      branchCode: firstBranch ? firstBranch.branchCode : '',
+      priority: 'Medium',
+      startDate: null,
+      startTime: '',
+      endDate: null,
+      endTime: '',
+      duration: '',
+      status: 'Pending',
+      assignedTo: '',
+      description: '',
       active: true
     });
-    setFieldErrors({
-      // companyCode: '',
-      ceo: '',
-      address: '',
-      currency: '',
-      country: '',
-      state: '',
-      city: '',
-      pincode: '',
-      mobileNo: '',
-      gstIn: '',
-      website: '',
-    });
     setEditId('');
-    getCompanyDetails();
+    setFieldErrors({});
   };
 
   const handleSave = async () => {
+    // Validation
     const errors = {};
-    if (!formData.ceo) {
-      errors.ceo = 'CEO is required';
+    // if (!formData.taskDate) errors.taskDate = 'Task Date is required';
+    if (!formData.taskName) errors.taskName = 'Task name is required';
+    if (!formData.branch) errors.branch = 'Branch is required';
+    if (!formData.startDate) errors.startDate = 'Start date is required';
+    if (!formData.startTime) errors.startTime = 'Start time is required';
+    if (!formData.status) errors.status = 'Status is required';
+    if (!formData.assignedTo) errors.assignedTo = 'Assign To is required';
+
+    // Additional time validation
+    if (formData.startTime && !isValidTime(formData.startTime)) {
+      errors.startTime = 'Invalid start time format (HH:mm)';
     }
-    if (!formData.address) {
-      errors.address = 'Address is required';
+    if (formData.endTime && !isValidTime(formData.endTime)) {
+      errors.endTime = 'Invalid end time format (HH:mm)';
     }
-    if (!formData.country) {
-      errors.country = 'Country is required';
-    }
-    if (!formData.state) {
-      errors.state = 'State is required';
-    }
-    if (!formData.city) {
-      errors.city = 'City is required';
-    }
-    if (!formData.mobileNo) {
-      errors.mobileNo = 'Mobile No is required';
-    } else if (formData.mobileNo.length < 10) {
-      errors.mobileNo = 'Invalid mobileNo No';
-    }
-    if (formData.pincode.length < 6 && formData.pincode.length >= 1) {
-      errors.pincode = 'Invalid Pincode';
+    if (formData.startTime && formData.endTime && formData.duration.includes('before')) {
+      errors.endTime = 'End time must be after start time';
     }
 
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        id: orgId,
-        active: formData.active,
-        address: formData.address,
-        cancel: true,
-        ceo: formData.ceo,
-        city: formData.city,
-        companyCode: formData.companyCode,
-        companyName: formData.companyName,
-        country: formData.country,
-        createdBy: loginUserName,
-        currency: formData.currency,
-        gstIn: formData.gstIn,
-        website: formData.website,
-        phone: formData.mobileNo,
-        state: formData.state,
-        zip: formData.pincode,
-      };
-      console.log('THE SAVE FORM DATA IS:', saveFormData);
-
-      try {
-        const response = await apiCalls('put', `commonmaster/updateCompany`, saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', 'Company updated Successfully');
-          const generatedId = response.paramObjectsMap.CompanyVO.id;
-          console.log("save", typeof logo);
-          if (generatedId && typeof logo === 'object') {
-            console.log('Generated ID:', generatedId);
-            console.log('Uploaded Item', logo);
-            handleFileUpload(generatedId);
-          } else {
-            console.log('handle Img Upload failed');
-          }
-          handleClear();
-          setIsLoading(false);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Company updation failed');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Company updation failed');
-
-        setIsLoading(false);
-      }
-    } else {
+    if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-    }
-  };
-  const [logo, setLogo] = useState(null);
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
-    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
-      setLogo(file);
-    } else {
-      showToast('error', 'Please upload a valid image (PNG or JPEG).');
-    }
-  };
-  const handleFileUpload = async (generatedId) => {
-    if (!generatedId) {
-      console.warn('Generated ID is missing');
-      showToast('error', 'Generated ID is required');
+      showToast('error', 'Please fix the validation errors');
       return;
     }
-    const formData = new FormData();
-    formData.append('file', logo);
+
+    setIsLoading(true);
+
+    // Prepare API payload
+    const payload = {
+      ...formData,
+      ...(editId && { id: editId }),
+      finYear: finYear,
+      createdBy: loginUserName,
+      orgId: parseInt(orgId),
+      docId: formData.taskId,
+      docDate: formData.taskDate,
+      duration: formData.duration,
+      active: formData.active === true || formData.active === 'true'
+    };
+
     try {
-      const response = await apiCalls(
-        'post',
-        `/commonmaster/uploadCompanyLogoInBloob?id=${generatedId}`,
-        formData,
-        {},
-        { 'Content-Type': 'multipart/form-data' }
-      );
-      console.log('Img Upload Response:', response);
+      const response = await apiCalls('put', '/activities/createUpdateTask', payload);
 
       if (response.status === true) {
-        showToast('success', response.message || 'Image Uploaded successfully!');
+        showToast('success', editId ? 'Task updated successfully' : 'Task created successfully');
+        handleClear();
+        getAllTasks();
       } else {
-        console.warn('Img upload failed:', response);
-        showToast('error', 'Img upload failed');
+        showToast('error', response.paramObjectsMap?.message || 'Operation failed');
       }
     } catch (error) {
-      console.error('Img Upload Error:', error);
-      showToast('error', 'Failed to upload Img');
+      console.error('Error saving task:', error);
+      showToast('error', 'Failed to save task');
+    } finally {
+      setIsLoading(false);
     }
   };
-  useEffect(() => {
-    return () => {
-      if (logo && typeof logo === 'object') {
-        URL.revokeObjectURL(logo);
-      }
-    };
-  }, [logo]);
-  const handleRemoveLogo = () => setLogo(null);
-  const handleView = () => {
-    console.log('LIST VIEW DATAS ARE:', listViewData);
 
+  const handleView = () => {
     setListView(!listView);
   };
 
-  const handleDateChange = (field, newValue) => {
-    if (newValue.isValid()) {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: newValue
-      }));
-    }
-  };
+  // Task type options
+  const taskTypeOptions = ['General', 'Meeting', 'Call', 'Email', 'Other'];
 
-  const handleTimeChange = (fieldName, newValue) => {
-    if (!newValue) return;
+  // Priority options
+  const priorityOptions = ['Low', 'Medium', 'High', 'Urgent'];
 
-    const timeFormat = 'HH:mm';
-    const newTime = dayjs(newValue).format(timeFormat);
-
-    setFormData((prev) => ({
-      ...prev,
-      [fieldName]: newTime
-    }));
-  };
+  // Status options
+  const statusOptions = ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled'];
 
   return (
     <>
@@ -522,19 +383,21 @@ const Task = () => {
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            {/* <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} /> */}
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
+
         {listView ? (
-          <div className="mt-4">
+          <div className="mt-0">
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}
-              // editCallback={editEmployee}
               enableEditing={true}
-              blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getCompanyById}
+              blockEdit={true}
+              // toEdit={()=>getTaskById(id)}
+               toEdit={(row) => getTaskById(row.original.id)}
+              
             />
           </div>
         ) : (
@@ -543,7 +406,7 @@ const Task = () => {
               {/* Task ID */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Task Id"
+                  label="Task ID"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -561,14 +424,15 @@ const Task = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Task Date *"
-                      value={formData.meetingDate ? dayjs(formData.meetingDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('meetingDate', date)}
+                      label="Task Date "
+                      disabled
+                      value={formData.taskDate ? dayjs(formData.taskDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('taskDate', date)}
                       slotProps={{
                         textField: {
                           size: 'small',
-                          error: !!fieldErrors.meetingDate,
-                          helperText: fieldErrors.meetingDate
+                          error: !!fieldErrors.taskDate,
+                          helperText: fieldErrors.taskDate
                         }
                       }}
                       format="DD-MM-YYYY"
@@ -577,25 +441,19 @@ const Task = () => {
                 </FormControl>
               </div>
 
-              {/* Client Name */}
+              {/* Task Name */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                  <InputLabel id="assignTo-label">Client Name</InputLabel>
-                  <Select
-                    labelId="assignTo-label"
-                    label="Client Name"
-                    value={formData.assignTo}
-                    onChange={handleInputChange}
-                    name="assignTo"
-                  >
-                    {assignToOptions.map((dir) => (
-                      <MenuItem key={dir} value={dir}>
-                        {dir}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                </FormControl>
+                <TextField
+                  label="Task Name *"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="taskName"
+                  value={formData.taskName}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.taskName}
+                  helperText={fieldErrors.taskName}
+                />
               </div>
 
               {/* Branch */}
@@ -619,61 +477,164 @@ const Task = () => {
                 </FormControl>
               </div>
 
-              {/* Customer Name */}
+              {/* Task Type */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                  <InputLabel id="assignTo-label">Customer Name</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth>
+                  <InputLabel id="taskType-label">Task Type</InputLabel>
                   <Select
-                    labelId="assignTo-label"
-                    label="Customer Name"
-                    value={formData.assignTo}
+                    labelId="taskType-label"
+                    label="Task Type"
+                    value={formData.taskType}
                     onChange={handleInputChange}
-                    name="assignTo"
+                    name="taskType"
                   >
-                    {assignToOptions.map((dir) => (
-                      <MenuItem key={dir} value={dir}>
-                        {dir}
+                    {taskTypeOptions.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
                 </FormControl>
               </div>
 
-              {/* task Name */}
+              {/* Priority */}
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth>
+                  <InputLabel id="priority-label">Priority</InputLabel>
+                  <Select
+                    labelId="priority-label"
+                    label="Priority"
+                    value={formData.priority}
+                    onChange={handleInputChange}
+                    name="priority"
+                  >
+                    {priorityOptions.map((priority) => (
+                      <MenuItem key={priority} value={priority}>
+                        {priority}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+
+              {/* Client Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Task Name *"
+                  label="Client Name"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="contactName"
-                  value={formData.contactName}
+                  name="clientName"
+                  value={formData.clientName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.contactName}
-                  helperText={fieldErrors.contactName}
                 />
               </div>
 
-              {/* task type */}
+              {/* Customer Name */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                  <InputLabel id="assignTo-label">Task type</InputLabel>
-                  <Select
-                    labelId="assignTo-label"
-                    label="Task type"
-                    value={formData.assignTo}
-                    onChange={handleInputChange}
-                    name="assignTo"
-                  >
-                    {assignToOptions.map((dir) => (
-                      <MenuItem key={dir} value={dir}>
-                        {dir}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
+                <TextField
+                  label="Customer Name"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="customerName"
+                  value={formData.customerName}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              {/* Start Date */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Start Date *"
+                      value={formData.startDate ? dayjs(formData.startDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('startDate', date)}
+                      slotProps={{
+                        textField: {
+                          size: 'small',
+                          error: !!fieldErrors.startDate,
+                          helperText: fieldErrors.startDate
+                        }
+                      }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
                 </FormControl>
+              </div>
+
+              {/* End Date */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="End Date"
+                      value={formData.endDate ? dayjs(formData.endDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('endDate', date)}
+                      slotProps={{ textField: { size: 'small' } }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+
+              {/* Start Time */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Start Time *"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="startTime"
+                  value={formData.startTime}
+                  onChange={handleInputChange}
+                  placeholder="HH:mm (e.g., 09:30)"
+                  error={!!fieldErrors.startTime}
+                // helperText={fieldErrors.startTime || "Format: HH:mm (24-hour)"}
+                />
+              </div>
+
+              {/* End Time */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="End Time"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="endTime"
+                  value={formData.endTime}
+                  onChange={handleInputChange}
+                  placeholder="HH:mm (e.g., 10:45)"
+                  error={!!fieldErrors.endTime}
+                // helperText={fieldErrors.endTime || "Format: HH:mm (24-hour)"}
+                />
+              </div>
+
+              {/* Duration */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Duration"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="duration"
+                  value={formData.duration}
+                  InputProps={{
+                    readOnly: true,
+                    style: {
+                      fontWeight: 'bold',
+                      color: formData.duration.includes('Invalid') ||
+                        formData.duration.includes('before')
+                        ? '#d32f2f' : '#1976d2'
+                    }
+                  }}
+                  error={formData.duration.includes('Invalid') ||
+                    formData.duration.includes('before')}
+                // helperText={formData.duration.includes('Invalid') ||
+                //   formData.duration.includes('before')
+                //   ? formData.duration : "Calculated automatically"}
+                />
               </div>
 
               {/* Status */}
@@ -697,133 +658,23 @@ const Task = () => {
                 </FormControl>
               </div>
 
-              {/* Start Date */}
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Start Date *"
-                      value={formData.dateStart ? dayjs(formData.dateStart, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('dateStart', date)}
-                      slotProps={{
-                        textField: {
-                          size: 'small',
-                          error: !!fieldErrors.dateStart,
-                          helperText: fieldErrors.dateStart
-                        }
-                      }}
-                      format="DD-MM-YYYY"
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-
-              {/* End Date */}
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="End Date"
-                      value={formData.dateEnd ? dayjs(formData.dateEnd, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('dateEnd', date)}
-                      slotProps={{ textField: { size: 'small' } }}
-                      format="DD-MM-YYYY"
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-
-              {/* Start Time */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Start Time * (HH:mm)"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="timeStart"
-                  value={formData.timeStart}
-                  onChange={handleInputChange}
-                  placeholder="09:30"
-                  error={!!fieldErrors.timeStart}
-                  helperText={fieldErrors.timeStart}
-                />
-              </div>
-
-              {/* End Time */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="End Time (HH:mm)"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="timeEnd"
-                  value={formData.timeEnd}
-                  onChange={handleInputChange}
-                  placeholder="10:30"
-                  error={!!fieldErrors.timeEnd}
-                  helperText={fieldErrors.timeEnd}
-                />
-              </div>
-
-              {/* Priority */}
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                  <InputLabel id="assignTo-label">Priority</InputLabel>
-                  <Select
-                    labelId="assignTo-label"
-                    label="Priority"
-                    value={formData.assignTo}
-                    onChange={handleInputChange}
-                    name="assignTo"
-                  >
-                    {assignToOptions.map((dir) => (
-                      <MenuItem key={dir} value={dir}>
-                        {dir}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                </FormControl>
-              </div>
-
               {/* Assign To */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                  <InputLabel id="assignTo-label">Assign To </InputLabel>
-                  <Select
-                    labelId="assignTo-label"
-                    label="Assign To "
-                    value={formData.assignTo}
-                    onChange={handleInputChange}
-                    name="assignTo"
-                  >
-                    {assignToOptions.map((dir) => (
-                      <MenuItem key={dir} value={dir}>
-                        {dir}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              {/* Assigneduname */}
-              <div className="col-md-3 mb-3">
                 <TextField
-                  label="Assigneduname"
+                  label="Assign To *"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="contactName"
-                  value={formData.contactName}
+                  name="assignedTo"
+                  value={formData.assignedTo}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.contactName}
-                  helperText={fieldErrors.contactName}
+                  error={!!fieldErrors.assignedTo}
+                  helperText={fieldErrors.assignedTo}
                 />
               </div>
 
               {/* Description */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-12 mb-3">
                 <TextField
                   label="Description"
                   variant="outlined"
@@ -837,104 +688,20 @@ const Task = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* Active */}
+              <div className="col-md-3 mb-3 d-flex align-items-center">
                 <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  control={
+                    <Checkbox
+                      checked={formData.active}
+                      onChange={handleInputChange}
+                      name="active"
+                    />
+                  }
                   label="Active"
+                  style={{ marginTop: '16px' }}
                 />
               </div>
-
-              <div className="row">
-                <label>Attachments</label>
-
-                {/* axpfilepath_atch */}
-                <div className="col-md-3 mb-3 mt-2">
-                  <TextField
-                    label="axpfilepath_atch"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="axpfilepath_atch"
-                    value={formData.axpfilepath_atch}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.axpfilepath_atch}
-                    helperText={fieldErrors.axpfilepath_atch}
-                  />
-                </div>
-
-                {/* Upload Ref.Docs */}
-                <div className="col-md-3 mb-3  mt-2">
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      multiline
-                      startIcon={<CloudUploadIcon />}
-                      sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
-                    >
-                      {/* {logo ? logo.name === '' ? "Logo👉" : logo.name : 'Upload Ref.Docs'} */}
-                      {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Logo👉') : 'Upload Ref.Docs'}
-
-                      <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
-                    </Button>
-
-                    {logo && (
-                      <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
-                        <ControlCameraIcon />
-                      </IconButton>
-                    )}
-                  </Box>
-                  <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-                    <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
-                      <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
-                        Company Logo
-                      </Typography>
-                      {logo ? (
-                        <Box>
-                          <Avatar
-                            src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
-                            alt="Company Logo"
-                            sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
-                          />
-                          <Box display="flex" gap={2} mt={2}>
-                            {/* <IconButton
-                            variant="contained"
-                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                            onClick={handleRemoveLogo}
-                          >
-                            Delete
-                          </IconButton> */}
-                            <IconButton
-                              variant="contained"
-                              sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                              onClick={handleClose}
-                            >
-                              Close
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      ) : (
-                        <Box>
-                          <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                            <Typography variant="caption">Upload Ref.Docs</Typography>
-                          </Avatar>
-                          <Box display="flex" gap={2} mt={2}>
-                            <IconButton
-                              variant="contained"
-                              sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
-                              onClick={handleClose}
-                            >
-                              Close
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-              </div>
-
             </div>
           </>
         )}
