@@ -154,7 +154,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
         </div>
       </div>
-      <LightDarkMode />
+      {/* <LightDarkMode /> */}
       <NotificationSection />
       <GlobalSection />
       {/* <SiteMapSection /> */}

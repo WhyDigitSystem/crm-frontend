@@ -143,10 +143,10 @@ const Task = () => {
         `/activities/getTaskDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
 
-      if (response.status === true && response.paramObjectsMap.callsDocId) {
+      if (response.status === true && response.paramObjectsMap.taskDocId) {
         setFormData(prev => ({
           ...prev,
-          taskId: response.paramObjectsMap.callsDocId
+          taskId: response.paramObjectsMap.taskDocId
         }));
       }
     } catch (error) {
@@ -674,14 +674,14 @@ const Task = () => {
               </div>
 
               {/* Description */}
-              <div className="col-md-12 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   label="Description"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  multiline
-                  rows={3}
+                  // multiline
+                  // rows={3}
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}

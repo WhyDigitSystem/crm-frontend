@@ -49,8 +49,8 @@ const Company = () => {
     city: '',
     pincode: '',
     mobileNo: '',
-    gstIn: '',
-    website: '',
+    gst: '',
+    webSite: '',
     active: true
   });
 
@@ -64,8 +64,8 @@ const Company = () => {
     city: '',
     pincode: '',
     mobileNo: '',
-    gstIn: '',
-    website: '',
+    gst: '',
+    webSite: '',
     active: true
   });
   const [listView, setListView] = useState(false);
@@ -82,7 +82,7 @@ const Company = () => {
       size: 140
     },
     {
-      accessorKey: 'gstIn',
+      accessorKey: 'gst',
       header: 'GST',
       size: 140
     },
@@ -238,8 +238,8 @@ const Company = () => {
           city: particularCompany.city,
           pincode: particularCompany.zip,
           mobileNo: particularCompany.phone,
-          gstIn: particularCompany.gstIn,
-          website: particularCompany.website,
+          gst: particularCompany.gst,
+          webSite: particularCompany.webSite,
         });
 
       } else {
@@ -291,8 +291,8 @@ const Company = () => {
       city: '',
       pincode: '',
       mobileNo: '',
-      gstIn: '',
-      website: '',
+      gst: '',
+      webSite: '',
       active: true
     });
     setFieldErrors({
@@ -305,8 +305,8 @@ const Company = () => {
       city: '',
       pincode: '',
       mobileNo: '',
-      gstIn: '',
-      website: '',
+      gst: '',
+      webSite: '',
     });
     setEditId('');
     getCompanyDetails();
@@ -353,8 +353,8 @@ const Company = () => {
         country: formData.country,
         createdBy: loginUserName,
         currency: formData.currency,
-        gstIn: formData.gstIn,
-        website: formData.website,
+        gst: formData.gst,
+        webSite: formData.webSite,
         phone: formData.mobileNo,
         state: formData.state,
         zip: formData.pincode,
@@ -630,24 +630,24 @@ const Company = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="gstIn"
-                  value={formData.gstIn}
+                  name="gst"
+                  value={formData.gst}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.gstIn}
-                  helperText={fieldErrors.gstIn}
+                  error={!!fieldErrors.gst}
+                  helperText={fieldErrors.gst}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Official Website"
+                  label="Official webSite"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="website"
-                  value={formData.website}
+                  name="webSite"
+                  value={formData.webSite}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.website}
-                  helperText={fieldErrors.website}
+                  error={!!fieldErrors.webSite}
+                  helperText={fieldErrors.webSite}
                 />
               </div>
              

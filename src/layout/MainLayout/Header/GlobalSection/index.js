@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-// third-party
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
@@ -32,10 +31,6 @@ import apiCalls from 'apicall';
 import { ToastContainer } from 'react-toastify';
 import { showToast } from 'utils/toast-component';
 
-// notification status options
-
-// ==============================|| NOTIFICATION ||============================== //
-
 const GlobalSection = () => {
   const theme = useTheme();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
@@ -45,7 +40,6 @@ const GlobalSection = () => {
   const [finYearValue, setFinYearValue] = useState('');
   const [companyValue, setCompanyValue] = useState('');
   const [customerValue, setCustomerValue] = useState('');
-  // const [warehouseValue, setWarehouseValue] = useState('');
   const [clientValue, setClientValue] = useState('');
   const [branchValue, setBranchValue] = useState('');
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -59,9 +53,7 @@ const GlobalSection = () => {
   const [globalParameter, setGlobalParameter] = useState([]);
   const [branchName, setBranchName] = useState('');
 
-  /**
-   * anchorRef is used on different componets and specifying one type leads to other components throwing an error
-   * */
+
   const anchorRef = useRef(null);
 
   useEffect(() => {
@@ -94,11 +86,11 @@ const GlobalSection = () => {
 
     setBranchValue(branchcode);
 
-    getCustomer(branchcode);
+    // getCustomer(branchcode);
   };
   const getAccessBranch = async () => {
     try {
-      const result = await apiCalls('get', `GlobalParam/globalparamBranchByUserName?orgid=${orgId}&userName=${userName}`);
+      const result = await apiCalls('get', `/GlobalParam/globalparamBranchByUserName?orgid=${orgId}&userName=${userName}`);
       setBranchVO(result.paramObjectsMap.GlopalParameters || []);
       console.log('Test', result);
     } catch (err) {
@@ -106,70 +98,45 @@ const GlobalSection = () => {
     }
   };
 
-  const getFinYear = async () => {
-    try {
-      const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
-      setFinVO(result.paramObjectsMap.financialYearVOs || []);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  // const getFinYear = async () => {
+  //   try {
+  //     const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+  //     setFinVO(result.paramObjectsMap.financialYearVOs || []);
+  //     console.log('Test', result);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
+const getFinYear = async () => {
+  try {
+    const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+    let finYears = result.paramObjectsMap.financialYearVOs || [];
+    finYears.sort((a, b) => parseInt(b.finYear, 10) - parseInt(a.finYear, 10));
+    setFinVO(finYears);
+    console.log('Sorted Fin Years:', finYears);
+  } catch (err) {
+    console.log('error', err);
+  }
+};
 
-  const getCustomer = async (branchcode) => {
-    const formData = {
-      branchcode: branchcode,
-      orgid: orgId,
-      userName: userName
-    };
-
-    const queryParams = new URLSearchParams(formData).toString();
-
-    try {
-      const result = await apiCalls('get', `GlobalParam/globalparamCustomerByUserName?${queryParams}`);
-      setCustomerVO(result.paramObjectsMap.GlopalParameterCustomer);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
-
-  const getClient = async (customer, branchCode) => {
-    const formData = {
-      branchcode: branchCode,
-      orgid: orgId,
-      userName: userName,
-      customer: customer
-    };
-
-    const queryParams = new URLSearchParams(formData).toString();
-
-    try {
-      const result = await apiCalls('get', `GlobalParam/globalparamClientByUserName?${queryParams}`);
-      setClientVO(result.paramObjectsMap.GlopalParameterClient);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
 
   const getGlobalParameter = async () => {
     try {
-      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userId=${userId}`);
+      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userid=${userId}`);
       const globalParameterVO = result.paramObjectsMap.globalParam;
       setGlobalParameter(globalParameterVO);
       // setCustomerValue(globalParameterVO.customer);
-      setClientValue(globalParameterVO.client);
+      // setClientValue(globalParameterVO.client);
       setFinYearValue(globalParameterVO.finYear);
       // setWarehouseValue(globalParameterVO.warehouse);
       setBranchValue(globalParameterVO.branchcode);
       setBranchName(globalParameterVO.branch);
       console.log('Test', result);
 
-      localStorage.setItem('customer', globalParameterVO.customer);
-      localStorage.setItem('client', globalParameterVO.client);
+      // localStorage.setItem('customer', globalParameterVO.customer);
+      // localStorage.setItem('client', globalParameterVO.client);
       localStorage.setItem('finYear', globalParameterVO.finYear);
-      localStorage.setItem('warehouse', globalParameterVO.warehouse);
+      // localStorage.setItem('warehouse', globalParameterVO.warehouse);
       localStorage.setItem('branchcode', globalParameterVO.branchcode);
       localStorage.setItem('branch', globalParameterVO.branch);
 
@@ -187,13 +154,15 @@ const GlobalSection = () => {
       branchcode: branchValue,
       finYear: finYearValue,
       // warehouse: warehouseValue,
-      userid: userId,
+      userid: parseInt(userId),
       orgId
     };
     try {
       const result = await apiCalls('put', `GlobalParam/globalparam`, formData);
-      showToast('success', 'Global Parameter updated succesfully');
-      // setOpen(false);
+      showToast('success', 'Global Parameter updated successfully');
+      setTimeout(() => {
+        window.location.reload();
+      }, 400);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -216,20 +185,6 @@ const GlobalSection = () => {
     setFinYearValue(event.target.value);
   };
 
-  const handleClientChange = (event) => {
-    setClientValue(event.target.value);
-    // getWareHouse(selectedBranch.branchcode);
-  };
-
-  const handleCustomerChange = (event) => {
-    setCustomerValue(event.target.value);
-
-    getClient(event.target.value, selectedBranch.branchcode);
-  };
-
-  // const handleWarehouseChange = (event) => {
-  //   setWarehouseValue(event.target.value);
-  // };
 
   return (
     <>
@@ -354,83 +309,11 @@ const GlobalSection = () => {
                             </TextField>
                           </Box>
                         </Grid>
-                        {/* 
-                        <Grid item xs={12}>
-                          <Box sx={{ px: 2, pt: 0.25 }}>
-                            <TextField
-                              id="outlined-select-currency-native"
-                              select
-                              fullWidth
-                              label="customer"
-                              value={customerValue}
-                              onChange={handleCustomerChange}
-                              SelectProps={{
-                                native: true
-                              }}
-                              size="small"
-                            >
-                              <option value="" disabled></option>
-                              {customerVO?.map((option) => (
-                                <option key={option.customer} value={option.customer}>
-                                  {option.customer}
-                                </option>
-                              ))}
-                            </TextField>
-                          </Box>
-                        </Grid>
-
-                        <Grid item xs={12}>
-                          <Box sx={{ px: 2, pt: 0.25 }}>
-                            <TextField
-                              id="outlined-select-currency-native"
-                              select
-                              fullWidth
-                              label="client"
-                              value={clientValue}
-                              onChange={handleClientChange}
-                              SelectProps={{
-                                native: true
-                              }}
-                              size="small"
-                            >
-                              <option value="" disabled></option>
-                              {clientVO?.map((option) => (
-                                <option key={option.client} value={option.client}>
-                                  {option.client}
-                                </option>
-                              ))}
-                            </TextField>
-                          </Box>
-                        </Grid> */}
-
-                        {/* <Grid item xs={12}>
-                          <Box sx={{ px: 2, pt: 0.25 }}>
-                            <TextField
-                              id="outlined-select-currency-native"
-                              select
-                              fullWidth
-                              label="Warehouse"
-                              value={warehouseValue}
-                              onChange={handleWarehouseChange}
-                              SelectProps={{
-                                native: true
-                              }}
-                              size="small"
-                            >
-                              <option value="" disabled></option>
-                              {warehouseVO?.map((option) => (
-                                <option key={option.Warehouse} value={option.Warehouse}>
-                                  {option.Warehouse}
-                                </option>
-                              ))}
-                            </TextField>
-                          </Box>
-                        </Grid> */}
+                        
                         <Grid item xs={12} p={0}>
                           <Divider sx={{ my: 0 }} />
                         </Grid>
                       </Grid>
-                      {/* <NotificationList /> */}
                     </Grid>
                   </Grid>
                   <Divider />

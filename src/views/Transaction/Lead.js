@@ -1,165 +1,140 @@
-import React, { useState, useEffect } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import {
-    TextField,
-    Checkbox,
-    FormControlLabel,
-    FormHelperText,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    Box,
-    Tabs,
-    Tab,
-    Autocomplete
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
-import CommonListViewTable from '../basicMaster/CommonListViewTable';
-import { ToastContainer } from 'react-toastify';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import SearchIcon from '@mui/icons-material/Search';
+import { TextField, Box, Tab, Tabs, FormControlLabel, Checkbox, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getAllActiveBranches } from 'utils/CommonFunctions';
+import ActionButton from 'utils/ActionButton';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
 
-export const Lead = () => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [editId, setEditId] = useState('');
-    const [branchList, setBranchList] = useState([]);
-    const [orgId] = useState(localStorage.getItem('orgId'));
-    const [loginUserName] = useState(localStorage.getItem('userName'));
-    const [listView, setListView] = useState(false);
+const Lead = () => {
     const [listViewData, setListViewData] = useState([]);
-    const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-    const [clientTypeOptions] = useState(['Customer', 'Prospect', 'Vendor', 'Partner']);
-    const [industryOptions] = useState(['IT', 'Manufacturing', 'Healthcare', 'Finance', 'Education', 'Retail']);
-    const [sourceOptions] = useState(['Website', 'Referral', 'Social Media', 'Event', 'Cold Call', 'Email']);
-    const [countryOptions] = useState(['India', 'USA', 'UK', 'Canada', 'Australia']);
-    const [stateOptions] = useState(['Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi', 'Gujarat']);
-    const [tabValue, setTabValue] = useState(0);
-    const [partyStateData, setPartyStateData] = useState([]);
-    const [partyAddressData, setPartyAddressData] = useState([]);
-    const [partyStateDataErrors, setPartyStateDataErrors] = useState([]);
-    const [partyAddressDataErrors, setPartyAddressDataErrors] = useState([]);
-    const [countryList, setCountryList] = useState([]);
+    const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
+    const [createdBy] = useState(localStorage.getItem('userName'));
+    const [value, setValue] = useState(0);
+    const [editId, setEditId] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [listView, setListView] = useState(false);
+    const [docId, setDocId] = useState('');
+    const [branchCode] = useState(localStorage.getItem('branchCode') || '');
+    const [clientTypes] = useState(['Corporate', 'Individual', 'Government', 'Non-Profit']);
+    const [sources] = useState(['Website', 'Referral', 'Social Media', 'Advertisement', 'Other']);
+    const [industries] = useState(['IT', 'Finance', 'Healthcare', 'Education', 'Manufacturing', 'Retail']);
 
-    // Form structure for Lead
     const [formData, setFormData] = useState({
         clientName: '',
+        clientType: '',
         contactNo: '',
         mail: '',
-        website: '',
         industry: '',
         source: '',
-        clientType: '',
         address: '',
         city: '',
         state: '',
         country: '',
         pinCode: '',
-        companyLogo: '',
+        website: '',
+        customer: '',
         cancelRemarks: '',
-        branch: '',
-        branchCode: '',
-        active: true,
-        // Child tables
-        leadContactDTO: [{
-            name: '',
-            designation: '',
-            mobileNo: '',
-            email: '',
-            dob: null,
-            workAniversaryDate: null,
-            aniversary: null,
-            preferedContact: 0,
-            branchName: ''
-        }],
-        leadBranchDTO: [{
-            branch: '',
-            branchCode: '',
-            address: '',
-            city: '',
-            state: '',
-            country: '',
-            gstNo: ''
-        }]
+        finYear: '2025',
     });
 
     const [fieldErrors, setFieldErrors] = useState({
         clientName: '',
+        clientType: '',
         contactNo: '',
-        branch: '',
-        clientType: ''
+        mail: '',
+        industry: '',
+        source: '',
     });
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const [leadBranches, setLeadBranches] = useState([{
+        address: '',
+        branch: '',
+        branchCode: '',
+        city: '',
+        country: '',
+        gstNo: '',
+        state: ''
+    }]);
+
+    const [branchErrors, setBranchErrors] = useState([{
+        branch: '',
+        branchCode: '',
+        address: '',
+        city: '',
+        country: '',
+        state: ''
+    }]);
+
+    const [leadContacts, setLeadContacts] = useState([{
+        branchName: '',
+        designation: '',
+        dob: '',
+        email: '',
+        mobileNo: '',
+        name: '',
+        preferredContact: false,
+        workAnniversaryDate: ''
+    }]);
+
+    const [contactErrors, setContactErrors] = useState([{
+        name: '',
+        mobileNo: '',
+        email: '',
+        designation: ''
+    }]);
+
+    const listViewColumns = [
+        { accessorKey: 'clientName', header: 'Client Name', size: 140 },
+        { accessorKey: 'clientType', header: 'Client Type', size: 140 },
+        { accessorKey: 'contactNo', header: 'Contact No', size: 140 },
+        { accessorKey: 'mail', header: 'Email', size: 140 },
+        { accessorKey: 'industry', header: 'Industry', size: 140 },
+        { accessorKey: 'source', header: 'Source', size: 140 },
+        { accessorKey: 'city', header: 'City', size: 140 },
+        { accessorKey: 'state', header: 'State', size: 140 }
+    ];
 
     useEffect(() => {
-        getAllBranches();
-        getAllLeads();
-        fetchCountries();
+        const fetchInitialData = async () => {
+            await getAllLeads();
+            await getLeadDocId();
+        };
+        fetchInitialData();
     }, []);
 
-    useEffect(() => {
-        if (formData.branch && formData.branchCode && !editId) {
-            getLeadDocId();
-        }
-    }, [formData.branch, formData.branchCode, editId]);
-
-    const fetchCountries = async () => {
+    const getLeadDocId = async () => {
+        if (editId) return;
         try {
-            // Replace with your actual API call to fetch countries
-            const response = await apiCalls('get', '/master/getAllCountry');
+            setIsDocIdLoading(true);
+            const response = await apiCalls(
+                'get',
+                `/transaction/getLeadDocId?branch=BANGALORE&branchCode=BLR&finYear=${formData.finYear}&orgId=${orgId}`
+            );
             if (response.status) {
-                setCountryList(response.paramObjectsMap.countryVOs);
+                setDocId(response.paramObjectsMap.leadDocId);
             }
-        } catch (error) {
-            console.error('Error fetching countries:', error);
-            showToast('error', 'Failed to load countries');
-        }
-    };
-
-    const getAllBranches = async () => {
-        try {
-            const branchData = await getAllActiveBranches(orgId);
-            setBranchList(branchData);
-            if (branchData.length > 0) {
-                setFormData(prev => ({
-                    ...prev,
-                    branch: branchData[0].branch,
-                    branchCode: branchData[0].branchCode
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            showToast('error', 'Failed to load branches');
+        } catch (err) {
+            console.error('Error fetching lead docId:', err);
+            showToast('error', 'Failed to generate lead ID');
+        } finally {
+            setIsDocIdLoading(false);
         }
     };
 
     const getAllLeads = async () => {
         try {
-            const response = await apiCalls(
-                'get',
-                `/transaction/getAllLeadByOrgId?orgId=${orgId}`
-            );
-
-            if (response.status === true) {
+            const response = await apiCalls('get', `/transaction/getAllLeadByOrgId?branchCode=BLR&finYear=2025&orgId=${orgId}`);
+            if (response.status) {
                 setListViewData(response.paramObjectsMap.leadVO);
             } else {
                 showToast('error', response.message || 'Failed to fetch leads');
@@ -170,105 +145,67 @@ export const Lead = () => {
         }
     };
 
-    const getLeadDocId = async () => {
-        if (!formData.branch || !formData.branchCode) return;
-
-        setIsDocIdLoading(true);
+    const getLeadById = async (row) => {
+        setEditId(row.original.id);
         try {
-            const response = await apiCalls(
-                'get',
-                `/transaction/getLeadDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
-            );
-
-            if (response.status === true && response.paramObjectsMap.leadDocId) {
-                setFormData(prev => ({
-                    ...prev,
-                    docId: response.paramObjectsMap.leadDocId
-                }));
-            }
-        } catch (error) {
-            console.error('Error getting document ID:', error);
-            showToast('error', 'Failed to generate document ID');
-        } finally {
-            setIsDocIdLoading(false);
-        }
-    };
-
-    const getLeadById = async (id) => {
-        try {
-            const response = await apiCalls('get', `/transaction/getLeadById?id=${id}`);
-
-            if (response.status === true) {
-                const lead = response.paramObjectsMap.leadVO;
-                setEditId(id);
+            const response = await apiCalls('get', `/transaction/getLeadById?id=${row.original.id}`);
+            if (response.status) {
                 setListView(false);
+                const lead = response.paramObjectsMap.leadVO;
 
-                // Convert date strings to Dayjs objects for child tables
-                const contactsWithDates = lead.leadContactDTO.map(contact => ({
-                    ...contact,
-                    dob: contact.dob ? dayjs(contact.dob) : null,
-                    workAniversaryDate: contact.workAniversaryDate ? dayjs(contact.workAniversaryDate) : null,
-                    aniversary: contact.aniversary ? dayjs(contact.aniversary) : null
-                }));
-
+                // Map API fields to formData state
                 setFormData({
-                    docId: lead.docId || '',
-                    clientName: lead.clientName || '',
-                    contactNo: lead.contactNo || '',
-                    mail: lead.mail || '',
-                    website: lead.website || '',
-                    industry: lead.industry || '',
-                    source: lead.source || '',
-                    clientType: lead.clientType || '',
-                    address: lead.address || '',
-                    city: lead.city || '',
-                    state: lead.state || '',
-                    country: lead.country || '',
-                    pinCode: lead.pinCode || '',
-                    companyLogo: lead.companyLogo || '',
+                    address: lead.addres || '',
                     cancelRemarks: lead.cancelRemarks || '',
-                    branch: lead.branch || '',
-                    branchCode: lead.branchCode || '',
-                    active: lead.active === "Active",
-                    leadContactDTO: contactsWithDates || [{
-                        name: '',
-                        designation: '',
-                        mobileNo: '',
-                        email: '',
-                        dob: null,
-                        workAniversaryDate: null,
-                        aniversary: null,
-                        preferedContact: 0,
-                        branchName: ''
-                    }],
-                    leadBranchDTO: lead.leadBranchDTO || [{
-                        branch: '',
-                        branchCode: '',
-                        address: '',
-                        city: '',
-                        state: '',
-                        country: '',
-                        gstNo: ''
-                    }]
+                    city: lead.city || '',
+                    clientName: lead.clientName || '',
+                    clientType: lead.clientType || '',
+                    contactNo: lead.contactNo || '',
+                    country: lead.country || '',
+                    customer: lead.customer || '',
+                    finYear: lead.finYear || '2025',
+                    industry: lead.industry || '',
+                    mail: lead.mail || '',
+                    pinCode: lead.pinCode || '',
+                    source: lead.source || '',
+                    state: lead.state || '',
+                    website: lead.website || '',
                 });
 
-                // Initialize party state and address data
-                if (lead.partyStateDTO) {
-                    setPartyStateData(lead.partyStateDTO.map(item => ({
-                        ...item,
-                        stateOptions: [],
-                        cityOptions: []
-                    })));
-                }
-                if (lead.partyAddressDTO) {
-                    setPartyAddressData(lead.partyAddressDTO.map(item => ({
-                        ...item,
-                        stateOptions: [],
-                        cityOptions: []
-                    })));
-                }
-            } else {
-                showToast('error', response.paramObjectsMap.message || 'Failed to fetch lead details');
+                // Set document ID
+                setDocId(lead.docId || '');
+
+                // Map branches
+                const branches = lead.leadBranchVO?.map(branch => ({
+                    address: branch.address || '',
+                    branch: branch.branch || '',
+                    branchCode: branch.branchCode || '',
+                    city: branch.city || '',
+                    country: branch.country || '',
+                    gstNo: branch.gstNo || '',
+                    state: branch.state || ''
+                })) || [];
+
+                setLeadBranches(branches.length > 0 ? branches : [{
+                    address: '', branch: '', branchCode: '', city: '', country: '', gstNo: '', state: ''
+                }]);
+
+                // Map contacts
+                const contacts = lead.leadContactVO?.map(contact => ({
+                    branchName: contact.branchName || '',
+                    designation: contact.designation || '',
+                    dob: contact.dob || contact.aniversary || '',
+                    email: contact.email || '',
+                    mobileNo: contact.mobileNo || '',
+                    name: contact.name || '',
+                    preferredContact: contact.preferedContact === 1,
+                    workAnniversaryDate: contact.workAniversaryDate || ''
+                })) || [];
+
+                setLeadContacts(contacts.length > 0 ? contacts : [{
+                    branchName: '', designation: '', dob: '', email: '', mobileNo: '', name: '',
+                    preferredContact: false, workAnniversaryDate: ''
+                }]);
             }
         } catch (error) {
             console.error('Error fetching lead details:', error);
@@ -277,177 +214,126 @@ export const Lead = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value, checked, type } = e.target;
+        const { name, value } = e.target;
+        // Convert to string if it's the contactNo field
+        const processedValue = name === 'contactNo' ? String(value) : value;
+        setFormData(prev => ({ ...prev, [name]: processedValue }));
+        setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    };
 
-        // Validation
-        let errorMessage = '';
-        if (name === 'mobile' && value && !/^\d{10}$/.test(value)) {
-            errorMessage = 'Invalid mobile number (10 digits required)';
-        } else if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            errorMessage = 'Invalid email format';
-        }
+    const validateMainField = (field, value) => {
+        const newErrors = { ...fieldErrors };
 
-        if (errorMessage) {
-            setFieldErrors(prev => ({ ...prev, [name]: errorMessage }));
+        if (field === 'mail' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            newErrors[field] = 'Invalid email format';
+        } else if (field === 'contactNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
+            newErrors[field] = 'Invalid contact number';
+        } else if (!value) {
+            newErrors[field] = 'This field is required';
         } else {
-            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+            newErrors[field] = '';
         }
 
-        // Update form data
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        setFieldErrors(newErrors);
     };
 
-    const handleBranchChange = (e) => {
-        const branchName = e.target.value;
-        const selectedBranch = branchList.find(b => b.branch === branchName);
+    const validateContactField = (index, field, value) => {
+        const newErrors = [...contactErrors];
+        if (!newErrors[index]) newErrors[index] = {};
 
-        if (selectedBranch) {
-            setFormData(prev => ({
-                ...prev,
-                branch: branchName,
-                branchCode: selectedBranch.branchCode
-            }));
+        if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            newErrors[index][field] = 'Invalid email format';
+        } else if (field === 'mobileNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
+            newErrors[index][field] = 'Invalid mobile number';
+        } else if (!value && ['name', 'mobileNo', 'email', 'designation'].includes(field)) {
+            newErrors[index][field] = 'This field is required';
+        } else {
+            newErrors[index][field] = '';
         }
+
+        setContactErrors(newErrors);
     };
 
-    // Child table handlers
-    const handleContactChange = (index, field, value) => {
-        const updatedContacts = [...formData.leadContactDTO];
-        updatedContacts[index][field] = value;
-        setFormData(prev => ({
-            ...prev,
-            leadContactDTO: updatedContacts
-        }));
+    const validateBranchField = (index, field, value) => {
+        const newErrors = [...branchErrors];
+        if (!newErrors[index]) newErrors[index] = {};
+
+        if (!value && ['branch', 'branchCode', 'address', 'city', 'country', 'state'].includes(field)) {
+            newErrors[index][field] = 'This field is required';
+        } else {
+            newErrors[index][field] = '';
+        }
+
+        setBranchErrors(newErrors);
     };
 
-    const handleBranchChangeChild = (index, field, value) => {
-        const updatedBranches = [...formData.leadBranchDTO];
-        updatedBranches[index][field] = value;
-        setFormData(prev => ({
-            ...prev,
-            leadBranchDTO: updatedBranches
-        }));
+    const validateFields = () => {
+        const errors = {};
+        if (!formData.clientName.trim()) errors.clientName = 'Client name is required';
+        if (!formData.clientType) errors.clientType = 'Client type is required';
+        if (!String(formData.contactNo).trim()) errors.contactNo = 'Contact number is required';
+        if (!formData.mail.trim()) errors.mail = 'Email is required';
+        if (!formData.industry) errors.industry = 'Industry is required';
+        if (!formData.source) errors.source = 'Source is required';
+
+        if (formData.mail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) {
+            errors.mail = 'Invalid email format';
+        }
+
+        if (String(formData.contactNo).trim() && !/^[0-9+\-\s]{10,15}$/.test(String(formData.contactNo))) {
+            errors.contactNo = 'Invalid contact number';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
-    const addContact = () => {
-        setFormData(prev => ({
-            ...prev,
-            leadContactDTO: [
-                ...prev.leadContactDTO,
-                {
-                    name: '',
-                    designation: '',
-                    mobileNo: '',
-                    email: '',
-                    dob: null,
-                    workAniversaryDate: null,
-                    aniversary: null,
-                    preferedContact: 0,
-                    branchName: ''
-                }
-            ]
-        }));
-    };
-
-    const addBranch = () => {
-        setFormData(prev => ({
-            ...prev,
-            leadBranchDTO: [
-                ...prev.leadBranchDTO,
-                {
-                    branch: '',
-                    branchCode: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    gstNo: ''
-                }
-            ]
-        }));
-    };
-
-    const removeContact = (index) => {
-        if (formData.leadContactDTO.length <= 1) return;
-        const updatedContacts = [...formData.leadContactDTO];
-        updatedContacts.splice(index, 1);
-        setFormData(prev => ({
-            ...prev,
-            leadContactDTO: updatedContacts
-        }));
-    };
-
-    const removeBranch = (index) => {
-        if (formData.leadBranchDTO.length <= 1) return;
-        const updatedBranches = [...formData.leadBranchDTO];
-        updatedBranches.splice(index, 1);
-        setFormData(prev => ({
-            ...prev,
-            leadBranchDTO: updatedBranches
-        }));
-    };
-
-    const handleClear = () => {
-        const firstBranch = branchList[0] || null;
-        setFormData({
-            clientName: '',
-            contactNo: '',
-            mail: '',
-            website: '',
-            industry: '',
-            source: '',
-            clientType: '',
-            address: '',
-            city: '',
-            state: '',
-            country: '',
-            pinCode: '',
-            companyLogo: '',
-            cancelRemarks: '',
-            branch: firstBranch ? firstBranch.branch : '',
-            branchCode: firstBranch ? firstBranch.branchCode : '',
-            active: true,
-            leadContactDTO: [{
-                name: '',
-                designation: '',
-                mobileNo: '',
-                email: '',
-                dob: null,
-                workAniversaryDate: null,
-                aniversary: null,
-                preferedContact: 0,
-                branchName: ''
-            }],
-            leadBranchDTO: [{
-                branch: '',
-                branchCode: '',
-                address: '',
-                city: '',
-                state: '',
-                country: '',
-                gstNo: ''
-            }]
+    const validateBranches = () => {
+        const errors = leadBranches.map(branch => {
+            const error = {};
+            if (!branch.branch.trim()) error.branch = 'Branch name is required';
+            if (!branch.branchCode.trim()) error.branchCode = 'Branch code is required';
+            if (!branch.address.trim()) error.address = 'Address is required';
+            if (!branch.city.trim()) error.city = 'City is required';
+            if (!branch.country.trim()) error.country = 'Country is required';
+            if (!branch.state.trim()) error.state = 'State is required';
+            return error;
         });
-        setEditId('');
-        setFieldErrors({});
-        setPartyStateData([]);
-        setPartyAddressData([]);
+
+        setBranchErrors(errors);
+        return errors.every(e => Object.keys(e).length === 0);
+    };
+
+    const validateContacts = () => {
+        const errors = leadContacts.map(contact => {
+            const error = {};
+            if (!contact.name.trim()) error.name = 'Name is required';
+            if (!contact.mobileNo.trim()) error.mobileNo = 'Mobile number is required';
+            if (!contact.email.trim()) error.email = 'Email is required';
+            if (!contact.designation.trim()) error.designation = 'Designation is required';
+
+            if (contact.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+                error.email = 'Invalid email format';
+            }
+
+            if (contact.mobileNo.trim() && !/^[0-9+\-\s]{10,15}$/.test(contact.mobileNo)) {
+                error.mobileNo = 'Invalid mobile number';
+            }
+
+            return error;
+        });
+
+        setContactErrors(errors);
+        return errors.every(e => Object.keys(e).length === 0);
     };
 
     const handleSave = async () => {
-        // Validation
-        const errors = {};
-        if (!formData.clientName) errors.clientName = 'Client name is required';
-        if (!formData.contactNo) errors.contactNo = 'Contact number is required';
-        if (!formData.branch) errors.branch = 'Branch is required';
-        if (!formData.clientType) errors.clientType = 'Client type is required';
+        const isFormValid = validateFields();
+        const isBranchesValid = validateBranches();
+        const isContactsValid = validateContacts();
 
-        if (Object.keys(errors).length > 0) {
-            setFieldErrors(errors);
-            showToast('error', 'Please fix the validation errors');
+        if (!isFormValid || !isBranchesValid || !isContactsValid) {
+            showToast('error', 'Please correct the highlighted fields');
             return;
         }
 
@@ -455,988 +341,747 @@ export const Lead = () => {
 
         // Prepare API payload
         const payload = {
-            ...formData,
             ...(editId && { id: editId }),
-            finYear: finYear,
-            createdBy: loginUserName,
-            orgId: parseInt(orgId),
-            contactNo: formData.contactNo ? parseInt(formData.contactNo) : 0,
+            addres: formData.address || '',
+            branch: leadBranches[0]?.branch || '',
+            branchCode: leadBranches[0]?.branchCode || '',
+            cancelRemarks: formData.cancelRemarks || '',
+            city: formData.city || '',
+            clientName: formData.clientName,
+            clientType: formData.clientType,
+            companyLogo: '',
+            contactNo: formData.contactNo,
+            country: formData.country || '',
+            createdBy: createdBy,
+            customer: formData.customer || '',
+            finYear: formData.finYear,
+            industry: formData.industry,
+            mail: formData.mail,
+            orgId: orgId,
             pinCode: formData.pinCode ? parseInt(formData.pinCode) : 0,
-            // Format dates for child tables
-            leadContactDTO: formData.leadContactDTO.map(contact => ({
-                ...contact,
-                dob: contact.dob ? contact.dob.format('YYYY-MM-DD') : null,
-                workAniversaryDate: contact.workAniversaryDate ? contact.workAniversaryDate.format('YYYY-MM-DD') : null,
-                aniversary: contact.aniversary ? contact.aniversary.format('YYYY-MM-DD') : null
+            source: formData.source,
+            state: formData.state || '',
+            website: formData.website || '',
+            leadBranchDTO: leadBranches.map(branch => ({
+                address: branch.address,
+                branch: branch.branch,
+                branchCode: branch.branchCode,
+                city: branch.city,
+                country: branch.country,
+                gstNo: branch.gstNo || '',
+                state: branch.state
             })),
-            partyStateDTO: partyStateData,
-            partyAddressDTO: partyAddressData
+            leadContactDTO: leadContacts.map(contact => ({
+                aniversary: contact.dob || '',
+                branchName: contact.branchName || '',
+                designation: contact.designation,
+                dob: contact.dob || '',
+                email: contact.email,
+                mobileNo: contact.mobileNo,
+                name: contact.name,
+                preferedContact: contact.preferredContact ? 1 : 0,
+                workAniversaryDate: contact.workAnniversaryDate || ''
+            }))
         };
 
         try {
             const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
-
-            if (response.status === true) {
+            if (response.status) {
                 showToast('success', editId ? 'Lead updated successfully' : 'Lead created successfully');
                 handleClear();
                 getAllLeads();
             } else {
-                showToast('error', response.paramObjectsMap.message || 'Operation failed');
+                showToast('error', response.message || 'Operation failed');
             }
         } catch (error) {
             console.error('Error saving lead:', error);
-            showToast('error', 'Failed to save lead');
+            showToast('error', 'Failed to save lead: ' + (error.response?.data?.message || error.message));
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleView = () => {
-        setListView(!listView);
-    };
-
-    const handleChangeTab = (event, newValue) => {
-        setTabValue(newValue);
-    };
-
-    const handleAddRowPartyState = () => {
-        setPartyStateData([
-            ...partyStateData,
-            {
-                id: Date.now(),
-                country: '',
-                state: '',
-                stateCode: '',
-                stateNo: '',
-                gstIn: '',
-                contactPerson: '',
-                contactPhoneNo: '',
-                email: '',
-                stateOptions: [],
-                cityOptions: []
-            }
-        ]);
-        setPartyStateDataErrors([...partyStateDataErrors, {}]);
-    };
-
-    const handleAddRowPartyAddress = () => {
-        setPartyAddressData([
-            ...partyAddressData,
-            {
-                id: Date.now(),
-                country: '',
-                state: '',
-                city: '',
-                businessPlace: '',
-                stateGstIn: '',
-                addressType: '',
-                addressLine1: '',
-                addressLine2: '',
-                addressLine3: '',
-                pincode: '',
-                contact: '',
-                stateOptions: [],
-                cityOptions: []
-            }
-        ]);
-        setPartyAddressDataErrors([...partyAddressDataErrors, {}]);
-    };
-
-    const handleDeleteRow = (id, data, setData, errors, setErrors) => {
-        if (data.length <= 1) return;
-        const index = data.findIndex(item => item.id === id);
-        const newData = [...data];
-        newData.splice(index, 1);
-        setData(newData);
-
-        const newErrors = [...errors];
-        newErrors.splice(index, 1);
-        setErrors(newErrors);
-    };
-
-    const handleCountryChange = async (row, index, e) => {
-        const countryName = e.target.value;
-        const newPartyStateData = [...partyStateData];
-        newPartyStateData[index] = {
-            ...newPartyStateData[index],
-            country: countryName,
-            state: '',
-            stateCode: '',
-            stateNo: '',
-            stateOptions: []
-        };
-        setPartyStateData(newPartyStateData);
-
-        // Fetch states for selected country
-        if (countryName) {
-            try {
-                const response = await apiCalls('get', `/master/getAllStateByCountryName?countryName=${countryName}`);
-                if (response.status) {
-                    newPartyStateData[index].stateOptions = response.paramObjectsMap.stateVOs;
-                    setPartyStateData([...newPartyStateData]);
-                }
-            } catch (error) {
-                console.error('Error fetching states:', error);
-            }
-        }
-    };
-
-    const handleStateChange = (newValue, index) => {
-        const newPartyStateData = [...partyStateData];
-        newPartyStateData[index] = {
-            ...newPartyStateData[index],
-            state: newValue.stateName,
-            stateCode: newValue.stateCode,
-            stateNo: newValue.stateNo
-        };
-        setPartyStateData(newPartyStateData);
-    };
-
-    const handleCountryPartyAddress = async (row, index, e) => {
-        const countryName = e.target.value;
-        const newPartyAddressData = [...partyAddressData];
-        newPartyAddressData[index] = {
-            ...newPartyAddressData[index],
-            country: countryName,
-            state: '',
+    const handleClear = () => {
+        setFormData({
+            address: '',
+            branch: '',
+            branchCode: '',
+            cancelRemarks: '',
             city: '',
-            stateOptions: []
-        };
-        setPartyAddressData(newPartyAddressData);
+            clientName: '',
+            clientType: '',
+            contactNo: '',
+            country: '',
+            customer: '',
+            finYear: '2025',
+            industry: '',
+            mail: '',
+            pinCode: '',
+            source: '',
+            state: '',
+            website: '',
+        });
 
-        // Fetch states for selected country
-        if (countryName) {
-            try {
-                const response = await apiCalls('get', `/master/getAllStateByCountryName?countryName=${countryName}`);
-                if (response.status) {
-                    newPartyAddressData[index].stateOptions = response.paramObjectsMap.stateVOs;
-                    setPartyAddressData([...newPartyAddressData]);
-                }
-            } catch (error) {
-                console.error('Error fetching states:', error);
-            }
-        }
-    };
+        setFieldErrors({
+            clientName: '',
+            clientType: '',
+            contactNo: '',
+            mail: '',
+            industry: '',
+            source: '',
+        });
 
-    const handleStatePartyAddress = async (newValue, index) => {
-        const newPartyAddressData = [...partyAddressData];
-        newPartyAddressData[index] = {
-            ...newPartyAddressData[index],
-            state: newValue.stateName,
+        setLeadBranches([{
+            address: '',
+            branch: '',
+            branchCode: '',
             city: '',
-            cityOptions: []
-        };
-        setPartyAddressData(newPartyAddressData);
+            country: '',
+            gstNo: '',
+            state: ''
+        }]);
 
-        // Fetch cities for selected state
-        if (newValue.stateName) {
-            try {
-                const response = await apiCalls('get', `/master/getAllCityByStateName?stateName=${newValue.stateName}`);
-                if (response.status) {
-                    newPartyAddressData[index].cityOptions = response.paramObjectsMap.cityVOs;
-                    setPartyAddressData([...newPartyAddressData]);
-                }
-            } catch (error) {
-                console.error('Error fetching cities:', error);
-            }
+        setLeadContacts([{
+            branchName: '',
+            designation: '',
+            dob: '',
+            email: '',
+            mobileNo: '',
+            name: '',
+            preferredContact: false,
+            workAnniversaryDate: ''
+        }]);
+
+        setEditId('');
+        getLeadDocId();
+    };
+
+    const handleAddBranch = () => {
+        const lastBranch = leadBranches[leadBranches.length - 1];
+
+        if (!lastBranch.branch || !lastBranch.branchCode || !lastBranch.address ||
+            !lastBranch.city || !lastBranch.country || !lastBranch.state) {
+            const newErrors = [...branchErrors];
+            const lastIndex = newErrors.length - 1;
+            newErrors[lastIndex] = {
+                branch: !lastBranch.branch ? 'Branch is required' : '',
+                branchCode: !lastBranch.branchCode ? 'Branch code is required' : '',
+                address: !lastBranch.address ? 'Address is required' : '',
+                city: !lastBranch.city ? 'City is required' : '',
+                country: !lastBranch.country ? 'Country is required' : '',
+                state: !lastBranch.state ? 'State is required' : ''
+            };
+            setBranchErrors(newErrors);
+            showToast('warning', 'Please fill current branch before adding new');
+            return;
+        }
+
+        setLeadBranches((prev) => [...prev, {
+            address: '',
+            branch: '',
+            branchCode: '',
+            city: '',
+            country: '',
+            gstNo: '',
+            state: ''
+        }]);
+
+        setBranchErrors((prev) => [...prev, {
+            branch: '',
+            branchCode: '',
+            address: '',
+            city: '',
+            country: '',
+            state: ''
+        }]);
+    };
+
+    const handleDeleteBranch = (index) => {
+        if (leadBranches.length <= 1) {
+            showToast('warning', 'At least one branch is required');
+            return;
+        }
+
+        const newBranches = leadBranches.filter((_, i) => i !== index);
+        const newErrors = branchErrors.filter((_, i) => i !== index);
+
+        setLeadBranches(newBranches);
+        setBranchErrors(newErrors);
+    };
+
+    const handleBranchChange = (index, field, value) => {
+        const newBranches = [...leadBranches];
+        newBranches[index] = { ...newBranches[index], [field]: value };
+        setLeadBranches(newBranches);
+
+        if (value) {
+            const newErrors = [...branchErrors];
+            newErrors[index] = { ...newErrors[index], [field]: '' };
+            setBranchErrors(newErrors);
         }
     };
 
-    const handleCityPartyAddress = (newValue, index) => {
-        const newPartyAddressData = [...partyAddressData];
-        newPartyAddressData[index] = {
-            ...newPartyAddressData[index],
-            city: newValue.cityName
+    const handleAddContact = () => {
+        const lastContact = leadContacts[leadContacts.length - 1];
+
+        if (!lastContact.name || !lastContact.mobileNo || !lastContact.email || !lastContact.designation) {
+            const newErrors = [...contactErrors];
+            const lastIndex = newErrors.length - 1;
+            newErrors[lastIndex] = {
+                name: !lastContact.name ? 'Name is required' : '',
+                mobileNo: !lastContact.mobileNo ? 'Mobile number is required' : '',
+                email: !lastContact.email ? 'Email is required' : '',
+                designation: !lastContact.designation ? 'Designation is required' : ''
+            };
+            setContactErrors(newErrors);
+            showToast('warning', 'Please fill current contact before adding new');
+            return;
+        }
+
+        setLeadContacts((prev) => [...prev, {
+            branchName: '',
+            designation: '',
+            dob: '',
+            email: '',
+            mobileNo: '',
+            name: '',
+            preferredContact: false,
+            workAnniversaryDate: ''
+        }]);
+
+        setContactErrors((prev) => [...prev, {
+            name: '',
+            mobileNo: '',
+            email: '',
+            designation: ''
+        }]);
+    };
+
+    const handleDeleteContact = (index) => {
+        if (leadContacts.length <= 1) {
+            showToast('warning', 'At least one contact is required');
+            return;
+        }
+
+        const newContacts = leadContacts.filter((_, i) => i !== index);
+        const newErrors = contactErrors.filter((_, i) => i !== index);
+
+        setLeadContacts(newContacts);
+        setContactErrors(newErrors);
+    };
+
+    const handleContactChange = (index, field, value) => {
+        const newContacts = [...leadContacts];
+        newContacts[index] = {
+            ...newContacts[index],
+            [field]: value
         };
-        setPartyAddressData(newPartyAddressData);
+        setLeadContacts(newContacts);
     };
 
-    const handleDateChange = (field, date) => {
-        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
-        setFormData(prev => ({ ...prev, [field]: formattedDate }));
-    };
-
-    const listViewColumns = [
-        { accessorKey: 'docId', header: 'Doc ID', size: 120 },
-        { accessorKey: 'clientName', header: 'Client', size: 180 },
-        { accessorKey: 'contactNo', header: 'Contact', size: 150 },
-        { accessorKey: 'mail', header: 'Email', size: 200 },
-        { accessorKey: 'clientType', header: 'Type', size: 120 },
-        { accessorKey: 'industry', header: 'Industry', size: 150 },
-        { accessorKey: 'source', header: 'Source', size: 130 },
-        { accessorKey: 'branch', header: 'Branch', size: 150 },
-        { accessorKey: 'active', header: 'Active', size: 100 },
-    ];
+    const handleView = () => setListView(!listView);
+    const handleTabChange = (_, newValue) => setValue(newValue);
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+        <>
+            <div>
+                <ToastComponent />
+            </div>
+            <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                        <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                        <ActionButton
-                            title="Save"
-                            icon={SaveIcon}
-                            isLoading={isLoading}
-                            onClick={handleSave}
-                            margin="0 10px 0 10px"
-                        />
+                        <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                        <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} disabled={isLoading} />
                     </div>
-                </div>
 
-                {listView ? (
-                    <div className="">
+                    {!listView ? (
+                        <>
+                            <div className="row d-flex ml">
+                                {/* Lead ID */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Lead ID"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        disabled
+                                        name="leadDocId"
+                                        value={isDocIdLoading ? "Generating..." : docId}
+                                        InputProps={{
+                                            style: { backgroundColor: '#f5f5f5' }
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Source */}
+                                <div className="col-md-3 mb-3">
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Source *</InputLabel>
+                                        <Select
+                                            label="Source *"
+                                            name="source"
+                                            value={formData.source}
+                                            onChange={handleInputChange}
+                                            error={!!fieldErrors.source}
+                                        >
+                                            {sources.map((source) => (
+                                                <MenuItem key={source} value={source}>{source}</MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </div>
+
+                                {/* Client Type */}
+                                <div className="col-md-3 mb-3">
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Client Type *</InputLabel>
+                                        <Select
+                                            label="Client Type *"
+                                            name="clientType"
+                                            value={formData.clientType}
+                                            onChange={handleInputChange}
+                                            error={!!fieldErrors.clientType}
+                                        >
+                                            {clientTypes.map((type) => (
+                                                <MenuItem key={type} value={type}>{type}</MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </div>
+
+                                {/* Client Name */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Client Name *"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="clientName"
+                                        value={formData.clientName}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.clientName}
+                                        helperText={fieldErrors.clientName}
+                                        onBlur={(e) => validateMainField('clientName', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Email *"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="mail"
+                                        value={formData.mail}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.mail}
+                                        helperText={fieldErrors.mail}
+                                        onBlur={(e) => validateMainField('mail', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Contact No */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Contact No *"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="contactNo"
+                                        value={formData.contactNo}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.contactNo}
+                                        helperText={fieldErrors.contactNo}
+                                        onBlur={(e) => validateMainField('contactNo', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Industry */}
+                                <div className="col-md-3 mb-3">
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Industry *</InputLabel>
+                                        <Select
+                                            label="Industry *"
+                                            name="industry"
+                                            value={formData.industry}
+                                            onChange={handleInputChange}
+                                            error={!!fieldErrors.industry}
+                                        >
+                                            {industries.map((industry) => (
+                                                <MenuItem key={industry} value={industry}>{industry}</MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </div>
+
+                                {/* Website */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Website"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="website"
+                                        value={formData.website}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                {/* City */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="City"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                {/* State */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="State"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                {/* Country */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Country"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="country"
+                                        value={formData.country}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                {/* PIN Code */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="PIN Code"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="pinCode"
+                                        value={formData.pinCode}
+                                        onChange={handleInputChange}
+                                        type="number"
+                                    />
+                                </div>
+
+                                {/* Customer */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Customer"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="customer"
+                                        value={formData.customer}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+
+                                {/* Address */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Address"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="row mt-2">
+                                <Box sx={{ width: '100%' }}>
+                                    <Tabs value={value} onChange={handleTabChange} textColor="secondary" indicatorColor="secondary">
+                                        <Tab value={0} label="Branches" />
+                                        <Tab value={1} label="Contacts" />
+                                    </Tabs>
+                                </Box>
+
+                                <Box sx={{ padding: 2 }}>
+                                    {value === 0 && (
+                                        <>
+                                            <div className="mb-1">
+                                                <ActionButton title="Add Branch" icon={AddIcon} onClick={handleAddBranch} />
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-lg-12">
+                                                    <div className="table-responsive">
+                                                        <table className="table table-bordered">
+                                                            <thead>
+                                                                <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Branch *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Branch Code *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">GST No</th>
+                                                                    <th className="px-2 py-2 text-white text-center">City *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">State *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Country *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Address *</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {leadBranches.map((branch, index) => (
+                                                                    <tr key={index}>
+                                                                        <td className="border px-2 py-2 text-center">
+                                                                            <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteBranch(index)} />
+                                                                        </td>
+                                                                        <td className="text-center pt-3">{index + 1}</td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.branch}
+                                                                                onChange={(e) => handleBranchChange(index, 'branch', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
+                                                                                error={!!branchErrors[index]?.branch}
+                                                                                helperText={branchErrors[index]?.branch}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.branchCode}
+                                                                                onChange={(e) => handleBranchChange(index, 'branchCode', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'branchCode', e.target.value)}
+                                                                                error={!!branchErrors[index]?.branchCode}
+                                                                                helperText={branchErrors[index]?.branchCode}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.gstNo}
+                                                                                onChange={(e) => handleBranchChange(index, 'gstNo', e.target.value)}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.city}
+                                                                                onChange={(e) => handleBranchChange(index, 'city', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'city', e.target.value)}
+                                                                                error={!!branchErrors[index]?.city}
+                                                                                helperText={branchErrors[index]?.city}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.state}
+                                                                                onChange={(e) => handleBranchChange(index, 'state', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'state', e.target.value)}
+                                                                                error={!!branchErrors[index]?.state}
+                                                                                helperText={branchErrors[index]?.state}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.country}
+                                                                                onChange={(e) => handleBranchChange(index, 'country', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'country', e.target.value)}
+                                                                                error={!!branchErrors[index]?.country}
+                                                                                helperText={branchErrors[index]?.country}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={branch.address}
+                                                                                onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
+                                                                                onBlur={(e) => validateBranchField(index, 'address', e.target.value)}
+                                                                                error={!!branchErrors[index]?.address}
+                                                                                helperText={branchErrors[index]?.address}
+                                                                            />
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {value === 1 && (
+                                        <>
+                                            <div className="mb-1">
+                                                <ActionButton title="Add Contact" icon={AddIcon} onClick={handleAddContact} />
+                                            </div>
+                                            <div className="row mt-2">
+                                                <div className="col-lg-12">
+                                                    <div className="table-responsive">
+                                                        <table className="table table-bordered">
+                                                            <thead>
+                                                                <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Preferred Contact</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Branch Name</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Name *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Mobile No *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Email *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Designation *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Date of Birth</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Work Anniversary</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {leadContacts.map((contact, index) => (
+                                                                    <tr key={index}>
+                                                                        <td className="border px-2 py-2 text-center">
+                                                                            <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteContact(index)} />
+                                                                        </td>
+                                                                        <td className="text-center pt-3">{index + 1}</td>
+
+                                                                        <td className="text-center">
+                                                                            <FormControlLabel
+                                                                                control={
+                                                                                    <Checkbox
+                                                                                        checked={contact.preferredContact}
+                                                                                        onChange={(e) => handleContactChange(index, 'preferredContact', e.target.checked)}
+                                                                                    />
+                                                                                }
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={contact.branchName}
+                                                                                onChange={(e) => handleContactChange(index, 'branchName', e.target.value)}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={contact.name}
+                                                                                onChange={(e) => handleContactChange(index, 'name', e.target.value)}
+                                                                                onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                                                                error={!!contactErrors[index]?.name}
+                                                                                helperText={contactErrors[index]?.name}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={contact.mobileNo}
+                                                                                onChange={(e) => handleContactChange(index, 'mobileNo', e.target.value)}
+                                                                                onBlur={(e) => validateContactField(index, 'mobileNo', e.target.value)}
+                                                                                error={!!contactErrors[index]?.mobileNo}
+                                                                                helperText={contactErrors[index]?.mobileNo}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={contact.email}
+                                                                                onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                                                                                onBlur={(e) => validateContactField(index, 'email', e.target.value)}
+                                                                                error={!!contactErrors[index]?.email}
+                                                                                helperText={contactErrors[index]?.email}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={contact.designation}
+                                                                                onChange={(e) => handleContactChange(index, 'designation', e.target.value)}
+                                                                                onBlur={(e) => validateContactField(index, 'designation', e.target.value)}
+                                                                                error={!!contactErrors[index]?.designation}
+                                                                                helperText={contactErrors[index]?.designation}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                type="date"
+                                                                                value={contact.dob || ''}
+                                                                                onChange={(e) => handleContactChange(index, 'dob', e.target.value)}
+                                                                                InputLabelProps={{ shrink: true }}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                type="date"
+                                                                                value={contact.workAnniversaryDate || ''}
+                                                                                onChange={(e) => handleContactChange(index, 'workAnniversaryDate', e.target.value)}
+                                                                                InputLabelProps={{ shrink: true }}
+                                                                            />
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </Box>
+                            </div>
+                        </>
+                    ) : (
                         <CommonListViewTable
                             data={listViewData}
                             columns={listViewColumns}
-                            blockEdit={true}
-                            toEdit={(row) => getLeadById(row.original.id)}
+                            enableEditing={true}
+                            toEdit={getLeadById}
                         />
-                    </div>
-                ) : (
-                    <div className="row">
-                        {/* Lead ID */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Lead ID"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                disabled
-                                name="docId"
-                                value={isDocIdLoading ? "Generating..." : formData.docId || ''}
-                                InputProps={{
-                                    style: { backgroundColor: '#f5f5f5' }
-                                }}
-                            />
-                        </div>
-
-                        {/* Meeting Date */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled" size="small">
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DatePicker
-                                        label="Doc Date *"
-                                        value={formData.meetingDate ? dayjs(formData.meetingDate, 'YYYY-MM-DD') : null}
-                                        onChange={(date) => handleDateChange('meetingDate', date)}
-                                        slotProps={{
-                                            textField: {
-                                                size: 'small',
-                                                error: !!fieldErrors.meetingDate,
-                                                helperText: fieldErrors.meetingDate
-                                            }
-                                        }}
-                                        format="DD-MM-YYYY"
-                                        disabled
-                                    />
-                                </LocalizationProvider>
-                            </FormControl>
-                        </div>
-
-                        {/* Source */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Source"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="clientName"
-                                value={formData.clientName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.clientName}
-                                helperText={fieldErrors.clientName}
-                            />
-                        </div>
-
-                        {/* Client Type */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.clientType}>
-                                <InputLabel id="clientType-label">Client Type *</InputLabel>
-                                <Select
-                                    labelId="clientType-label"
-                                    label="Client Type *"
-                                    value={formData.clientType}
-                                    onChange={handleInputChange}
-                                    name="clientType"
-                                >
-                                    {clientTypeOptions.map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {type}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.clientType && <FormHelperText>{fieldErrors.clientType}</FormHelperText>}
-                            </FormControl>
-                        </div>
-
-                        {/* Client Name */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Client Name *"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="clientName"
-                                value={formData.clientName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.clientName}
-                                helperText={fieldErrors.clientName}
-                            />
-                        </div>
-
-                        {/* Email */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Email"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.email}
-                                helperText={fieldErrors.email}
-                            />
-                        </div>
-
-                        {/* Contact Number */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Contact Number *"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="contactNo"
-                                value={formData.contactNo}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.contactNo}
-                                helperText={fieldErrors.contactNo}
-                                inputProps={{ maxLength: 10 }}
-                            />
-                        </div>
-                        {/* Industry */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth>
-                                <InputLabel id="industry-label">Industry</InputLabel>
-                                <Select
-                                    labelId="industry-label"
-                                    label="Industry"
-                                    value={formData.industry}
-                                    onChange={handleInputChange}
-                                    name="industry"
-                                >
-                                    {industryOptions.map((industry) => (
-                                        <MenuItem key={industry} value={industry}>
-                                            {industry}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </div>
-
-                        {/* Website */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Website"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="website"
-                                value={formData.website}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        {/* City */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="City"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="city"
-                                value={formData.city}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        {/* State */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth>
-                                <InputLabel id="state-label">State</InputLabel>
-                                <Select
-                                    labelId="state-label"
-                                    label="State"
-                                    value={formData.state}
-                                    onChange={handleInputChange}
-                                    name="state"
-                                >
-                                    {stateOptions.map((state) => (
-                                        <MenuItem key={state} value={state}>
-                                            {state}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </div>
-
-                        {/* Country */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth>
-                                <InputLabel id="country-label">Country</InputLabel>
-                                <Select
-                                    labelId="country-label"
-                                    label="Country"
-                                    value={formData.country}
-                                    onChange={handleInputChange}
-                                    name="country"
-                                >
-                                    {countryOptions.map((country) => (
-                                        <MenuItem key={country} value={country}>
-                                            {country}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </div>
-
-                        {/* Pin Code */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Pin Code"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="pinCode"
-                                value={formData.pinCode}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 6 }}
-                            />
-                        </div>
-
-
-                        {/* Customer */}
-                        <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth>
-                                <InputLabel id="source-label">Customer</InputLabel>
-                                <Select
-                                    labelId="source-label"
-                                    label="Customer"
-                                    value={formData.source}
-                                    onChange={handleInputChange}
-                                    name="source"
-                                >
-                                    {sourceOptions.map((source) => (
-                                        <MenuItem key={source} value={source}>
-                                            {source}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </div>
-
-                        {/* Address */}
-                        <div className="col-md-6 mb-3">
-                            <TextField
-                                label="Address"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        {/* Tabs for Party State and Address */}
-                        <div className="row mt-2">
-                            <Box sx={{ width: '100%' }}>
-                                <Tabs value={tabValue} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
-                                    <Tab label="Branch Details" />
-                                    <Tab label="Contact Details" />
-                                </Tabs>
-                            </Box>
-                            <Box sx={{ padding: 2 }}>
-                                {tabValue === 0 && (
-                                    <div className="row d-flex ml">
-                                        <div className="">
-                                            <ActionButton title="Add" icon={AddCircleOutlineIcon} onClick={handleAddRowPartyState} />
-                                        </div>
-                                        <div className="row mt-2">
-                                            <div className="col-lg-12">
-                                                <div className="table-responsive">
-                                                    <table className="table table-bordered">
-                                                        <thead>
-                                                            <tr style={{ backgroundColor: '#673AB7' }}>
-                                                                <th className="table-header">Action</th>
-                                                                <th className="table-header">SNo</th>
-                                                                <th className="table-header">Branch</th>
-                                                                <th className="table-header">GST No</th>
-                                                                <th className="table-header">City</th>
-                                                                <th className="table-header">State</th>
-                                                                <th className="table-header">Country</th>
-                                                                <th className="table-header">Address</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {partyStateData.map((row, index) => (
-                                                                <tr key={row.id}>
-                                                                    <td className="border px-2 py-2 text-center">
-                                                                        <ActionButton
-                                                                            title="Delete"
-                                                                            icon={DeleteOutlineIcon}
-                                                                            onClick={() => handleDeleteRow(
-                                                                                row.id,
-                                                                                partyStateData,
-                                                                                setPartyStateData,
-                                                                                partyStateDataErrors,
-                                                                                setPartyStateDataErrors
-                                                                            )}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="text-center">
-                                                                        <div className="pt-2">{index + 1}</div>
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <select
-                                                                            value={row.country}
-                                                                            style={{ width: '150px' }}
-                                                                            onChange={(e) => handleCountryChange(row, index, e)}
-                                                                            className={partyStateDataErrors[index]?.country ? 'error form-control' : 'form-control'}
-                                                                        >
-                                                                            <option value="">Select Country</option>
-                                                                            {countryList?.map((country) => (
-                                                                                <option key={country.id} value={country.countryName}>
-                                                                                    {country.countryName}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        {partyStateDataErrors[index]?.country && (
-                                                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                                                {partyStateDataErrors[index].country}
-                                                                            </div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <Autocomplete
-                                                                            options={row.stateOptions || []}
-                                                                            getOptionLabel={(option) => option.stateName || ''}
-                                                                            disableClearable
-                                                                            sx={{ width: '200px' }}
-                                                                            value={
-                                                                                row.stateOptions?.find(
-                                                                                    (option) => option.stateName === row.state
-                                                                                ) || null
-                                                                            }
-                                                                            onChange={(event, newValue) => {
-                                                                                handleStateChange(newValue, index);
-                                                                            }}
-                                                                            renderInput={(params) => (
-                                                                                <TextField
-                                                                                    {...params}
-                                                                                    placeholder="Select State"
-                                                                                    size="small"
-                                                                                    error={!!partyStateDataErrors[index]?.state}
-                                                                                    helperText={partyStateDataErrors[index]?.state}
-                                                                                />
-                                                                            )}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.stateCode}
-                                                                            style={{ width: '150px' }}
-                                                                            maxLength={3}
-                                                                            disabled
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
-                                                                                setPartyStateDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        stateCode: !value ? 'State Code is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyStateDataErrors[index]?.stateCode ? 'error form-control' : 'form-control'}
-                                                                        />
-                                                                        {partyStateDataErrors[index]?.stateCode && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateCode}</div>
-                                                                        )}
-                                                                    </td>
-
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="number"
-                                                                            value={row.stateNo}
-                                                                            style={{ width: '150px' }}
-                                                                            disabled
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateNo: value } : r)));
-                                                                                setPartyStateDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        stateNo: !value ? 'State No is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyStateDataErrors[index]?.stateNo ? 'error form-control' : 'form-control'}
-                                                                        />
-                                                                        {partyStateDataErrors[index]?.stateNo && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateNo}</div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.gstIn}
-                                                                            style={{ width: '150px' }}
-                                                                            maxLength={15}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
-                                                                                setPartyStateDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Reg No is required' : '' };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
-                                                                        />
-                                                                        {partyStateDataErrors[index]?.gstIn && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.contactPerson}
-                                                                            style={{ width: '150px' }}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyStateData((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r))
-                                                                                );
-                                                                                setPartyStateDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        contactPerson: !value ? 'Contact Person is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyStateDataErrors[index]?.contactPerson ? 'error form-control' : 'form-control'}
-                                                                        />
-                                                                        {partyStateDataErrors[index]?.contactPerson && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].contactPerson}</div>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                {tabValue === 1 && (
-                                    <div className="row d-flex ml">
-                                        <div className="">
-                                            <ActionButton title="Add" icon={AddCircleOutlineIcon} onClick={handleAddRowPartyAddress} />
-                                        </div>
-                                        <div className="row mt-2">
-                                            <div className="col-lg-12">
-                                                <div className="table-responsive">
-                                                    <table className="table table-bordered">
-                                                        <thead>
-                                                            <tr style={{ backgroundColor: '#673AB7' }}>
-                                                                <th className="table-header">Action</th>
-                                                                <th className="table-header">SNo</th>
-                                                                <th className="table-header">prefered Contact</th>
-                                                                <th className="table-header">Branch Name</th>
-                                                                <th className="table-header">Name</th>
-                                                                <th className="table-header">Mobile</th>
-                                                                <th className="table-header">Email</th>
-                                                                <th className="table-header">designation</th>
-                                                                <th className="table-header">DOB</th>
-                                                                <th className="table-header">Anniversary Date</th>
-                                                                <th className="table-header">Work Anniversary Date</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {partyAddressData.map((row, index) => (
-                                                                <tr key={row.id}>
-                                                                    <td className="border px-2 py-2 text-center">
-                                                                        <ActionButton
-                                                                            title="Delete"
-                                                                            icon={DeleteOutlineIcon}
-                                                                            onClick={() => handleDeleteRow(
-                                                                                row.id,
-                                                                                partyAddressData,
-                                                                                setPartyAddressData,
-                                                                                partyAddressDataErrors,
-                                                                                setPartyAddressDataErrors
-                                                                            )}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="text-center">
-                                                                        <div className="pt-2">{index + 1}</div>
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <select
-                                                                            value={row.country}
-                                                                            style={{ width: '150px' }}
-                                                                            onChange={(e) => handleCountryPartyAddress(row, index, e)}
-                                                                            className={partyAddressDataErrors[index]?.country ? 'error form-control' : 'form-control'}
-                                                                        >
-                                                                            <option value="">Select Country</option>
-                                                                            {countryList?.map((country) => (
-                                                                                <option key={country.id} value={country.countryName}>
-                                                                                    {country.countryName}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        {partyAddressDataErrors[index]?.country && (
-                                                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                                                {partyAddressDataErrors[index].country}
-                                                                            </div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <Autocomplete
-                                                                            options={row.stateOptions || []}
-                                                                            getOptionLabel={(option) => option.stateName || ''}
-                                                                            disableClearable
-                                                                            sx={{ width: '200px' }}
-                                                                            value={
-                                                                                row.stateOptions?.find(
-                                                                                    (option) => option.stateName === row.state
-                                                                                ) || null
-                                                                            }
-                                                                            onChange={(event, newValue) => {
-                                                                                handleStatePartyAddress(newValue, index);
-                                                                            }}
-                                                                            renderInput={(params) => (
-                                                                                <TextField
-                                                                                    {...params}
-                                                                                    placeholder="Select State"
-                                                                                    size="small"
-                                                                                    error={!!partyAddressDataErrors[index]?.state}
-                                                                                    helperText={partyAddressDataErrors[index]?.state}
-                                                                                />
-                                                                            )}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <Autocomplete
-                                                                            options={row.cityOptions || []}
-                                                                            sx={{ width: '150px' }}
-                                                                            getOptionLabel={(option) => option.cityName || ''}
-                                                                            disableClearable
-                                                                            value={
-                                                                                row.cityOptions?.find(
-                                                                                    (option) => option.cityName === row.city
-                                                                                ) || null
-                                                                            }
-                                                                            onChange={(event, newValue) => {
-                                                                                handleCityPartyAddress(newValue, index);
-                                                                            }}
-                                                                            renderInput={(params) => (
-                                                                                <TextField
-                                                                                    {...params}
-                                                                                    placeholder="Select City"
-                                                                                    size="small"
-                                                                                    error={!!partyAddressDataErrors[index]?.city}
-                                                                                    helperText={partyAddressDataErrors[index]?.city}
-                                                                                />
-                                                                            )}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.businessPlace}
-                                                                            maxLength={15}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyAddressData((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, businessPlace: value } : r))
-                                                                                );
-                                                                                setPartyAddressDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        businessPlace: !value ? 'Business Place In is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyAddressDataErrors[index]?.businessPlace ? 'error form-control' : 'form-control'}
-                                                                            style={{ width: '150px' }}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.businessPlace && (
-                                                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                                                {partyAddressDataErrors[index].businessPlace}
-                                                                            </div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.stateGstIn}
-                                                                            maxLength={15}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyAddressData((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, stateGstIn: value } : r))
-                                                                                );
-                                                                                setPartyAddressDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        stateGstIn: !value ? 'State Gst In is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyAddressDataErrors[index]?.stateGstIn ? 'error form-control' : 'form-control'}
-                                                                            style={{ width: '150px' }}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.stateGstIn && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
-                                                                        )}
-                                                                    </td>
-                                                                 
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.addressLine2}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyAddressData((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, addressLine2: value } : r))
-                                                                                );
-                                                                                setPartyAddressDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        addressLine2: !value ? 'Address Line2 is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyAddressDataErrors[index]?.addressLine2 ? 'error form-control' : 'form-control'}
-                                                                            style={{ width: '150px' }}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.addressLine2 && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].addressLine2}</div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.addressLine3}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyAddressData((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, addressLine3: value } : r))
-                                                                                );
-                                                                                setPartyAddressDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        addressLine3: !value ? 'Address Line3 is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyAddressDataErrors[index]?.addressLine3 ? 'error form-control' : 'form-control'}
-                                                                            style={{ width: '150px' }}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.addressLine3 && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].addressLine3}</div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.pincode}
-                                                                            style={{ width: '150px' }}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-
-                                                                                if (/^\d{0,6}$/.test(value)) {
-                                                                                    setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, pincode: value } : r)));
-
-                                                                                    setPartyAddressDataErrors((prev) => {
-                                                                                        const newErrors = [...prev];
-                                                                                        newErrors[index] = {
-                                                                                            ...newErrors[index],
-                                                                                            pincode: !value
-                                                                                                ? 'Pin Code is required'
-                                                                                                : value.length !== 6
-                                                                                                    ? 'Pin Code must be exactly 6 digits'
-                                                                                                    : ''
-                                                                                        };
-                                                                                        return newErrors;
-                                                                                    });
-                                                                                }
-                                                                            }}
-                                                                            maxLength="6"
-                                                                            className={partyAddressDataErrors[index]?.pincode ? 'error form-control' : 'form-control'}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.pincode && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].pincode}</div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="border px-2 py-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={row.contact}
-                                                                            onChange={(e) => {
-                                                                                const value = e.target.value;
-                                                                                setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contact: value } : r)));
-                                                                                setPartyAddressDataErrors((prev) => {
-                                                                                    const newErrors = [...prev];
-                                                                                    newErrors[index] = {
-                                                                                        ...newErrors[index],
-                                                                                        contact: !value ? 'Contact is required' : ''
-                                                                                    };
-                                                                                    return newErrors;
-                                                                                });
-                                                                            }}
-                                                                            className={partyAddressDataErrors[index]?.contact ? 'error form-control' : 'form-control'}
-                                                                            style={{ width: '150px' }}
-                                                                        />
-                                                                        {partyAddressDataErrors[index]?.contact && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].contact}</div>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </Box>
-                        </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
-            <ToastContainer />
-        </LocalizationProvider>
+        </>
     );
 };
 

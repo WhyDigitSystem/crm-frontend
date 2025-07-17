@@ -12,7 +12,7 @@ import {
     MenuItem,
     Select
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers'; // Added TimePicker
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
@@ -27,13 +27,15 @@ export const Meeting = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [editId, setEditId] = useState('');
     const [branchList, setBranchList] = useState([]);
-    const [orgId] = useState(localStorage.getItem('orgId'));
-    const [loginUserName] = useState(localStorage.getItem('userName'));
+    const orgId = localStorage.getItem('orgId');
+    const branch = localStorage.getItem('branch');
+    const branchCode = localStorage.getItem('branchCode');
+    const finYear = localStorage.getItem('finYear');
+    const loginUserName = localStorage.getItem('userName');
     const [listView, setListView] = useState(false);
     const [listViewData, setListViewData] = useState([]);
-    const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-    const [userList, setUserList] = useState([]); // For assignTo dropdown
+    const [userList, setUserList] = useState([]);
 
     // Updated form structure for meetings
     const [formData, setFormData] = useState({
@@ -43,12 +45,12 @@ export const Meeting = () => {
         contactName: '',
         mobileNo: '',
         parent: '',
-        branch: '',
-        branchCode: '',
+        branch: branch || '',
+        branchCode: branchCode || '',
         startDate: null,
-        startTime: '',
+        startTime: null, // Changed to Dayjs object
         endDate: null,
-        endTime: '',
+        endTime: null, // Changed to Dayjs object
         duration: '',
         description: '',
         status: '',
@@ -75,22 +77,12 @@ export const Meeting = () => {
     // Status options
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
 
-    // Helper function to validate time format
-    const isValidTime = (time) => {
-        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
-    };
-
     // Calculate duration between start and end times
     const calculateDuration = (startTime, endTime) => {
         if (!startTime || !endTime) return '';
-        if (!isValidTime(startTime)) return 'Invalid start time';
-        if (!isValidTime(endTime)) return 'Invalid end time';
 
-        const [startHours, startMinutes] = startTime.split(':').map(Number);
-        const [endHours, endMinutes] = endTime.split(':').map(Number);
-
-        const startTotalMinutes = startHours * 60 + startMinutes;
-        const endTotalMinutes = endHours * 60 + endMinutes;
+        const startTotalMinutes = startTime.hour() * 60 + startTime.minute();
+        const endTotalMinutes = endTime.hour() * 60 + endTime.minute();
 
         if (endTotalMinutes < startTotalMinutes) {
             return 'End time before start';
@@ -105,7 +97,6 @@ export const Meeting = () => {
 
     useEffect(() => {
         getAllBranches();
-        // getAllUsers(); 
     }, []);
 
     useEffect(() => {
@@ -130,44 +121,47 @@ export const Meeting = () => {
         }
     }, [formData.startTime, formData.endTime]);
 
+    // getAllBranches
     const getAllBranches = async () => {
         try {
             const branchData = await getAllActiveBranches(orgId);
             setBranchList(branchData);
+
+            // Set to localStorage values if available, otherwise first branch
+            let initialBranch = branch || '';
+            let initialBranchCode = branchCode || '';
+
             if (branchData.length > 0) {
-                setFormData(prev => ({
-                    ...prev,
-                    branch: branchData[0].branch,
-                    branchCode: branchData[0].branchCode
-                }));
+                // Try to find localStorage branch in list
+                const storedBranch = branchData.find(b => b.branch === branch && b.branchCode === branchCode);
+
+                if (storedBranch) {
+                    initialBranch = storedBranch.branch;
+                    initialBranchCode = storedBranch.branchCode;
+                } else {
+                    // Fallback to first branch
+                    initialBranch = branchData[0].branch;
+                    initialBranchCode = branchData[0].branchCode;
+                }
             }
+
+            setFormData(prev => ({
+                ...prev,
+                branch: initialBranch,
+                branchCode: initialBranchCode
+            }));
         } catch (error) {
             console.error('Error fetching branches:', error);
             showToast('error', 'Failed to load branches');
         }
     };
-    //     try {
-    //         // Assuming you have an API to fetch active users
-    //         const response = await apiCalls(
-    //             'get',
-    //             `/user/getAllActiveUsers?orgId=${orgId}`
-    //         );
 
-    //         if (response.status === true) {
-    //             setUserList(response.paramObjectsMap.users || []);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching users:', error);
-    //         showToast('error', 'Failed to load users');
-    //     }
-    // };
-
+    // getAllMeetings
     const getAllMeetings = async () => {
         try {
-            // Updated API endpoint for meetings
             const response = await apiCalls(
                 'get',
-                `/activities/getMeetingByOrgId?orgId=${orgId}`
+                `/activities/getMeetingByOrgId?orgId=${orgId}&branchCode=${formData.branchCode}`
             );
 
             if (response.status === true) {
@@ -181,21 +175,22 @@ export const Meeting = () => {
         }
     };
 
+    // getMeetingDocId
     const getMeetingDocId = async () => {
         if (!formData.branch || !formData.branchCode) return;
 
         setIsDocIdLoading(true);
         try {
-            // Updated API endpoint for meeting doc ID
             const response = await apiCalls(
                 'get',
                 `/activities/getMetingDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
 
-            if (response.status === true && response.paramObjectsMap.callsDocId) {
+            if (response.status === true && response.paramObjectsMap.meetingDocId) {
                 setFormData(prev => ({
                     ...prev,
-                    meetingDocId: response.paramObjectsMap.callsDocId
+                    meetingDocId: response.paramObjectsMap.meetingDocId,
+                    meetingDate: dayjs() // Set current date as meeting date
                 }));
             }
         } catch (error) {
@@ -206,6 +201,7 @@ export const Meeting = () => {
         }
     };
 
+    // getMeetingById
     const getMeetingById = async (id) => {
         try {
             const response = await apiCalls('get', `/activities/getMeetingById?id=${id}`);
@@ -221,6 +217,15 @@ export const Meeting = () => {
                 const endDate = meeting.endDate ? dayjs(meeting.endDate, 'YYYY-MM-DD') : null;
                 const followUpDate = meeting.followUpDate ? dayjs(meeting.followUpDate, 'YYYY-MM-DD') : null;
 
+                // Convert time strings to Dayjs objects
+                const startTime = meeting.startTime
+                    ? dayjs(`1970-01-01T${meeting.startTime.substring(0, 5)}`)
+                    : null;
+
+                const endTime = meeting.endTime
+                    ? dayjs(`1970-01-01T${meeting.endTime.substring(0, 5)}`)
+                    : null;
+
                 setFormData({
                     meetingDocId: meeting.docId || '',
                     meetingDate: meetingDate,
@@ -231,9 +236,9 @@ export const Meeting = () => {
                     branch: meeting.branch || '',
                     branchCode: meeting.branchCode || '',
                     startDate: startDate,
-                    startTime: meeting.startTime ? meeting.startTime.substring(0, 5) : '',
+                    startTime: startTime,
                     endDate: endDate,
-                    endTime: meeting.endTime ? meeting.endTime.substring(0, 5) : '',
+                    endTime: endTime,
                     duration: meeting.duration || '',
                     description: meeting.description || '',
                     status: meeting.status || '',
@@ -252,6 +257,7 @@ export const Meeting = () => {
         }
     };
 
+    // handleInputChange
     const handleInputChange = (e) => {
         const { name, value, checked, type } = e.target;
 
@@ -259,10 +265,6 @@ export const Meeting = () => {
         let errorMessage = '';
         if (name === 'mobileNo' && value && !/^\d{10}$/.test(value)) {
             errorMessage = 'Invalid mobile number (10 digits required)';
-        } else if (name === 'startTime' && value && !isValidTime(value)) {
-            errorMessage = 'Invalid time format (HH:mm required)';
-        } else if (name === 'endTime' && value && !isValidTime(value)) {
-            errorMessage = 'Invalid time format (HH:mm required)';
         }
 
         if (errorMessage) {
@@ -278,12 +280,24 @@ export const Meeting = () => {
         }));
     };
 
+    // handleDateChange
     const handleDateChange = (field, date) => {
-        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
-        setFormData(prev => ({ ...prev, [field]: formattedDate }));
+        setFormData(prev => ({ ...prev, [field]: date }));
     };
 
+    // handleTimeChange
+    const handleTimeChange = (field, time) => {
+        setFormData(prev => ({ ...prev, [field]: time }));
 
+        // Clear time errors when time is selected
+        if (field === 'startTime') {
+            setFieldErrors(prev => ({ ...prev, startTime: '' }));
+        } else if (field === 'endTime') {
+            setFieldErrors(prev => ({ ...prev, endTime: '' }));
+        }
+    };
+
+    // handleBranchChange
     const handleBranchChange = (e) => {
         const branchName = e.target.value;
         const selectedBranch = branchList.find(b => b.branch === branchName);
@@ -297,8 +311,26 @@ export const Meeting = () => {
         }
     };
 
+    // handleClear
     const handleClear = () => {
-        const firstBranch = branchList[0] || null;
+        // Reset to localStorage values if available, otherwise first branch
+        let initialBranch = branch || '';
+        let initialBranchCode = branchCode || '';
+
+        if (branchList.length > 0) {
+            // Try to find localStorage branch in list
+            const storedBranch = branchList.find(b => b.branch === branch && b.branchCode === branchCode);
+
+            if (storedBranch) {
+                initialBranch = storedBranch.branch;
+                initialBranchCode = storedBranch.branchCode;
+            } else {
+                // Fallback to first branch
+                initialBranch = branchList[0].branch;
+                initialBranchCode = branchList[0].branchCode;
+            }
+        }
+
         setFormData({
             meetingDocId: '',
             meetingDate: null,
@@ -306,12 +338,12 @@ export const Meeting = () => {
             contactName: '',
             mobileNo: '',
             parent: '',
-            branch: firstBranch ? firstBranch.branch : '',
-            branchCode: firstBranch ? firstBranch.branchCode : '',
+            branch: initialBranch,
+            branchCode: initialBranchCode,
             startDate: null,
-            startTime: '',
+            startTime: null,
             endDate: null,
-            endTime: '',
+            endTime: null,
             duration: '',
             description: '',
             status: '',
@@ -325,6 +357,7 @@ export const Meeting = () => {
         setFieldErrors({});
     };
 
+    // handleSave
     const handleSave = async () => {
         // Validation
         const errors = {};
@@ -338,14 +371,8 @@ export const Meeting = () => {
         if (!formData.assignTo) errors.assignTo = 'Assign To is required';
 
         // Additional time validation
-        if (formData.timeStart && !isValidTime(formData.timeStart)) {
-            errors.timeStart = 'Invalid start time format (HH:mm)';
-        }
-        if (formData.timeEnd && !isValidTime(formData.timeEnd)) {
-            errors.timeEnd = 'Invalid end time format (HH:mm)';
-        }
-        if (formData.timeStart && formData.timeEnd && formData.duration.includes('before')) {
-            errors.timeEnd = 'End time must be after start time';
+        if (formData.startTime && formData.endTime && formData.duration.includes('before')) {
+            errors.endTime = 'End time must be after start time';
         }
 
         if (Object.keys(errors).length > 0) {
@@ -356,37 +383,49 @@ export const Meeting = () => {
 
         setIsLoading(true);
 
+        // Format dates for API
+        const formatDate = (date) => date ? dayjs(date).format('YYYY-MM-DD') : null;
+        // Format times for API
+        const formatTime = (time) => time ? time.format('HH:mm') : '';
+
         // Prepare API payload
         const payload = {
-            ...formData,
-            ...(editId && { id: editId }),
+            meetingDocId: formData.meetingDocId,
+            meetingDate: formatDate(formData.meetingDate),
+            clientName: formData.clientName,
+            contactName: formData.contactName,
+            mobileNo: formData.mobileNo,
+            parent: formData.parent,
+            branch: formData.branch,
+            branchCode: formData.branchCode,
+            startDate: formatDate(formData.startDate),
+            startTime: formatTime(formData.startTime),
+            endDate: formatDate(formData.endDate),
+            endTime: formatTime(formData.endTime),
+            duration: formData.duration,
+            description: formData.description,
+            status: formData.status,
+            followUpDate: formatDate(formData.followUpDate),
+            active: formData.active,
+            venue: formData.venue,
+            address: formData.address,
+            assignTo: formData.assignTo,
+            cancelRemarks: formData.cancelRemarks,
             finYear: finYear,
             createdBy: loginUserName,
             orgId: parseInt(orgId),
             cancel: formData.status === 'Cancelled',
-
-
-            // finYear: finYear,
-            // createdBy: loginUserName,
-            // orgId: parseInt(orgId),
-            // mobile: formData.mobile ? parseInt(formData.mobile) : null,
-            // duration: formData.duration,
-            // parent: formData.Parent,
-            // follwUpDate: formData.followUpDate,
-            // cancel: formData.status === 'Cancelled',
+            ...(editId && { id: editId }),
         };
 
         try {
-            // Updated API endpoint for meetings
             const response = await apiCalls('put', '/activities/createUpdateMetting', payload);
-
 
             if (response.status === true) {
                 showToast('success', editId ? 'Meeting updated successfully' : 'Meeting created successfully');
                 handleClear();
                 getAllMeetings();
             } else {
-                // showToast('error', response.message || 'Operation failed');
                 showToast('error', response.paramObjectsMap.message || 'Operation failed');
             }
         } catch (error) {
@@ -397,6 +436,7 @@ export const Meeting = () => {
         }
     };
 
+    // handleView
     const handleView = () => {
         setListView(!listView);
     };
@@ -583,7 +623,7 @@ export const Meeting = () => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Start Date *"
-                                        value={formData.startDate ? dayjs(formData.startDate, 'YYYY-MM-DD') : null}
+                                        value={formData.startDate}
                                         onChange={(date) => handleDateChange('startDate', date)}
                                         slotProps={{
                                             textField: {
@@ -604,7 +644,7 @@ export const Meeting = () => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="End Date"
-                                        value={formData.endDate ? dayjs(formData.endDate, 'YYYY-MM-DD') : null}
+                                        value={formData.endDate}
                                         onChange={(date) => handleDateChange('endDate', date)}
                                         slotProps={{ textField: { size: 'small' } }}
                                         format="DD-MM-YYYY"
@@ -615,34 +655,46 @@ export const Meeting = () => {
 
                         {/* Start Time */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Start Time *"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="startTime"
-                                value={formData.startTime}
-                                onChange={handleInputChange}
-                                placeholder="HH:mm (e.g., 09:30)"
-                                error={!!fieldErrors.startTime}
-                                // helperText={fieldErrors.startTime || "Format: HH:mm (24-hour)"}
-                            />
+                            <FormControl fullWidth variant="filled" size="small">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <TimePicker
+                                        label="Start Time *"
+                                        value={formData.startTime}
+                                        onChange={(time) => handleTimeChange('startTime', time)}
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                error: !!fieldErrors.startTime,
+                                                helperText: fieldErrors.startTime
+                                            }
+                                        }}
+                                        format="HH:mm"
+                                        views={['hours', 'minutes']}
+                                    />
+                                </LocalizationProvider>
+                            </FormControl>
                         </div>
 
                         {/* End Time */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="End Time"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="endTime"
-                                value={formData.endTime}
-                                onChange={handleInputChange}
-                                placeholder="HH:mm (e.g., 10:45)"
-                                error={!!fieldErrors.endTime}
-                                // helperText={fieldErrors.endTime || "Format: HH:mm (24-hour)"}
-                            />
+                            <FormControl fullWidth variant="filled" size="small">
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <TimePicker
+                                        label="End Time"
+                                        value={formData.endTime}
+                                        onChange={(time) => handleTimeChange('endTime', time)}
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                error: !!fieldErrors.endTime,
+                                                helperText: fieldErrors.endTime
+                                            }
+                                        }}
+                                        format="HH:mm"
+                                        views={['hours', 'minutes']}
+                                    />
+                                </LocalizationProvider>
+                            </FormControl>
                         </div>
 
                         {/* Duration */}
@@ -658,16 +710,13 @@ export const Meeting = () => {
                                     readOnly: true,
                                     style: {
                                         fontWeight: 'bold',
-                                        color: formData.duration.includes('Invalid') ||
-                                            formData.duration.includes('before')
+                                        color: formData.duration.includes('before')
                                             ? '#d32f2f' : '#1976d2'
                                     }
                                 }}
-                                error={formData.duration.includes('Invalid') ||
-                                    formData.duration.includes('before')}
-                                // helperText={formData.duration.includes('Invalid') ||
-                                //     formData.duration.includes('before')
-                                //     ? formData.duration : "Calculated automatically"}
+                                error={formData.duration.includes('before')}
+                                helperText={formData.duration.includes('before')
+                                    ? formData.duration : "Calculated automatically"}
                             />
                         </div>
 
@@ -693,25 +742,6 @@ export const Meeting = () => {
                         </div>
 
                         {/* Assign To */}
-                        {/* <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.assignTo}>
-                                <InputLabel id="assignTo-label">Assign To *</InputLabel>
-                                <Select
-                                    labelId="assignTo-label"
-                                    label="Assign To *"
-                                    value={formData.assignTo}
-                                    onChange={handleInputChange}
-                                    name="assignTo"
-                                >
-                                    {userList.map((user) => (
-                                        <MenuItem key={user.id} value={user.userName}>
-                                            {user.userName}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.assignTo && <FormHelperText>{fieldErrors.assignTo}</FormHelperText>}
-                            </FormControl>
-                        </div> */}
                         <div className="col-md-3 mb-3">
                             <TextField
                                 label="Assign To *"
@@ -732,7 +762,7 @@ export const Meeting = () => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Follow-up Date"
-                                        value={formData.followUpDate ? dayjs(formData.followUpDate, 'YYYY-MM-DD') : null}
+                                        value={formData.followUpDate}
                                         onChange={(date) => handleDateChange('followUpDate', date)}
                                         slotProps={{ textField: { size: 'small' } }}
                                         format="DD-MM-YYYY"
@@ -742,7 +772,7 @@ export const Meeting = () => {
                         </div>
 
                         {/* Address */}
-                        <div className="col-md-6 mb-3">
+                        <div className="col-md-3 mb-3">
                             <TextField
                                 label="Address"
                                 variant="outlined"
@@ -755,14 +785,14 @@ export const Meeting = () => {
                         </div>
 
                         {/* Description */}
-                        <div className="col-md-6 mb-3">
+                        <div className="col-md-3 mb-3">
                             <TextField
                                 label="Description"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                multiline
-                                rows={3}
+                                // multiline
+                                // rows={3}
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}

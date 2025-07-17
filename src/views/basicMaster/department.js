@@ -60,22 +60,48 @@ export const Department = () => {
         }
     };
 
+    // const getDepartmentById = async (row) => {
+    //     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+    //     setEditId(row.original.id);
+    //     try {
+    //         const response = await apiCalls('get', `/commonmaster/getDepartmentById/${row.original.id}`);
+
+    //         if (response.status === true) {
+    //             setListView(false);
+    //             const particularCountry = response.paramObjectsMap.departmentVO;
+
+    //             setFormData({
+    //                 departmentCode: particularCountry.departmentCode,
+    //                 departmentName: particularCountry.departmentName,
+    //                 active: particularCountry.active === 'Active' ? true : false
+    //             });
+    //             setListView(false);
+    //         } else {
+    //             console.error('API Error');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //     }
+    // };
+
     const getDepartmentById = async (row) => {
-        console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+        console.log('THE SELECTED CURRENCY ID IS:', row.original.id);
         setEditId(row.original.id);
         try {
             const response = await apiCalls('get', `commonmaster/getDepartmentById/${row.original.id}`);
+            console.log('API Response:', response);
 
             if (response.status === true) {
-                const particularCountry = response.paramObjectsMap.Country;
-                setFormData({
-                    departmentCode: particularCountry.departmentCode,
-                    departmentName: particularCountry.departmentName,
-                    active: particularCountry.active === 'Active' ? true : false
-                });
                 setListView(false);
+                const particularCurrency = response.paramObjectsMap.departmentVO;
+
+                setFormData({
+                    departmentName: particularCurrency.departmentName,
+                    departmentCode: particularCurrency.departmentCode,
+                    active: particularCurrency.active === 'Active' ? true : false
+                });
             } else {
-                console.error('API Error');
+                console.error('API Error:', response);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -205,7 +231,7 @@ export const Department = () => {
                         <CommonListViewTable
                             data={listViewData}
                             columns={listViewColumns}
-                            blockEdit={true} // DISAPLE THE MODAL IF TRUE
+                            blockEdit={true}
                             toEdit={getDepartmentById}
                         />
                     </div>

@@ -33,7 +33,7 @@ export const Product = () => {
   const branch = localStorage.getItem('branch') || '';
   const branchCode = localStorage.getItem('branchCode') || '';
   const [formData, setFormData] = useState({
-    docId: '',
+    productCode: '',
     productName: '',
     type: '',
     brand: '',
@@ -125,7 +125,7 @@ export const Product = () => {
         const data = res.paramObjectsMap.productVO;
         setFormData({
           brand: data.brand,
-          docId: data.docId,
+          productCode: data.productCode,
           productName: data.productName,
           subCategory: data.subCategory,
           category: data.category,
@@ -145,7 +145,7 @@ export const Product = () => {
     const errors = {};
     if (!formData.brand) errors.brand = 'Brand is required';
     if (!formData.productName) errors.productName = 'Product Name is required';
-    if (!formData.docId) errors.docId = 'Product Code is required';
+    if (!formData.productCode) errors.productCode = 'Product Code is required';
     if (!formData.category) errors.category = 'Category is required';
     if (!formData.unit) errors.unit = 'Unit is required';
     if (!formData.subCategory) errors.subCategory = 'Sub Category is required';
@@ -159,7 +159,7 @@ export const Product = () => {
         category: formData.category,
         createdBy: loginUserName,
         description: formData.description,
-        docId: formData.docId,
+        productCode: formData.productCode,
         orgId: orgId,
         productName: formData.productName,
         subCategory: formData.subCategory,
@@ -202,7 +202,7 @@ export const Product = () => {
     setFormData({
       brand: '',
       productName: '',
-      docId: '',
+      productCode: '',
       subCategory: '',
       category: '',
       unit: '',
@@ -218,7 +218,7 @@ export const Product = () => {
   const handleView = () => setListView(!listView);
 
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Product Code', size: 140 },
+    { accessorKey: 'productCode', header: 'Product Code', size: 140 },
     { accessorKey: 'productName', header: 'Product', size: 140 },
     { accessorKey: 'brand', header: 'Brand', size: 140 },
     { accessorKey: 'category', header: 'Category', size: 140 },
@@ -249,7 +249,7 @@ export const Product = () => {
           <div className="row">
 
             {/* Product Code */}
-            <div className="col-md-3 mb-3">
+            {/* <div className="col-md-3 mb-3">
               <TextField
                 label="Product Code"
                 variant="outlined"
@@ -259,8 +259,21 @@ export const Product = () => {
                 value={formData.docId}
                 onChange={handleInputChange}
                 error={!!fieldErrors.docId}
-                // helperText={fieldErrors.docId || "Auto-generated code"}
                 disabled
+              />
+            </div> */}
+
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Product Code"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="productCode"
+                value={formData.productCode}
+                onChange={handleInputChange}
+                error={!!fieldErrors.productCode}
+                helperText={fieldErrors.productCode}
               />
             </div>
 

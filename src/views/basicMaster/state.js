@@ -68,7 +68,7 @@ export const State = () => {
     } catch (err) {
       console.log('error', err);
     }
-  };
+  }; 
 
   const getStateById = async (row) => {
     setEditId(row.original.id);
