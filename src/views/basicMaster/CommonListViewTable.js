@@ -2,6 +2,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { Box, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import dayjs from 'dayjs';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
@@ -40,6 +41,15 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
   }, []);
 
   const customColumns = columns.map((column) => {
+    if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
+      return {
+        ...column,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? dayjs(value).format('DD-MM-YYYY') : '-';
+        }
+      };
+    }
     if (column.accessorKey === 'active') {
       console.log('the columns are:', column);
 

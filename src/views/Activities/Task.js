@@ -1,7 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import FormControl from '@mui/material/FormControl';
+// import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -9,8 +9,10 @@ import TextField from '@mui/material/TextField';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import Box from '@mui/material/Box';
-import { FormHelperText, Button, Checkbox, FormControlLabel } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
@@ -25,39 +27,45 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 const Task = () => {
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
+  const [branch] = useState(localStorage.getItem('branch'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear] = useState(localStorage.getItem('finYear'));
   const [isLoading, setIsLoading] = useState(false);
   const [branchList, setBranchList] = useState([]);
   const [editId, setEditId] = useState('');
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-  const [finYear] = useState(new Date().getFullYear().toString());
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
-
+  const [open, setOpen] = useState(false);
   // Form state
   const [formData, setFormData] = useState({
     taskId: '',
-    taskDate: null,
-    taskName: '',
-    taskType: 'General',
+    taskDate: dayjs(),
     clientName: '',
+    branch: branch,
     customerName: '',
-    branch: '',
-    branchCode: '',
-    priority: 'Medium',
-    startDate: null,
-    startTime: '',
-    endDate: null,
-    endTime: '',
+    taskName: '',
+    taskType: '',
     duration: '',
     status: 'Pending',
-    assignedTo: '',
+    startDate: dayjs(),
+    endDate: dayjs(),
+    priority: 'Medium',
+    startTime: '',
+    endTime: '',
     description: '',
+    assignedTo: '',
+    assignedName: '',
+    finYear: finYear,
+    orgId: orgId,
+    branch: branch,
+    branchCode: branchCode,
+    createdBy: loginUserName,
     active: true
   });
 
   // Validation errors
   const [fieldErrors, setFieldErrors] = useState({
-    taskDate: '',
     taskName: '',
     branch: '',
     startDate: '',
@@ -69,7 +77,7 @@ const Task = () => {
   // Column definitions for list view
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Task ID', size: 120 },
-    { accessorKey: 'taskDate', header: 'Task Date', size: 120 },
+    { accessorKey: 'docDate', header: 'Task Date', size: 120 },
     { accessorKey: 'taskName', header: 'Task Name', size: 180 },
     { accessorKey: 'taskType', header: 'Type', size: 100 },
     { accessorKey: 'priority', header: 'Priority', size: 100 },
@@ -103,13 +111,13 @@ const Task = () => {
     try {
       const branchData = await getAllActiveBranches(orgId);
       setBranchList(branchData);
-      if (branchData.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          branch: branchData[0].branch,
-          branchCode: branchData[0].branchCode
-        }));
-      }
+      // if (branchData.length > 0) {
+      //   setFormData(prev => ({
+      //     ...prev,
+      //     branch: branchData[0].branch,
+      //     branchCode: branchData[0].branchCode
+      //   }));
+      // }
     } catch (error) {
       console.error('Error fetching branches:', error);
       showToast('error', 'Failed to load branches');
@@ -123,7 +131,7 @@ const Task = () => {
       );
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.taskVO);
+        setListViewData(response.paramObjectsMap.taskVO.reverse());
       } else {
         showToast('error', response.message || 'Failed to fetch tasks');
       }
@@ -135,7 +143,6 @@ const Task = () => {
 
   const getTaskDocId = async () => {
     if (!formData.branch || !formData.branchCode) return;
-
     setIsDocIdLoading(true);
     try {
       const response = await apiCalls(
@@ -166,30 +173,26 @@ const Task = () => {
         const task = response.paramObjectsMap.taskVO;
         setEditId(id);
         setListView(false);
-
-
         // Handle date formatting correctly
         const formatDate = (dateString) => {
           if (!dateString) return null;
           // Ensure date is in YYYY-MM-DD format
           return dayjs(dateString).format('YYYY-MM-DD');
         };
-
+        setImg(response.paramObjectsMap.taskVO.attachments);
         setFormData({
           taskId: task.docId || '',
-          // taskDate: formatDate(task.docDate),
-          // taskDate: task.docDate || null,
           taskDate: task.docDate ? dayjs(task.docDate).format('YYYY-MM-DD') : null,
           taskName: task.taskName || '',
-          taskType: task.taskType || 'General',
+          taskType: task.taskType || '',
           clientName: task.clientName || '',
           customerName: task.customerName || '',
           branch: task.branch || '',
           branchCode: task.branchCode || '',
-          priority: task.priority || 'Medium',
-          startDate: formatDate(task.startDate),
+          priority: task.priority || '',
+          startDate: task.startDate ? dayjs(task.startDate).format('YYYY-MM-DD') : null,
           startTime: task.startTime ? task.startTime.slice(0, 5) : '', // Ensure HH:mm format
-          endDate: formatDate(task.endDate),
+          endDate: task.endDate ? dayjs(task.endDate).format('YYYY-MM-DD') : null,
           endTime: task.endTime ? task.endTime.slice(0, 5) : '', // Ensure HH:mm format
           duration: task.duration || '',
           status: task.status || 'Pending',
@@ -277,20 +280,20 @@ const Task = () => {
   };
 
   const handleClear = () => {
-    const firstBranch = branchList[0] || null;
+    // const firstBranch = branchList[0] || null;
     setFormData({
       taskId: '',
-      taskDate: null,
+      taskDate: dayjs(),
       taskName: '',
       taskType: 'General',
       clientName: '',
       customerName: '',
-      branch: firstBranch ? firstBranch.branch : '',
-      branchCode: firstBranch ? firstBranch.branchCode : '',
+      branch: branch,
+      branchCode: branchCode,
       priority: 'Medium',
-      startDate: null,
+      startDate: dayjs(),
       startTime: '',
-      endDate: null,
+      endDate: dayjs(),
       endTime: '',
       duration: '',
       status: 'Pending',
@@ -300,12 +303,13 @@ const Task = () => {
     });
     setEditId('');
     setFieldErrors({});
+    getTaskDocId();
+    setImg(null);
   };
 
   const handleSave = async () => {
     // Validation
     const errors = {};
-    // if (!formData.taskDate) errors.taskDate = 'Task Date is required';
     if (!formData.taskName) errors.taskName = 'Task name is required';
     if (!formData.branch) errors.branch = 'Branch is required';
     if (!formData.startDate) errors.startDate = 'Start date is required';
@@ -333,25 +337,55 @@ const Task = () => {
     setIsLoading(true);
 
     // Prepare API payload
+    // const payload = {
+    //   ...formData,
+    //   ...(editId && { id: editId }),
+    //   finYear: finYear,
+    //   createdBy: loginUserName,
+    //   orgId: parseInt(orgId),
+    //   docId: formData.taskId,
+    //   docDate: formData.taskDate,
+    //   duration: formData.duration,
+    //   active: formData.active
+    // };
     const payload = {
-      ...formData,
       ...(editId && { id: editId }),
-      finYear: finYear,
       createdBy: loginUserName,
-      orgId: parseInt(orgId),
-      docId: formData.taskId,
-      docDate: formData.taskDate,
-      duration: formData.duration,
-      active: formData.active === true || formData.active === 'true'
+      finYear: finYear,
+      orgId: orgId,
+      branch: branch,
+      branchCode: branchCode,
+      active: formData.active === 'Active' ? true : false,
+      assignedName: formData.assignedName,
+      assignedTo: formData.assignedTo,
+      clientName: formData.clientName,
+      customerName: formData.customerName,
+      description: formData.description,
+      endDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null,
+      endTime: formData.endTime,
+      priority: formData.priority,
+      startDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
+      startTime: formData.startTime,
+      status: formData.status,
+      taskName: formData.taskName,
+      taskType: formData.taskType,
     };
-
     try {
       const response = await apiCalls('put', '/activities/createUpdateTask', payload);
 
       if (response.status === true) {
-        showToast('success', editId ? 'Task updated successfully' : 'Task created successfully');
+        showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
+        const generatedId = response.paramObjectsMap.taskVO.id;
+        if (generatedId && typeof supportingImg === 'object') {
+          console.log('Generated ID:', generatedId);
+          console.log('Uploaded Item', supportingImg);
+          handleFileUpload(generatedId);
+        } else {
+          console.log('handle Img Upload failed');
+        }
         handleClear();
         getAllTasks();
+        getTaskDocId();
       } else {
         showToast('error', response.paramObjectsMap?.message || 'Operation failed');
       }
@@ -366,7 +400,54 @@ const Task = () => {
   const handleView = () => {
     setListView(!listView);
   };
+  const [supportingImg, setImg] = useState(null);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleImgChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+      setImg(file);
+    } else {
+      showToast('error', 'Please upload a valid image (PNG or JPEG).');
+    }
+  };
+  const handleFileUpload = async (generatedId) => {
+    if (!generatedId) {
+      console.warn('Generated ID is missing');
+      showToast('error', 'Generated ID is required');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', supportingImg);
+    try {
+      const response = await apiCalls(
+        'post',
+        `/activities/uploadAttachmentsTaskInBloob?id=${generatedId}`,
+        formData,
+        {},
+        { 'Content-Type': 'multipart/form-data' }
+      );
+      console.log('Img Upload Response:', response);
 
+      if (response.status === true) {
+        showToast('success', response.message || 'Image Uploaded successfully!');
+      } else {
+        console.warn('Img upload failed:', response);
+        showToast('error', 'Img upload failed');
+      }
+    } catch (error) {
+      console.error('Img Upload Error:', error);
+      showToast('error', 'Failed to upload Img');
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (supportingImg && typeof supportingImg === 'object') {
+        URL.revokeObjectURL(supportingImg);
+      }
+    };
+  }, [supportingImg]);
+  const handleRemoveImg = () => setImg(null);
   // Task type options
   const taskTypeOptions = ['General', 'Meeting', 'Call', 'Email', 'Other'];
 
@@ -381,7 +462,7 @@ const Task = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
@@ -395,9 +476,7 @@ const Task = () => {
               columns={listViewColumns}
               enableEditing={true}
               blockEdit={true}
-              // toEdit={()=>getTaskById(id)}
-               toEdit={(row) => getTaskById(row.original.id)}
-              
+              toEdit={(row) => getTaskById(row.original.id)}
             />
           </div>
         ) : (
@@ -687,9 +766,76 @@ const Task = () => {
                   onChange={handleInputChange}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    multiline
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  >
+                    {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : '') : 'Upload Img'}
 
+                    <input type="file" hidden accept="image/png, image/jpeg" onChange={handleImgChange} />
+                  </Button>
+
+                  {supportingImg && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                  <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                      Attachment
+                    </Typography>
+                    {supportingImg ? (
+                      <Box>
+                        <Avatar
+                          src={typeof supportingImg === 'object' ? URL.createObjectURL(supportingImg) : `data:image/jpeg;base64,${supportingImg}`}
+                          alt="Attachment"
+                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                        />
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleRemoveImg}
+                          >
+                            Delete
+                          </IconButton>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                          <Typography variant="caption">Upload Img</Typography>
+                        </Avatar>
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
               {/* Active */}
-              <div className="col-md-3 mb-3 d-flex align-items-center">
+              <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -699,7 +845,7 @@ const Task = () => {
                     />
                   }
                   label="Active"
-                  style={{ marginTop: '16px' }}
+                  // style={{ marginTop: '16px' }}
                 />
               </div>
             </div>
