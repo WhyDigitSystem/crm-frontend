@@ -4,10 +4,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField, Box, Tab, Tabs, FormControlLabel, Checkbox, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import IconButton from '@mui/material/IconButton';
+import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
@@ -19,12 +21,15 @@ const Lead = () => {
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
     const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
     const [createdBy] = useState(localStorage.getItem('userName'));
+    const [branch] = useState(localStorage.getItem('branch'));
+    const [branchCode] = useState(localStorage.getItem('branchcode'));
+    const [finYear] = useState(localStorage.getItem('finYear'));
     const [value, setValue] = useState(0);
     const [editId, setEditId] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [listView, setListView] = useState(false);
     const [docId, setDocId] = useState('');
-    const [branchCode] = useState(localStorage.getItem('branchCode') || '');
+    const [open, setOpen] = useState(false);
     const [clientTypes] = useState(['Corporate', 'Individual', 'Government', 'Non-Profit']);
     const [sources] = useState(['Website', 'Referral', 'Social Media', 'Advertisement', 'Other']);
     const [industries] = useState(['IT', 'Finance', 'Healthcare', 'Education', 'Manufacturing', 'Retail']);
@@ -43,8 +48,11 @@ const Lead = () => {
         pinCode: '',
         website: '',
         customer: '',
-        cancelRemarks: '',
-        finYear: '2025',
+        finYear: finYear,
+        orgId: orgId,
+        branch: branch,
+        branchCode: branchCode,
+        createdBy: createdBy,
     });
 
     const [fieldErrors, setFieldErrors] = useState({
@@ -388,6 +396,14 @@ const Lead = () => {
             const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
             if (response.status) {
                 showToast('success', editId ? 'Lead updated successfully' : 'Lead created successfully');
+                const generatedId = response.paramObjectsMap.leadVO.id;
+                if (generatedId && typeof companyLogo === 'object') {
+                    console.log('Generated ID:', generatedId);
+                    console.log('Uploaded Item', companyLogo);
+                    handleFileUpload(generatedId);
+                } else {
+                    console.log('handle Img Upload failed');
+                }
                 handleClear();
                 getAllLeads();
             } else {
@@ -402,6 +418,7 @@ const Lead = () => {
     };
 
     const handleClear = () => {
+        setCompanyLogo(null);
         setFormData({
             address: '',
             branch: '',
@@ -581,7 +598,54 @@ const Lead = () => {
 
     const handleView = () => setListView(!listView);
     const handleTabChange = (_, newValue) => setValue(newValue);
+    const [companyLogo, setCompanyLogo] = useState(null);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+            setCompanyLogo(file);
+        } else {
+            showToast('error', 'Please upload a valid image (PNG or JPEG).');
+        }
+    };
+    const handleFileUpload = async (generatedId) => {
+        if (!generatedId) {
+            console.warn('Generated ID is missing');
+            showToast('error', 'Generated ID is required');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', companyLogo);
+        try {
+            const response = await apiCalls(
+                'post',
+                `/transaction/uploadLeadCompanyLogoInBloob?id=${generatedId}`,
+                formData,
+                {},
+                { 'Content-Type': 'multipart/form-data' }
+            );
+            console.log('Logo Upload Response:', response);
 
+            if (response.status === true) {
+                showToast('success', response.message || 'Image Uploaded successfully!');
+            } else {
+                console.warn('Logo upload failed:', response);
+                showToast('error', 'Logo upload failed');
+            }
+        } catch (error) {
+            console.error('Logo Upload Error:', error);
+            showToast('error', 'Failed to upload Logo');
+        }
+    };
+    useEffect(() => {
+        return () => {
+            if (companyLogo && typeof companyLogo === 'object') {
+                URL.revokeObjectURL(companyLogo);
+            }
+        };
+    }, [companyLogo]);
+    const handleRemoveLogo = () => setCompanyLogo(null);
     return (
         <>
             <div>
@@ -807,6 +871,74 @@ const Lead = () => {
                                         value={formData.address}
                                         onChange={handleInputChange}
                                     />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        <Button
+                                            variant="outlined"
+                                            component="label"
+                                            multiline
+                                            startIcon={<CloudUploadIcon />}
+                                            sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                                        >
+                                            {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Company Logo'}
+
+                                            <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                                        </Button>
+
+                                        {companyLogo && (
+                                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                                                <ControlCameraIcon />
+                                            </IconButton>
+                                        )}
+                                    </Box>
+                                    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                                        <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                                            <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                                                Company Logo
+                                            </Typography>
+                                            {companyLogo ? (
+                                                <Box>
+                                                    <Avatar
+                                                        src={typeof companyLogo === 'object' ? URL.createObjectURL(companyLogo) : `data:image/jpeg;base64,${companyLogo}`}
+                                                        alt="Company Logo"
+                                                        sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                                                    />
+                                                    <Box display="flex" gap={2} mt={2}>
+                                                        <IconButton
+                                                            variant="contained"
+                                                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                                            onClick={handleRemoveLogo}
+                                                        >
+                                                            Delete
+                                                        </IconButton>
+                                                        <IconButton
+                                                            variant="contained"
+                                                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                                            onClick={handleClose}
+                                                        >
+                                                            Close
+                                                        </IconButton>
+                                                    </Box>
+                                                </Box>
+                                            ) : (
+                                                <Box>
+                                                    <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                                                        <Typography variant="caption">Company Logo</Typography>
+                                                    </Avatar>
+                                                    <Box display="flex" gap={2} mt={2}>
+                                                        <IconButton
+                                                            variant="contained"
+                                                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                                                            onClick={handleClose}
+                                                        >
+                                                            Close
+                                                        </IconButton>
+                                                    </Box>
+                                                </Box>
+                                            )}
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
                             </div>
 
