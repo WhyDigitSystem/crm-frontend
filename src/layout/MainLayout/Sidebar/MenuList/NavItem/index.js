@@ -70,10 +70,10 @@ const NavItem = ({ item, level }) => {
       disabled={item.disabled}
       sx={{
         borderRadius: `${customization.borderRadius}px`,
-        // mb: 0.25,
+        mb: 0.2,
         alignItems: 'flex-start',
         backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-        py: level > 1 ? 0.25 : 0.5,
+        py: level > 1 ? 0.30 : 0.30,
         pl: `${level * 20}px`
       }}
       selected={customization.isOpen.findIndex((id) => id === item.id) > -1}

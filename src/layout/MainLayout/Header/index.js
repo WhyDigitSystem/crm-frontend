@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // material-ui
-import { Avatar, Box, ButtonBase, Chip } from '@mui/material';
+import { Avatar, Box, ButtonBase,Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -9,7 +9,7 @@ import LogoSection from '../LogoSection';
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import SearchSection from './SearchSection';
-import LightDarkMode from './LightDarkMode/index'
+// import HAISection from './HAISection/haisection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -97,6 +97,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       {/* header search */}
       <SearchSection />
+      {/* <HAISection/> */}
       <Box sx={{ flexGrow: 1 }} />
       {/* Remove or adjust this Box component to reduce space */}
       {/* <Box sx={{ flexGrow: 1 }} /> */}
@@ -131,7 +132,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             <img
               src={`data:image/png;base64,${logo[0].companyLogo}`}
               alt="Company Logo"
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }}
             />
           ) : (
             "Upload Logo"
@@ -140,21 +141,20 @@ const Header = ({ handleLeftDrawerToggle }) => {
         </Avatar>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h6 style={{ marginTop: '-12px', marginBottom: 1 }}>
-            {localStorage.getItem('companyName')}
-          </h6>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <Chip
-              label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`}
-              size="small"
-              color="primary"
-              sx={{ fontSize: '11px', height: '20px' }}
-            />
-          </div>
+  <h6 style={{ marginTop: '-12px', marginBottom: 1 }}>
+    {localStorage.getItem('companyName')}
+  </h6>
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+  <Chip 
+    label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`} 
+    size="small" 
+    color="primary" 
+    sx={{ fontSize: '11px', height: '20px' }} 
+  />
+</div>
 
-        </div>
+</div>
       </div>
-      {/* <LightDarkMode /> */}
       <NotificationSection />
       <GlobalSection />
       {/* <SiteMapSection /> */}

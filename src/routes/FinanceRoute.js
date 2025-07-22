@@ -95,28 +95,8 @@ const FinanceRoute = {
       element: <City />
     },
     {
-      path: '/basicMaster/currency',
-      element: <Currency />
-    },
-    {
       path: '/basicMaster/RegionMaster',
       element: <Region />
-    },
-    {
-      path: '/basicMaster/finYear',
-      element: <FinYear />
-    },
-    {
-      path: '/basicMaster/roles',
-      element: <Roles />
-    },
-    {
-      path: '/basicMaster/ScreenNames',
-      element: <ScreenNames />
-    },
-    {
-      path: '/basicMaster/employee',
-      element: <Employee />
     },
     {
       path: '/basicMaster/department',
@@ -125,6 +105,10 @@ const FinanceRoute = {
     {
       path: '/basicMaster/designation',
       element: <Designation />
+    },
+    {
+      path: '/basicMaster/employee',
+      element: <Employee />
     },
     {
       path: '/basicMaster/Product',
@@ -145,6 +129,23 @@ const FinanceRoute = {
     {
       path: '/basicMaster/SubCategory',
       element: <SubCategory />
+    },
+    {
+      path: '/basicMaster/currency',
+      element: <Currency />
+    },
+
+    {
+      path: '/basicMaster/finYear',
+      element: <FinYear />
+    },
+    {
+      path: '/basicMaster/roles',
+      element: <Roles />
+    },
+    {
+      path: '/basicMaster/ScreenNames',
+      element: <ScreenNames />
     },
 
     // Activities

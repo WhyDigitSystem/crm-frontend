@@ -354,12 +354,18 @@ const SalesOrder = () => {
                     return;
                 }
 
+                // Find the branch details from branchList
+                const selectedBranch = branchList.find(b =>
+                    b.branchCode === salesOrder.branchCode ||
+                    b.branch === salesOrder.branch
+                );
+
                 // Set form data
                 setFormData({
                     address: salesOrder.address || '',
                     branch: salesOrder.branch || branch,
                     branchCode: salesOrder.branchCode || branchCode,
-                    branchName: salesOrder.branchName || '',
+                    branchName: selectedBranch?.branchName || salesOrder.branchName || '',
                     clientName: salesOrder.clientName || '',
                     contactName: salesOrder.contactName || '',
                     email: salesOrder.email || '',
@@ -374,17 +380,17 @@ const SalesOrder = () => {
 
                 setDocId(salesOrder.docId || '');
 
-                // Set sales order details
+                // Set sales order details - properly handle product name
                 const details = salesOrder.salesOrderDetailsVO?.map(detail => ({
                     id: detail.id,
                     category: detail.category || '',
-                    discount: detail.discount || '',
-                    produtName: detail.produtName || '',
-                    qty: detail.qty || '',
-                    sellingPrice: detail.sellingPrice || '',
+                    discount: detail.discount || 0,
+                    produtName: detail.produtName || detail.productName || '', // Handle both spellings
+                    qty: detail.qty || 1,
+                    sellingPrice: detail.sellingPrice || 0,
                     subCategory: detail.subCategory || '',
                 })) || [{
-                    category: '', discount: '', produtName: '', qty: '', sellingPrice: '', subCategory: ''
+                    category: '', discount: 0, produtName: '', qty: 1, sellingPrice: 0, subCategory: ''
                 }];
 
                 setSalesOrderDetails(details);
@@ -432,6 +438,20 @@ const SalesOrder = () => {
             }));
             getQuotationDetails(value);
         }
+
+        // Handle branch selection separately to update branchName
+        if (name === 'branch') {
+            const selectedBranch = branchList.find(b => b.branch === value);
+            setFormData(prev => ({
+                ...prev,
+                branch: value,
+                branchCode: selectedBranch?.branchCode || '',
+                branchName: selectedBranch?.branchName || ''
+            }));
+            return;
+        }
+
+        setFormData(prev => ({ ...prev, [name]: value }));
 
         // If quotation is selected, update the quotation details
         if (name === 'quotationId') {
@@ -619,7 +639,7 @@ const SalesOrder = () => {
             docId: docId,
             address: formData.address,
             branch: formData.branch,
-            branchName: selectedBranch?.branchName || '',
+            branchName: formData.branchName || selectedBranch?.branchName || '',
             branchCode: formData.branchCode,
             clientName: formData.clientName,
             contactName: formData.contactName,
@@ -636,7 +656,7 @@ const SalesOrder = () => {
             active: true,
             salesOrderDetailsDTO: salesOrderDetails.map(detail => ({
                 ...(detail.id && { id: detail.id }),
-                productName: detail.produtName,
+                productName: detail.produtName, 
                 category: detail.category,
                 subCategory: detail.subCategory,
                 sellingPrice: parseFloat(detail.sellingPrice) || 0,
@@ -991,8 +1011,8 @@ const SalesOrder = () => {
                                         name="address"
                                         value={formData.address}
                                         onChange={handleInputChange}
-                                        // multiline
-                                        // rows={2}
+                                    // multiline
+                                    // rows={2}
                                     />
                                 </div>
                             </div>

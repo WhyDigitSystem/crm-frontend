@@ -53,13 +53,6 @@ const basicMaster = {
       icon: icons.IconKey,
       children: [
         {
-          id: 'employee',
-          title: 'Employee',
-          type: 'item',
-          url: '/basicMaster/employee',
-          icon: icons.IconUser
-        },
-        {
           id: 'country',
           title: 'Country',
           type: 'item',
@@ -81,25 +74,11 @@ const basicMaster = {
           icon: icons.IconHome
         },
         {
-          id: 'currency',
-          title: 'Currency',
-          type: 'item',
-          url: '/basicMaster/currency',
-          icon: icons.IconCurrencyDollar
-        },
-        {
           id: 'region',
           title: 'Region',
           type: 'item',
           url: '/basicMaster/RegionMaster',
           icon: icons.IconMap
-        },
-        {
-          id: 'finYear',
-          title: 'FinYear',
-          type: 'item',
-          url: '/basicMaster/finYear',
-          icon: icons.IconCalendarStats
         },
         {
           id: 'department',
@@ -116,18 +95,25 @@ const basicMaster = {
           icon: icons.IconIdBadge
         },
         {
-          id: 'roles',
-          title: 'Roles',
+          id: 'employee',
+          title: 'Employee',
           type: 'item',
-          url: '/basicMaster/roles',
-          icon: icons.IconShieldLock
+          url: '/basicMaster/employee',
+          icon: icons.IconUser
         },
         {
-          id: 'screenNames',
-          title: 'Screen Names',
+          id: 'Product',
+          title: 'Product',
           type: 'item',
-          url: '/basicMaster/ScreenNames',
-          icon: icons.IconLayoutDashboard
+          url: '/basicMaster/Product',
+          icon: icons.IconBox
+        },
+        {
+          id: 'PriceMaster',
+          title: 'Price Master',
+          type: 'item',
+          url: '/basicMaster/PriceMaster',
+          icon: icons.IconCurrencyRupee
         },
         {
           id: 'UnitMaster',
@@ -151,18 +137,32 @@ const basicMaster = {
           icon: icons.IconTag
         },
         {
-          id: 'Product',
-          title: 'Product',
+          id: 'currency',
+          title: 'Currency',
           type: 'item',
-          url: '/basicMaster/Product',
-          icon: icons.IconBox
+          url: '/basicMaster/currency',
+          icon: icons.IconCurrencyDollar
         },
         {
-          id: 'PriceMaster',
-          title: 'Price Master',
+          id: 'finYear',
+          title: 'FinYear',
           type: 'item',
-          url: '/basicMaster/PriceMaster',
-          icon: icons.IconCurrencyRupee
+          url: '/basicMaster/finYear',
+          icon: icons.IconCalendarStats
+        },
+        {
+          id: 'roles',
+          title: 'Roles',
+          type: 'item',
+          url: '/basicMaster/roles',
+          icon: icons.IconShieldLock
+        },
+        {
+          id: 'screenNames',
+          title: 'Screen Names',
+          type: 'item',
+          url: '/basicMaster/ScreenNames',
+          icon: icons.IconLayoutDashboard
         }
       ]
     }

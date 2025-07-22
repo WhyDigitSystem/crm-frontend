@@ -33,8 +33,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           style={{
             height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
             paddingLeft: '16px',
-            paddingRight: '16px',
-            marginTop: '-10px',
+            paddingRight: '16px'
           }}
         >
           <MenuList />
@@ -45,7 +44,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
         </PerfectScrollbar>
       </BrowserView>
       <MobileView>
-        <Box sx={{ px: 2 }}>
+        <Box sx={{ px: 1 }}>
           <MenuList />
           <MenuCard />
           {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
@@ -73,7 +72,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
             color: theme.palette.text.primary,
             borderRight: 'none',
             [theme.breakpoints.up('md')]: {
-              top: '88px'
+              top: '70px'
             }
           }
         }}

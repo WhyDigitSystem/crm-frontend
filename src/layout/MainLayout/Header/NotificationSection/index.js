@@ -1,195 +1,229 @@
+import { useEffect, useRef, useState } from 'react';
+
+// material-ui
 import {
   Avatar,
-  Badge,
   Box,
   Button,
+  ButtonBase,
+  CardActions,
   Chip,
-  CircularProgress,
   ClickAwayListener,
   Divider,
-  IconButton,
+  Grid,
   Paper,
   Popper,
   Stack,
-  Tooltip,
   Typography,
   useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { IconBell, IconX } from '@tabler/icons-react';
-import apiCalls from 'apicall';
-import { useEffect, useRef, useState } from 'react';
+
+// third-party
+import PerfectScrollbar from 'react-perfect-scrollbar';
+
+// project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
+import NotificationList from './NotificationList';
+
+// assets
+import { IconBell } from '@tabler/icons-react';
+
+// notification status options
+const notifications = [
+  {
+    name: 'John Doe',
+    expenceId: 'EXP123',
+    docDate: '2024-11-12',
+    amount: 2500.5,
+    currency: 'USD',
+    heading: 'TAX INVOICE'
+  },
+  {
+    name: 'Jane Smith',
+    expenceId: 'EXP124',
+    docDate: '2024-11-13',
+    amount: 1750.75,
+    currency: 'EUR',
+    heading: 'IRN CREDIT NOTE'
+  }
+];
+// ==============================|| NOTIFICATION ||============================== //
 
 const NotificationSection = () => {
   const theme = useTheme();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
 
   const [open, setOpen] = useState(false);
-  const [notificationList, setNotificationList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [value, setValue] = useState('');
+  /**
+   * anchorRef is used on different componets and specifying one type leads to other components throwing an error
+   * */
   const anchorRef = useRef(null);
 
-  const orgId = localStorage.getItem('orgId');
-  const loginUserName = localStorage.getItem('userName');
-
-  useEffect(() => {
-    getAllNotifications();
-  }, []);
-
-  const getAllNotifications = async () => {
-    try {
-      setIsLoading(true);
-      const response = await apiCalls('get', `ticketcontroller/getTicketNotification?orgId=${orgId}&userName=${loginUserName}`);
-      if (response.status === true) {
-        setNotificationList(response.paramObjectsMap.ticketVOs || []);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
   };
 
-  const handleToggle = () => setOpen((prev) => !prev);
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
     setOpen(false);
   };
 
-  const handleClear = async (ticketId, clear) => {
-    try {
-      setIsLoading(true);
-      const response = await apiCalls(
-        'put',
-        `ticketcontroller/updateNotification?orgId=${orgId}&userName=${loginUserName}&status=${clear === 'clear' ? 'clear' : 'clearAll'}&ticketId=${ticketId ? ticketId : 0}`
-      );
-      if (response.status === true) {
-        getAllNotifications();
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClearAll = () => handleClear();
-
   const prevOpen = useRef(open);
   useEffect(() => {
-    if (prevOpen.current && !open) {
-      anchorRef.current?.focus();
+    if (prevOpen.current === true && open === false) {
+      anchorRef.current.focus();
     }
     prevOpen.current = open;
   }, [open]);
 
+  const handleChange = (event) => {
+    if (event?.target.value) setValue(event?.target.value);
+  };
+
+  const handleApprove = (item) => {
+    console.log('Approved:', item);
+  };
+
+  const handleReject = (item) => {
+    console.log('Rejected:', item);
+  };
+
+  const handleCardClick = (item) => {
+    console.log('Card Clicked:', item);
+  };
+
   return (
     <>
-      <Box sx={{ ml: 1, [theme.breakpoints.down('md')]: { mr: 0 } }}>
-        <IconButton ref={anchorRef} onClick={handleToggle} size="large">
-          <Badge color="error" badgeContent={notificationList.length}>
-            <Avatar
-              variant="rounded"
-              sx={{
-                ...theme.typography.commonAvatar,
-                ...theme.typography.mediumAvatar,
-                backgroundColor: theme.palette.primary.light,
-                color: theme.palette.primary.dark,
-                // transition: 'all 0.3s ease',
-                '&:hover': {
-                  background: theme.palette.primary.main,
-                  color: theme.palette.primary.light
+      <Box
+        sx={{
+          ml: 2,
+          // mr: 3,
+          [theme.breakpoints.down('md')]: {
+            mr: 2
+          }
+        }}
+      >
+        <ButtonBase sx={{ borderRadius: '12px' }}>
+          <Avatar
+            variant="rounded"
+            sx={{
+              ...theme.typography.commonAvatar,
+              ...theme.typography.mediumAvatar,
+              transition: 'all .2s ease-in-out',
+              backgroundColor: theme.palette.primary.light,
+              color: theme.palette.primary.dark,
+              '&[aria-controls="menu-list-grow"], &:hover': {
+                borderColor: theme.palette.primary.main,
+                background: `${theme.palette.primary.main}!important`,
+                color: theme.palette.primary.light,
+                '& svg': {
+                  stroke: theme.palette.primary.light
                 }
-              }}
-            >
-              <IconBell stroke={1.5} size="1.3rem" />
-            </Avatar>
-          </Badge>
-        </IconButton>
+              }
+            }}
+            ref={anchorRef}
+            aria-controls={open ? 'menu-list-grow' : undefined}
+            aria-haspopup="true"
+            onClick={handleToggle}
+            color="inherit"
+          >
+            <IconBell stroke={1.5} size="1.3rem" />
+          </Avatar>
+        </ButtonBase>
       </Box>
-
       <Popper
+        placement={matchesXs ? 'bottom' : 'bottom-end'}
         open={open}
         anchorEl={anchorRef.current}
-        placement={matchesXs ? 'bottom' : 'bottom-end'}
+        role={undefined}
         transition
         disablePortal
         popperOptions={{
-          modifiers: [{ name: 'offset', options: { offset: [matchesXs ? 5 : 0, 20] } }]
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [matchesXs ? 5 : 0, 20]
+              }
+            }
+          ]
         }}
       >
         {({ TransitionProps }) => (
           <Transitions position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-            <Paper sx={{ width: 350, borderRadius: 2, boxShadow: 6 }}>
+            <Paper>
               <ClickAwayListener onClickAway={handleClose}>
-                <MainCard border={false} elevation={0} content={false}>
-                  <Box sx={{ px: 2, pt: 2 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="h6">Notifications</Typography>
-                      {notificationList.length > 0 && (
-                        <Button color="error" size="small" onClick={handleClearAll}>
-                          Clear All
-                        </Button>
-                      )}
-                    </Stack>
-                  </Box>
-
-                  <Divider sx={{ mt: 1 }} />
-
-                  <Box sx={{ maxHeight: 300, overflowY: 'auto', px: 2 }}>
-                    {isLoading ? (
-                      <Stack alignItems="center" justifyContent="center" sx={{ py: 5 }}>
-                        <CircularProgress size={24} />
-                      </Stack>
-                    ) : notificationList.length === 0 ? (
-                      <Typography variant="body2" align="center" sx={{ py: 5 }}>
-                        No new notifications
-                      </Typography>
-                    ) : (
-                      notificationList.map((item) => (
-                        <Box
-                          key={item.ticketId}
-                          sx={{
-                            background: theme.palette.grey[100],
-                            p: 1.5,
-                            mb: 1.2,
-                            borderRadius: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            boxShadow: 1,
-                            '&:hover': { background: theme.palette.grey[200] }
-                          }}
-                        >
-                          <Box sx={{ flex: 1, pr: 1 }}>
-                            <Typography variant="subtitle2" fontWeight={600}>
-                              {item.subject}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 0.5 }}>
-                              {item.description}
-                            </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <Chip
-                                size="small"
-                                label={item.status}
-                                color={item.status === 'Open' ? 'primary' : item.status === 'Closed' ? 'success' : 'warning'}
-                              />
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                by {item.createdBy}
-                              </Typography>
-                            </Stack>
-                          </Box>
-                          <Tooltip title="Clear">
-                            <IconButton size="small" color="error" onClick={() => handleClear(item.ticketId, 'clear')}>
-                              <IconX size="1rem" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      ))
-                    )}
-                  </Box>
+                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
+                  <Grid container direction="column" spacing={2}>
+                    <Grid item xs={12}>
+                      <Grid container alignItems="center" justifyContent="space-between" sx={{ pt: 2, px: 2 }}>
+                        <Grid item>
+                          <Stack direction="row" spacing={2}>
+                            <Typography variant="subtitle1">All Notification</Typography>
+                            <Chip
+                              size="small"
+                              label={notifications.length}
+                              sx={{
+                                color: theme.palette.background.default,
+                                bgcolor: theme.palette.warning.dark
+                              }}
+                            />
+                          </Stack>
+                        </Grid>
+                        {/* <Grid item>
+                          <Typography component={Link} to="#" variant="subtitle2" color="primary">
+                            Mark as all read
+                          </Typography>
+                        </Grid> */}
+                      </Grid>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 205px)', overflowX: 'hidden' }}>
+                        <Grid container direction="column" spacing={2}>
+                          {/* <Grid item xs={12}>
+                            <Box sx={{ px: 2, pt: 0.25 }}>
+                              <TextField
+                                id="outlined-select-currency-native"
+                                select
+                                fullWidth
+                                value={value}
+                                onChange={handleChange}
+                                SelectProps={{
+                                  native: true
+                                }}
+                              >
+                                {status.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </TextField>
+                            </Box>
+                          </Grid> */}
+                          <Grid item xs={12} p={0}>
+                            <Divider sx={{ my: 0 }} />
+                          </Grid>
+                        </Grid>
+                        <NotificationList
+                          notifications={notifications}
+                          handleApprove={handleApprove}
+                          handleReject={handleReject}
+                          handleCardClick={handleCardClick}
+                        />
+                      </PerfectScrollbar>
+                    </Grid>
+                  </Grid>
+                  <Divider />
+                  <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
+                    <Button size="small" disableElevation>
+                      View All
+                    </Button>
+                  </CardActions>
                 </MainCard>
               </ClickAwayListener>
             </Paper>

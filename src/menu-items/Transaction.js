@@ -1,26 +1,20 @@
-// assets
 import {
-    IconKey,
+    IconArrowsExchange,
     IconPhone,
     IconWorld,
-    IconMap,
     IconFileText,
     IconShoppingCart,
     IconUsers
 } from '@tabler/icons-react';
 
-// constant
 const icons = {
-    IconKey,
+    IconArrowsExchange,
     IconPhone,
     IconWorld,
-    IconMap,
     IconFileText,
     IconShoppingCart,
     IconUsers
 };
-
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const Transaction = {
     id: 'Transaction',
@@ -30,7 +24,7 @@ const Transaction = {
             id: 'Transaction',
             title: 'Transaction',
             type: 'collapse',
-            icon: icons.IconKey,
+            icon: icons.IconArrowsExchange, // Transaction icon added
             children: [
                 {
                     id: 'Lead',
@@ -55,7 +49,7 @@ const Transaction = {
                 },
                 {
                     id: 'SaleOrder',
-                    title: 'Sale Order',
+                    title: 'Sales Order',
                     type: 'item',
                     url: '/Transaction/SaleOrder',
                     icon: icons.IconShoppingCart

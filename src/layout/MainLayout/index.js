@@ -26,13 +26,13 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && pr
     'margin',
     open
       ? {
-          easing: theme.transitions.easing.easeOut,
-          duration: theme.transitions.duration.enteringScreen
-        }
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen
+      }
       : {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen
-        }
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen
+      }
   ),
   [theme.breakpoints.up('md')]: {
     marginLeft: open ? 0 : -(drawerWidth - 20),
@@ -41,12 +41,12 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && pr
   [theme.breakpoints.down('md')]: {
     marginLeft: '20px',
     width: `calc(100% - ${drawerWidth}px)`,
-    padding: '16px'
+    padding: '1px'
   },
   [theme.breakpoints.down('sm')]: {
     marginLeft: '10px',
     width: `calc(100% - ${drawerWidth}px)`,
-    padding: '16px',
+    padding: '1px',
     marginRight: '10px'
   }
 }));
@@ -64,7 +64,7 @@ const MainLayout = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', marginTop: '-20px' }}>
       <CssBaseline />
       {/* header */}
       <AppBar
@@ -74,7 +74,8 @@ const MainLayout = () => {
         elevation={0}
         sx={{
           bgcolor: theme.palette.background.default,
-          transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
+          transition: leftDrawerOpened ? theme.transitions.create("width") : "none",
+          marginTop: '-8px',
         }}
       >
         <Toolbar>

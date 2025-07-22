@@ -186,6 +186,13 @@
   /* For text color */
 }
 
+.error-text {
+  color: red;
+  font-size: 0.8rem;
+  margin-left: 3px;
+  margin-top: 3px;
+}
+
 // sidebar 
 @media (min-width: 900px) {
   .css-u1tokn-MuiDrawer-docked .MuiDrawer-paper {
@@ -220,6 +227,7 @@
 .css-40exn0-MuiInputBase-root-MuiOutlinedInput-root {
   border-radius: 12px;
   width: 350px !important;
+  height: 40px !important;
 }
 
 .css-173tha8 {
@@ -228,6 +236,12 @@
 
 .css-1r435k1-MuiAvatar-root {
   border-radius: 0% !important;
+}
+ 
+// search
+.css-1pxvvms-MuiButtonBase-root-MuiListItemButton-root {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
 }
 
 .css-ftvhhb-MuiPaper-root-MuiCard-root {

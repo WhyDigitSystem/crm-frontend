@@ -33,64 +33,23 @@ import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-reac
 
 const screens = [
   { name: 'Dashboard', path: '/' },
-  { name: 'Set Tax Rate', path: '/Finance/SetTaxRate' },
-  { name: 'Party Master', path: '/finance/partyMaster' },
-  { name: 'Tax Master', path: '/Finance/TaxMaster' },
-  { name: 'Taxes', path: '/Finance/Taxes' },
-  { name: 'TCS Master', path: '/Finance/tcsMaster/TcsMaster' },
-  { name: 'TDS Master', path: '/Finance/tdsMaster/TdsMaster' },
-  { name: 'HSN SAC Code', path: '/Finance/HsnSacCode' },
-  { name: 'HSN SAC Codes Listing', path: '/Finance/HsnSacCodesListing' },
-  { name: 'Group', path: '/Finance/Group' },
-  { name: 'Account', path: '/Finance/account/Account' },
-  { name: 'Exchange Rates', path: '/Finance/ExRates' },
-  { name: 'Sub Ledger Account', path: '/Finance/SubLedgerAccount' },
-  { name: 'Cost Centre', path: '/Finance/costcenter/CostCentre' },
-  { name: 'Daily Rate', path: '/Finance/daily/DailyRate' },
-  { name: 'Chart Of Costcenter', path: '/Finance/chartOfCostcenter/ChartOfCostcenter' },
-  { name: 'BRS Opening', path: '/Finance/BRSOpening' },
-  { name: 'AR Bill Balance', path: '/Finance/receiptAr/ArBillBalance' },
-  { name: 'Cheque Book Master', path: '/Finance/chequeBookMaster/ChequeBookMaster' },
-  { name: 'GL Opening Balance', path: '/Finance/glOpening/GlOpening' },
-  { name: 'Fund Transfer', path: '/Finance/FundTransfer' },
-  { name: 'General Journal', path: '/Finance/GeneralJournal/GeneralJournal' },
-  { name: 'Receipt', path: '/Finance/receipt/Receipt' },
-  { name: 'Payment', path: '/Finance/payment/Payment' },
-  { name: 'AP Bill Balance', path: '/Finance/paymentAp/ApBillBalance' },
-  { name: 'Reconcile', path: '/Finance/Reconcile/Reconcile' },
-  { name: 'Receipt Register', path: '/Finance/receiptRegister/ReceiptRegister' },
-  { name: 'Payment Register', path: '/Finance/paymentRegister/PaymentRegister' },
-  { name: 'Reconciliation Summary', path: '/Finance/ReconciliationSummaryReport/ReconciliationSummary' },
-  { name: 'Document Type Master', path: '/Finance/DocumentTypeMaster' },
-  { name: 'Document Type Mapping Master', path: '/Finance/DocumentTypeMappingMaster' },
-  { name: 'Multiple Document Id Generation Master', path: '/Finance/MultipleDocumentIdGeneration' },
-  { name: 'Reconcile Cash', path: '/Finance/ReconcileCash' },
-  { name: 'Reconcile Corp', path: '/Finance/ReconcileCorp' },
-  { name: 'Create Company', path: '/companysetup/createcompany' },
+  { name: 'Doc Type', path: '/finance/DocumentType/documentType' },
+  { name: 'Doc Mapping', path: '/finance/DocumentType/documentTypeMapping' },
+  { name: 'Multi Doc', path: '/finance/DocumentType/multipleDocumentIdGeneration' },
+  { name: 'User Creation', path: '/admin/user-creation/userCreation' },
   { name: 'Company Setup', path: '/companysetup/companysetup' },
   { name: 'Country', path: '/basicMaster/country' },
   { name: 'State', path: '/basicMaster/state' },
   { name: 'City', path: '/basicMaster/city' },
   { name: 'Currency', path: '/basicMaster/currency' },
   { name: 'Region', path: '/basicMaster/RegionMaster' },
-  { name: 'Financial Year', path: '/basicMaster/finYear' },
-  { name: 'Roles', path: '/basicMaster/roles' },
-  { name: 'Screen Names', path: '/basicMaster/ScreenNames' },
+  { name: 'Department', path: '/basicMaster/Department' },
+  { name: 'Designation', path: '/basicMaster/Designation' },
+  { name: 'FinYear', path: '/basicMaster/finYear' },
+  { name: 'Roles And Responsibilities', path: '/basicMaster/roles' },
+  { name: 'Screens', path: '/basicMaster/ScreenNames' },
   { name: 'Employee', path: '/basicMaster/employee' },
-  { name: 'Charge Type Request', path: '/Finance/ChargeTypeRequest' },
-  { name: 'Tax Invoice Detail', path: '/Finance/taxInvoice/taxInvoiceDetail' },
-  { name: 'Credit Note Detail', path: '/Finance/creditNote/CreditNoteDetail' },
-  { name: 'Cost Invoice', path: '/Finance/costInvoice/CostInvoice' },
-  { name: 'Cost Debit Note', path: '/Finance/costDebitNote/CostDebitNote' },
-  { name: 'List Of Values', path: '/Finance/listOfValues/listOfValues' },
-  { name: 'Payment Voucher', path: '/Finance/paymentVoucher/paymentVoucher' },
-  { name: 'AR/AP Detail', path: '/Finance/ARAP-Details' },
-  { name: 'AR/AP Adjustment', path: '/Finance/APAP-Adjustment' },
-  { name: 'Party Master', path: '/Finance/PartyMaster' },
-  { name: 'Adjustment Journal', path: '/Finance/AdjustmentJournal' },
-  { name: 'Deposit', path: '/Finance/Deposit' },
-  { name: 'Withdrawal', path: '/Finance/Withdrawal' },
-  { name: 'Contra Voucher', path: '/Finance/ContraVoucher' }
+  { name: 'Charges', path: '/finance/ChargeTypeRequest' },
 ];
 
 // Styled Components
@@ -251,6 +210,7 @@ const DesktopSearch = ({ value, setValue }) => {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search"
+        sx={{ width: "250px", height: '35px' }} // Adjust width as needed
         startAdornment={
           <InputAdornment position="start">
             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
@@ -259,8 +219,8 @@ const DesktopSearch = ({ value, setValue }) => {
         endAdornment={
           <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
             <ButtonBase sx={{ borderRadius: '12px', mr: 1 }}>
-              <HeaderAvatarStyle variant="rounded">
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
+              <HeaderAvatarStyle variant="rounded" sx={{ height: '25px', width: '25px' }}>
+                <IconAdjustmentsHorizontal stroke={1.5} size="1.1rem" />
               </HeaderAvatarStyle>
             </ButtonBase>
           </InputAdornment>
@@ -298,6 +258,7 @@ const DesktopSearch = ({ value, setValue }) => {
         </SearchResultsPaper>
       )}
     </Box>
+
   );
 };
 

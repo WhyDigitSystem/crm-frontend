@@ -104,12 +104,12 @@ const NavCollapse = ({ menu, level }) => {
     <>
       <ListItemButton
         sx={{
-          borderRadius: `${customization.borderRadius}px`,
-          mb: 0.5,
-          alignItems: 'flex-start',
+           borderRadius: `${customization.borderRadius}px`,
+          // mb: 0, // Reduce margin-bottom
+          alignItems: 'center', // Align vertically centered
           backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-          py: level > 1 ? 1 : 1.25,
-          pl: `${level * 24}px`
+          py: level > 1 ? 0.3 : 0.5, // Reduce vertical padding
+          pl: `${level * 20}px` // Reduce left padding
         }}
         selected={selected === menu.id}
         onClick={handleClick}

@@ -60,53 +60,32 @@ export const Department = () => {
         }
     };
 
-    // const getDepartmentById = async (row) => {
-    //     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
-    //     setEditId(row.original.id);
-    //     try {
-    //         const response = await apiCalls('get', `/commonmaster/getDepartmentById/${row.original.id}`);
-
-    //         if (response.status === true) {
-    //             setListView(false);
-    //             const particularCountry = response.paramObjectsMap.departmentVO;
-
-    //             setFormData({
-    //                 departmentCode: particularCountry.departmentCode,
-    //                 departmentName: particularCountry.departmentName,
-    //                 active: particularCountry.active === 'Active' ? true : false
-    //             });
-    //             setListView(false);
-    //         } else {
-    //             console.error('API Error');
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //     }
-    // };
 
     const getDepartmentById = async (row) => {
-        console.log('THE SELECTED CURRENCY ID IS:', row.original.id);
-        setEditId(row.original.id);
+        const selectedId = row.original.id;
+        console.log('Selected Department ID:', selectedId);
+        setEditId(selectedId);
         try {
-            const response = await apiCalls('get', `commonmaster/getDepartmentById/${row.original.id}`);
+            const response = await apiCalls('get', `/commonmaster/getDepartmentById?id=${selectedId}`);
             console.log('API Response:', response);
 
             if (response.status === true) {
                 setListView(false);
-                const particularCurrency = response.paramObjectsMap.departmentVO;
+                const department = response.paramObjectsMap.departmentVO;
 
                 setFormData({
-                    departmentName: particularCurrency.departmentName,
-                    departmentCode: particularCurrency.departmentCode,
-                    active: particularCurrency.active === 'Active' ? true : false
+                    departmentName: department.departmentName || '',
+                    departmentCode: department.departmentCode || '',
+                    active: department.active === 'Active' ? true : false
                 });
             } else {
-                console.error('API Error:', response);
+                console.error('Failed to fetch Department:', response.paramObjectsMap?.message);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching Department:', error);
         }
     };
+
 
     const handleInputChange = (e) => {
         const { name, value, selectionStart, selectionEnd, type } = e.target;
