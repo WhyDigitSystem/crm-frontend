@@ -4,108 +4,230 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField, Box, Tab, Tabs, FormControlLabel, Checkbox } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText } from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
 
 const Opportunity = () => {
+    // State management
     const [listViewData, setListViewData] = useState([]);
-    const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
-    const [createdBy] = useState(localStorage.getItem('userName'));
-    const [branchCode] = useState(localStorage.getItem('branchCode') || '');
-    const [branchName] = useState(localStorage.getItem('branch') || '');
-    const [value, setValue] = useState(0);
-    const [editId, setEditId] = useState('');
+    const [isDocIdLoading, setIsDocIdLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [listView, setListView] = useState(false);
+    const [editId, setEditId] = useState('');
     const [docId, setDocId] = useState('');
+    const [toggle, setToggle] = useState({});
+    const [branchList, setBranchList] = useState([]);
+    const [categoryList, setCategoryList] = useState([]);
+    const [subCategoryList, setSubCategoryList] = useState([]);
+    const [isBranchLoading, setIsBranchLoading] = useState(false);
 
+    // User session data
+    const orgId = parseInt(localStorage.getItem('orgId'));
+    const finYear = parseInt(localStorage.getItem('finYear'));
+    const branch = localStorage.getItem('branch') || '';
+    const branchCode = localStorage.getItem('branchcode') || '';
+    const createdBy = localStorage.getItem('userName');
+
+    // Static options
+    const statusOptions = ['Open', 'Closed', 'Lost', 'Won', 'In Progress'];
+    const productStatusOptions = ['Active', 'Inactive'];
+
+    // Form data
     const [formData, setFormData] = useState({
-        active: true,
         address: '',
-        branch: branchName,
-        branchCode: branchCode,
+        branch:'',
+        branchCode:'',
+        branchName:'',
+        cancelRemarks: '',
         clientName: '',
-        closedDate: '',
+        closedDate: dayjs().add(30, 'day').format('YYYY-MM-DD'),
         contactName: '',
         description: '',
+        designation: '',
         email: '',
-        finYear: '2025',
+        finYear: finYear.toString(),
         gstNo: '',
         mobileNo: '',
-        cancelRemarks: ''
+        status: 'Open',
     });
 
+    // Validation errors
     const [fieldErrors, setFieldErrors] = useState({
         clientName: '',
         contactName: '',
-        mobileNo: ''
+        mobileNo: '',
+        email: '',
+        branch: ''
     });
 
-    const [opportunityDetailsData, setOpportunityDetailsData] = useState([{
-        id: null,
+    // Opportunity details
+    const [opportunityDetails, setOpportunityDetails] = useState([{
         category: '',
-        subCategory: '',
-        productName: '',
         description: '',
-        quantity: 0,
         opportunityAmount: 0,
-        status: '',
-        remarks: ''
-    }]);
-
-    const [opportunityDetailsErrors, setOpportunityDetailsErrors] = useState([{
-        category: '',
         productName: '',
-        opportunityAmount: ''
+        quantity: 1,
+        remarks: '',
+        status: 'Active',
+        subCategory: '',
     }]);
 
-    const listViewColumns = [
+    const [detailErrors, setDetailErrors] = useState([{
+        productName: '',
+        category: '',
+        opportunityAmount: '',
+    }]);
+
+    // Table columns for list view
+    const listViewColumns = useMemo(() => [
         { accessorKey: 'docId', header: 'Opportunity ID', size: 140 },
         { accessorKey: 'clientName', header: 'Client Name', size: 140 },
-        { accessorKey: 'contactName', header: 'Contact Name', size: 140 },
+        { accessorKey: 'contactName', header: 'Contact', size: 140 },
         { accessorKey: 'mobileNo', header: 'Mobile No', size: 140 },
-        { accessorKey: 'branchName', header: 'Branch', size: 140 },
+        { accessorKey: 'email', header: 'Email', size: 140 },
         { accessorKey: 'status', header: 'Status', size: 140 },
-        { accessorKey: 'totalAmount', header: 'Amount', size: 140 }
-    ];
+        { accessorKey: 'totalAmount', header: 'Total Amount', size: 140 },
+    ], []);
 
+    // Calculate total amount
+    const totalAmount = useMemo(() => {
+        return opportunityDetails.reduce(
+            (sum, item) => sum + (parseFloat(item.opportunityAmount) || 0),
+            0
+        );
+    }, [opportunityDetails]);
+
+    // Initial data fetch
     useEffect(() => {
         const fetchInitialData = async () => {
             await getAllOpportunities();
-            await generateDocId();
+            await getOpportunityDocId();
+            await getAllBranches();
+            await getAllCategories();
+            await getAllSubCategories();
         };
         fetchInitialData();
     }, []);
 
-    const generateDocId = async () => {
+    // API calls
+    const getAllBranches = async () => {
+        setIsBranchLoading(true);
         try {
-            const response = await apiCalls('get',
-                `/transaction/getOpportunityDocId?branch=${branchName}&branchCode=${branchCode}&finYear=2025&orgId=${orgId}`);
+            const response = await apiCalls('get', `/master/branch?orgid=${orgId}`);
+            console.log('Branch API Response:', response);
 
             if (response.status) {
-                setDocId(response.paramObjectsMap.opportunityDocId);
-                setFormData(prev => ({
-                    ...prev,
-                    docId: response.paramObjectsMap.opportunityDocId
-                }));
+                const branches = response.data?.branchVO ||
+                    response.paramObjectsMap?.branchVO ||
+                    [];
+
+                setBranchList(branches);
+
+                if (branches.length > 0) {
+                    const defaultBranch = branches.find(b => b.branchCode === branchCode) ||
+                        branches[0];
+
+                    setFormData(prev => ({
+                        ...prev,
+                        branch: defaultBranch.branchCode,
+                        branchName: defaultBranch.branchName,
+                        branchCode: defaultBranch.branchCode
+                    }));
+                }
+            } else {
+                showToast('error', response.message || 'Failed to load branches');
             }
         } catch (error) {
-            console.error('Error generating doc ID:', error);
-            showToast('error', 'Failed to generate document ID');
+            console.error('Error fetching branches:', error);
+            showToast('error', 'Failed to load branches');
+        } finally {
+            setIsBranchLoading(false);
+        }
+    };
+
+    const getAllSubCategories = async () => {
+        try {
+            const response = await apiCalls('get', `/master/getSubCategoryByOrgId?orgId=${orgId}`);
+            if (response.status) {
+                setSubCategoryList(response.paramObjectsMap?.subCategoryVO || []);
+            } else {
+                showToast('error', response.message || 'Failed to load subcategories');
+            }
+        } catch (error) {
+            console.error('Error fetching subcategories:', error);
+            showToast('error', 'Failed to load subcategories');
+        }
+    };
+
+    const getAllCategories = async () => {
+        try {
+            const response = await apiCalls('get', `/ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
+            if (response.status) {
+                setCategoryList(response.paramObjectsMap?.categoryVO || []);
+            } else {
+                showToast('error', response.message || 'Failed to load categories');
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            showToast('error', 'Failed to load categories');
+        }
+    };
+    const handleBranchChange = (e) => {
+        const branchName = e.target.value;
+        const selectedBranch = branchList.find(b => b.branch === branchName);
+
+        if (selectedBranch) {
+            setFormData(prev => ({
+                ...prev,
+                branch: branchName,
+                branchCode: selectedBranch.branchCode
+            }));
+        }
+    };
+
+    const getOpportunityDocId = async () => {
+        if (editId) return;
+
+        try {
+            setIsDocIdLoading(true);
+            const response = await apiCalls(
+                'get',
+                `/transaction/getOpportunityDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+            );
+
+            if (response.status && response.paramObjectsMap?.opportunityDocId) {
+                setDocId(response.paramObjectsMap.opportunityDocId);
+            } else {
+                showToast('error', response.paramObjectsMap?.message || 'Failed to generate opportunity ID');
+            }
+        } catch (err) {
+            console.error('Error fetching opportunity docId:', err);
+            showToast('error', 'Failed to generate opportunity ID');
+        } finally {
+            setIsDocIdLoading(false);
         }
     };
 
     const getAllOpportunities = async () => {
         try {
-            const response = await apiCalls('get',
-                `/transaction/getOpportunityByOrgId?branchCode=${branchCode}&finYear=2025&orgId=${orgId}`);
+            const response = await apiCalls(
+                'get',
+                `/transaction/getOpportunityByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+            );
 
             if (response.status) {
-                setListViewData(response.paramObjectsMap.opportunityVO || []);
+                const opportunities = response.paramObjectsMap?.opportunityVO || [];
+                setListViewData(opportunities.map(opp => ({
+                    ...opp,
+                    totalAmount: opp.opportunityDetailsVO?.reduce((sum, item) => sum + (item.opportunityAmount || 0), 0) || 0
+                })));
             } else {
                 showToast('error', response.message || 'Failed to fetch opportunities');
             }
@@ -118,122 +240,263 @@ const Opportunity = () => {
     const getOpportunityById = async (row) => {
         setEditId(row.original.id);
         try {
+            setIsLoading(true);
             const response = await apiCalls('get', `/transaction/getOpportunityById?id=${row.original.id}`);
 
-            if (response.status && response.paramObjectsMap.opportunityVO) {
+            if (response.status) {
                 setListView(false);
                 const opportunity = response.paramObjectsMap.opportunityVO;
 
+                if (!opportunity) {
+                    showToast('error', 'Opportunity not found');
+                    return;
+                }
+
+                // Set form data
                 setFormData({
-                    active: opportunity.active,
-                    address: opportunity.address,
-                    branch: opportunity.branch,
-                    branchCode: opportunity.branchCode,
-                    branchName: opportunity.branchName,
-                    clientName: opportunity.clientName,
-                    closedDate: opportunity.closedDate,
-                    contactName: opportunity.contactName,
-                    description: opportunity.description,
-                    email: opportunity.email,
-                    finYear: opportunity.finYear,
-                    gstNo: opportunity.gstNo,
-                    mobileNo: opportunity.mobileNo,
-                    cancelRemarks: opportunity.cancelRemarks,
-                    docId: opportunity.docId
+                    address: opportunity.address || '',
+                    branchCode: opportunity.branchCode || branchCode,
+                    branch:opportunity.branch || branch,
+                    branchName: opportunity.branchName || '',
+                    cancelRemarks: opportunity.cancelRemarks || '',
+                    clientName: opportunity.clientName || '',
+                    closedDate: opportunity.closedDate || dayjs().add(30, 'day').format('YYYY-MM-DD'),
+                    contactName: opportunity.contactName || '',
+                    description: opportunity.description || '',
+                    designation: opportunity.designation || '',
+                    email: opportunity.email || '',
+                    finYear: opportunity.finYear || finYear.toString(),
+                    gstNo: opportunity.gstNo || '',
+                    mobileNo: opportunity.mobileNo || '',
+                    status: opportunity.status || 'Open',
                 });
 
-                setOpportunityDetailsData(
-                    opportunity.opportunityDetailsDTO.map(detail => ({
-                        id: detail.id,
-                        category: detail.category,
-                        subCategory: detail.subCategory,
-                        productName: detail.productName,
-                        description: detail.description,
-                        quantity: detail.quantity,
-                        opportunityAmount: detail.opportunityAmount,
-                        status: detail.status,
-                        remarks: detail.remarks
-                    })) || [{
-                        id: null,
-                        category: '',
-                        subCategory: '',
-                        productName: '',
-                        description: '',
-                        quantity: 0,
-                        opportunityAmount: 0,
-                        status: '',
-                        remarks: ''
-                    }]
-                );
+                setDocId(opportunity.docId || '');
+
+                // Set opportunity details
+                const details = opportunity.opportunityDetailsVO?.map(detail => ({
+                    id: detail.id, // Include id for existing items
+                    category: detail.category || '',
+                    description: detail.description || '',
+                    opportunityAmount: detail.opportunityAmount || 0,
+                    productName: detail.productName || '',
+                    quantity: detail.quantity || 1,
+                    remarks: detail.remarks || '',
+                    status: detail.status || 'Active',
+                    subCategory: detail.subCategory || '',
+                })) || [{
+                    category: '', description: '', opportunityAmount: 0, productName: '',
+                    quantity: 1, remarks: '', status: 'Active', subCategory: ''
+                }];
+
+                setOpportunityDetails(details);
+                setDetailErrors(details.map(() => ({
+                    productName: '',
+                    category: '',
+                    opportunityAmount: ''
+                })));
+            } else {
+                showToast('error', response.message || 'Failed to fetch opportunity details');
             }
         } catch (error) {
             console.error('Error fetching opportunity details:', error);
             showToast('error', 'Failed to fetch opportunity details');
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    // Form handlers
     const handleInputChange = (e) => {
-        const { name, value, checked, type } = e.target;
-        const updatedValue = type === 'checkbox' ? checked : value;
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
 
-        setFormData(prev => ({
-            ...prev,
-            [name]: updatedValue
-        }));
+        // Clear error when field is modified
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
 
-        setFieldErrors(prev => ({
-            ...prev,
-            [name]: ''
-        }));
+    const validateMainField = (field, value) => {
+        const newErrors = { ...fieldErrors };
+
+        switch (field) {
+            case 'email':
+                if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    newErrors[field] = 'Invalid email format';
+                } else if (!value) {
+                    newErrors[field] = 'Email is required';
+                } else {
+                    newErrors[field] = '';
+                }
+                break;
+
+            case 'mobileNo':
+                if (value && !/^(\+\d{1,3}[- ]?)?\d{10}$/.test(value)) {
+                    newErrors[field] = 'Invalid mobile number (10 digits required)';
+                } else if (!value) {
+                    newErrors[field] = 'Mobile number is required';
+                } else {
+                    newErrors[field] = '';
+                }
+                break;
+
+            case 'clientName':
+            case 'contactName':
+                if (!value) {
+                    newErrors[field] = 'This field is required';
+                } else {
+                    newErrors[field] = '';
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        setFieldErrors(newErrors);
+    };
+
+    const validateDetailField = (index, field, value) => {
+        const newErrors = [...detailErrors];
+        if (!newErrors[index]) newErrors[index] = {};
+
+        if (field === 'opportunityAmount') {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) {
+                newErrors[index][field] = 'Must be a number';
+            } else if (numValue <= 0) {
+                newErrors[index][field] = 'Amount must be positive';
+            } else {
+                newErrors[index][field] = '';
+            }
+        } else if (!value && ['productName', 'category'].includes(field)) {
+            newErrors[index][field] = 'This field is required';
+        } else {
+            newErrors[index][field] = '';
+        }
+
+        setDetailErrors(newErrors);
+    };
+
+    const validateFields = () => {
+        let isValid = true;
+        const newErrors = { ...fieldErrors };
+
+        // Required field validation
+        if (!formData.clientName.trim()) {
+            newErrors.clientName = 'Client name is required';
+            isValid = false;
+        }
+
+        if (!formData.contactName.trim()) {
+            newErrors.contactName = 'Contact name is required';
+            isValid = false;
+        }
+
+        if (!formData.mobileNo.trim()) {
+            newErrors.mobileNo = 'Mobile number is required';
+            isValid = false;
+        } else if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNo)) {
+            newErrors.mobileNo = 'Invalid mobile number (10 digits required)';
+            isValid = false;
+        }
+
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Invalid email format';
+            isValid = false;
+        }
+
+        if (!formData.branch) {
+            newErrors.branch = 'Branch is required';
+            isValid = false;
+        }
+
+        setFieldErrors(newErrors);
+        return isValid;
+    };
+
+    const validateDetails = () => {
+        let isValid = true;
+        const newErrors = [];
+
+        opportunityDetails.forEach((detail, index) => {
+            const error = {};
+
+            if (!detail.productName?.trim()) {
+                error.productName = 'Product name is required';
+                isValid = false;
+            }
+
+            if (!detail.category) {
+                error.category = 'Category is required';
+                isValid = false;
+            }
+
+            const amount = parseFloat(detail.opportunityAmount);
+            if (isNaN(amount)) {
+                error.opportunityAmount = 'Must be a valid number';
+                isValid = false;
+            } else if (amount <= 0) {
+                error.opportunityAmount = 'Amount must be positive';
+                isValid = false;
+            }
+
+            newErrors[index] = error;
+        });
+
+        setDetailErrors(newErrors);
+        return isValid;
     };
 
     const handleSave = async () => {
-        // Validate main form fields
-        const errors = {};
-        if (!formData.clientName) errors.clientName = 'Client name is required';
-        if (!formData.contactName) errors.contactName = 'Contact name is required';
-        if (!formData.mobileNo) errors.mobileNo = 'Mobile number is required';
+        const isFormValid = validateFields();
+        const isDetailsValid = validateDetails();
 
-        // Validate details
-        const detailsErrors = opportunityDetailsData.map(detail => {
-            const error = {};
-            if (!detail.category) error.category = 'Category is required';
-            if (!detail.productName) error.productName = 'Product name is required';
-            if (!detail.opportunityAmount || detail.opportunityAmount <= 0)
-                error.opportunityAmount = 'Valid amount is required';
-            return error;
-        });
-
-        if (Object.keys(errors).length > 0 || detailsErrors.some(e => Object.keys(e).length > 0)) {
-            setFieldErrors(errors);
-            setOpportunityDetailsErrors(detailsErrors);
-            showToast('error', 'Please fill all required fields');
+        if (!isFormValid || !isDetailsValid) {
+            showToast('error', 'Please correct the highlighted fields');
             return;
         }
 
         setIsLoading(true);
 
-        // Prepare details payload
-        const opportunityDetailsDTO = opportunityDetailsData.map(row => ({
-            ...(row.id && { id: row.id }),
-            category: row.category,
-            subCategory: row.subCategory,
-            productName: row.productName,
-            description: row.description,
-            quantity: row.quantity,
-            opportunityAmount: row.opportunityAmount,
-            status: row.status,
-            remarks: row.remarks
-        }));
+        const selectedBranch = branchList.find(b => b.branchCode === formData.branch);
 
         const payload = {
             ...(editId && { id: editId }),
-            ...formData,
+            docId: docId,
+            address: formData.address,
+            branch: formData.branch,
+            branchName: formData.branchName,
+            branchCode: formData.branchCode,
+            cancelRemarks: formData.cancelRemarks,
+            clientName: formData.clientName,
+            closedDate: formData.closedDate,
+            contactName: formData.contactName,
+            description: formData.description,
+            designation: formData.designation,
+            email: formData.email,
+            finYear: formData.finYear,
+            gstNo: formData.gstNo,
+            mobileNo: formData.mobileNo,
+            status: formData.status,
+            active: true,
             orgId: orgId,
-            branch:branchName,
-            branchCode:branchCode,
             createdBy: createdBy,
-            opportunityDetailsDTO: opportunityDetailsDTO
+            opportunityDetailsDTO: opportunityDetails.map(detail => ({
+                ...(detail.id && { id: detail.id }), // Include id for existing items
+                productName: detail.productName,
+                category: detail.category,
+                subCategory: detail.subCategory,
+                opportunityAmount: parseFloat(detail.opportunityAmount) || 0,
+                quantity: parseInt(detail.quantity) || 1,
+                status: detail.status,
+                description: detail.description,
+                remarks: detail.remarks
+            }))
         };
 
         try {
@@ -241,8 +504,7 @@ const Opportunity = () => {
             if (response.status) {
                 showToast('success', editId ? 'Opportunity updated successfully' : 'Opportunity created successfully');
                 handleClear();
-                getAllOpportunities();
-                await generateDocId();
+                await getAllOpportunities();
             } else {
                 showToast('error', response.message || 'Operation failed');
             }
@@ -256,126 +518,125 @@ const Opportunity = () => {
 
     const handleClear = () => {
         setFormData({
-            active: true,
             address: '',
-            branch: branchName,
-            branchCode: branchCode,
-            branchName: branchName,
+            branchName: '',
+            cancelRemarks: '',
             clientName: '',
-            closedDate: '',
+            closedDate: dayjs().add(30, 'day').format('YYYY-MM-DD'),
             contactName: '',
             description: '',
+            designation: '',
             email: '',
-            finYear: '2025',
+            finYear: finYear.toString(),
             gstNo: '',
             mobileNo: '',
-            cancelRemarks: '',
-            docId: docId
+            status: 'Open',
         });
 
         setFieldErrors({
             clientName: '',
             contactName: '',
-            mobileNo: ''
+            mobileNo: '',
+            email: '',
+            branch: ''
         });
 
-        setOpportunityDetailsData([{
-            id: null,
+        setOpportunityDetails([{
             category: '',
-            subCategory: '',
-            productName: '',
             description: '',
-            quantity: 0,
             opportunityAmount: 0,
-            status: '',
-            remarks: ''
+            productName: '',
+            quantity: 1,
+            remarks: '',
+            status: 'Active',
+            subCategory: '',
         }]);
 
-        setOpportunityDetailsErrors([{
-            category: '',
+        setDetailErrors([{
             productName: '',
+            category: '',
             opportunityAmount: ''
         }]);
 
         setEditId('');
+        getOpportunityDocId();
     };
 
-    const handleAddRow = () => {
-        const lastRow = opportunityDetailsData[opportunityDetailsData.length - 1];
+    const handleAddDetail = () => {
+        const lastDetail = opportunityDetails[opportunityDetails.length - 1];
+        const lastError = detailErrors[detailErrors.length - 1] || {};
 
-        if (!lastRow.category || !lastRow.productName || !lastRow.opportunityAmount) {
-            const newErrors = [...opportunityDetailsErrors];
-            const lastIndex = newErrors.length - 1;
-            newErrors[lastIndex] = {
-                category: !lastRow.category ? 'Category is required' : '',
-                productName: !lastRow.productName ? 'Product name is required' : '',
-                opportunityAmount: !lastRow.opportunityAmount ? 'Valid amount is required' : ''
+        const productNameValid = lastDetail.productName?.trim();
+        const categoryValid = lastDetail.category;
+        const amount = parseFloat(lastDetail.opportunityAmount);
+        const amountValid = !isNaN(amount) && amount > 0;
+
+        if (!productNameValid || !categoryValid || !amountValid) {
+            const newErrors = [...detailErrors];
+            newErrors[newErrors.length - 1] = {
+                productName: !productNameValid ? 'Product name is required' : '',
+                category: !categoryValid ? 'Category is required' : '',
+                opportunityAmount: isNaN(amount)
+                    ? 'Must be a number'
+                    : amount <= 0
+                        ? 'Amount must be positive'
+                        : ''
             };
-            setOpportunityDetailsErrors(newErrors);
-            showToast('warning', 'Please fill current row before adding new');
+            setDetailErrors(newErrors);
+            showToast('warning', 'Please fill current product details before adding new');
             return;
         }
 
-        const newId = opportunityDetailsData.length > 0 ? Math.min(...opportunityDetailsData.map(d => d.id)) - 1 : -1;
-
-        setOpportunityDetailsData(prev => [
+        setOpportunityDetails(prev => [
             ...prev,
             {
-                id: newId,
                 category: '',
-                subCategory: '',
-                productName: '',
                 description: '',
-                quantity: 0,
                 opportunityAmount: 0,
-                status: '',
-                remarks: ''
+                productName: '',
+                quantity: 1,
+                remarks: '',
+                status: 'Active',
+                subCategory: '',
             }
         ]);
 
-        setOpportunityDetailsErrors(prev => [
+        setDetailErrors(prev => [
             ...prev,
             {
-                category: '',
                 productName: '',
+                category: '',
                 opportunityAmount: ''
             }
         ]);
     };
 
-    const handleDeleteRow = (id) => {
-        if (opportunityDetailsData.length <= 1) {
-            showToast('warning', 'At least one opportunity detail is required');
+    const handleDeleteDetail = (index) => {
+        if (opportunityDetails.length <= 1) {
+            showToast('warning', 'At least one product is required');
             return;
         }
 
-        const index = opportunityDetailsData.findIndex(d => d.id === id);
-        if (index === -1) return;
+        const newDetails = opportunityDetails.filter((_, i) => i !== index);
+        const newErrors = detailErrors.filter((_, i) => i !== index);
 
-        const newData = opportunityDetailsData.filter(d => d.id !== id);
-        const newErrors = opportunityDetailsErrors.filter((_, i) => i !== index);
-
-        setOpportunityDetailsData(newData);
-        setOpportunityDetailsErrors(newErrors);
+        setOpportunityDetails(newDetails);
+        setDetailErrors(newErrors);
     };
 
-    const handleDetailChange = (id, field, value) => {
-        const index = opportunityDetailsData.findIndex(d => d.id === id);
-        if (index === -1) return;
+    const handleDetailChange = (index, field, value) => {
+        const newDetails = [...opportunityDetails];
+        newDetails[index] = { ...newDetails[index], [field]: value };
+        setOpportunityDetails(newDetails);
 
-        const newData = [...opportunityDetailsData];
-        newData[index] = { ...newData[index], [field]: value };
-        setOpportunityDetailsData(newData);
-
-        if (value) {
-            const newErrors = [...opportunityDetailsErrors];
+        if (value && detailErrors[index]?.[field]) {
+            const newErrors = [...detailErrors];
             newErrors[index] = { ...newErrors[index], [field]: '' };
-            setOpportunityDetailsErrors(newErrors);
+            setDetailErrors(newErrors);
         }
     };
 
     const handleView = () => setListView(!listView);
-    const handleTabChange = (_, newValue) => setValue(newValue);
 
     return (
         <>
@@ -388,25 +649,37 @@ const Opportunity = () => {
                         <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} disabled={isLoading} />
+                        <ActionButton
+                            title="Save"
+                            icon={SaveIcon}
+                            onClick={handleSave}
+                            disabled={isLoading}
+                            loading={isLoading}
+                        />
                     </div>
 
                     {!listView ? (
                         <>
                             <div className="row d-flex ml">
+                                {/* Opportunity ID */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Opportunity ID"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
-                                        value={formData.docId || docId}
                                         disabled
+                                        value={isDocIdLoading ? "Generating..." : docId}
+                                        InputProps={{
+                                            style: { backgroundColor: '#f5f5f5' }
+                                        }}
                                     />
                                 </div>
+
+                                {/* Client Name */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Client Name*"
+                                        label="Client Name *"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -415,11 +688,35 @@ const Opportunity = () => {
                                         onChange={handleInputChange}
                                         error={!!fieldErrors.clientName}
                                         helperText={fieldErrors.clientName}
+                                        onBlur={(e) => validateMainField('clientName', e.target.value)}
                                     />
                                 </div>
+
+                                {/* Branch Dropdown - Updated */}
+                                <div className="col-md-3 mb-3">
+                                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
+                                        <InputLabel id="branch-label">Branch Name *</InputLabel>
+                                        <Select
+                                            labelId="branch-label"
+                                            label="Branch Name *"
+                                            value={formData.branch}
+                                            onChange={handleBranchChange}
+                                            name="branch"
+                                        >
+                                            {branchList.map((branch) => (
+                                                <MenuItem key={branch.id} value={branch.branch}>
+                                                    {branch.branch}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
+                                    </FormControl>
+                                </div>
+                                
+                                {/* Contact Name */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Contact Name*"
+                                        label="Contact Name *"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -428,32 +725,24 @@ const Opportunity = () => {
                                         onChange={handleInputChange}
                                         error={!!fieldErrors.contactName}
                                         helperText={fieldErrors.contactName}
+                                        onBlur={(e) => validateMainField('contactName', e.target.value)}
                                     />
                                 </div>
+
+                                {/* Designation */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Mobile No*"
+                                        label="Designation"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
-                                        name="mobileNo"
-                                        value={formData.mobileNo}
-                                        onChange={handleInputChange}
-                                        error={!!fieldErrors.mobileNo}
-                                        helperText={fieldErrors.mobileNo}
-                                    />
-                                </div>
-                                <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Email"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="email"
-                                        value={formData.email}
+                                        name="designation"
+                                        value={formData.designation}
                                         onChange={handleInputChange}
                                     />
                                 </div>
+
+                                {/* GST No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="GST No"
@@ -465,6 +754,40 @@ const Opportunity = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
+
+                                {/* Mobile No */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Mobile No *"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="mobileNo"
+                                        value={formData.mobileNo}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.mobileNo}
+                                        helperText={fieldErrors.mobileNo}
+                                        onBlur={(e) => validateMainField('mobileNo', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Email *"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.email}
+                                        helperText={fieldErrors.email}
+                                        onBlur={(e) => validateMainField('email', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Address */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Address"
@@ -474,31 +797,50 @@ const Opportunity = () => {
                                         name="address"
                                         value={formData.address}
                                         onChange={handleInputChange}
+                                        multiline
+                                        rows={2}
                                     />
                                 </div>
+
+                                {/* Status */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Branch"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        value={formData.branch}
-                                        disabled
-                                    />
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Status</InputLabel>
+                                        <Select
+                                            label="Status"
+                                            value={formData.status}
+                                            onChange={(e) => handleInputChange({
+                                                target: { name: 'status', value: e.target.value }
+                                            })}
+                                        >
+                                            {statusOptions.map(status => (
+                                                <MenuItem key={branch.branchCode} value={branch.branchCode}>
+                                                    {branch.branchName}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
                                 </div>
+
+                                {/* Expected Close Date */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Closed Date"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        type="date"
-                                        InputLabelProps={{ shrink: true }}
-                                        name="closedDate"
-                                        value={formData.closedDate}
-                                        onChange={handleInputChange}
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="Expected Close Date"
+                                            value={dayjs(formData.closedDate)}
+                                            onChange={(newValue) =>
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    closedDate: newValue.format('YYYY-MM-DD')
+                                                }))
+                                            }
+                                            renderInput={(params) =>
+                                                <TextField {...params} size="small" fullWidth />}
+                                        />
+                                    </LocalizationProvider>
                                 </div>
+
+                                {/* Description */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Description"
@@ -508,162 +850,172 @@ const Opportunity = () => {
                                         name="description"
                                         value={formData.description}
                                         onChange={handleInputChange}
-                                    />
-                                </div>
-                                <div className="col-md-3 mb-3">
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={formData.active}
-                                                onChange={handleInputChange}
-                                                name="active"
-                                                color="primary"
-                                            />
-                                        }
-                                        label="Active Status"
-                                    />
-                                </div>
-                                <div className="col-md-6 mb-3">
-                                    <TextField
-                                        label="Cancel Remarks"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="cancelRemarks"
-                                        value={formData.cancelRemarks}
-                                        onChange={handleInputChange}
                                         multiline
                                         rows={2}
                                     />
                                 </div>
                             </div>
 
-                            <div className="row mt-2">
-                                <Box sx={{ width: '100%' }}>
-                                    <Tabs value={value} onChange={handleTabChange} textColor="secondary" indicatorColor="secondary">
-                                        <Tab value={0} label="Opportunity Details" />
-                                    </Tabs>
-                                </Box>
 
-                                <Box sx={{ padding: 2 }}>
-                                    {value === 0 && (
-                                        <>
-                                            <div className="mb-1">
-                                                <ActionButton title="Add Row" icon={AddIcon} onClick={handleAddRow} />
-                                            </div>
-                                            <div className="row mt-2">
-                                                <div className="col-lg-12">
-                                                    <div className="table-responsive">
-                                                        <table className="table table-bordered">
-                                                            <thead>
-                                                                <tr
-                                                                    style={{ background: '#5e35b1', color: '#ede7f6' }}
+                            <div className="row mt-2">
+                                <div className="mb-1">
+                                    <ActionButton
+                                        title="Add Product"
+                                        icon={AddIcon}
+                                        onClick={handleAddDetail}
+                                    />
+                                </div>
+                                <div className="col-lg-12">
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered">
+                                            <thead>
+                                                <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
+                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
+                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                    <th className="px-2 py-2 text-white text-center">Product Name *</th>
+                                                    <th className="px-2 py-2 text-white text-center">Category *</th>
+                                                    <th className="px-2 py-2 text-white text-center">Sub Category</th>
+                                                    <th className="px-2 py-2 text-white text-center">Amount *</th>
+                                                    <th className="px-2 py-2 text-white text-center">Quantity</th>
+                                                    <th className="px-2 py-2 text-white text-center">Status</th>
+                                                    <th className="px-2 py-2 text-white text-center">Remarks</th>
+                                                    <th className="px-2 py-2 text-white text-center">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {opportunityDetails.map((detail, index) => (
+                                                    <tr key={index}>
+                                                        <td className="border px-2 py-2 text-center">
+                                                            <ActionButton
+                                                                title="Delete"
+                                                                icon={DeleteIcon}
+                                                                onClick={() => handleDeleteDetail(index)}
+                                                                aria-label={`Delete product ${index + 1}`}
+                                                            />
+                                                        </td>
+                                                        <td className="text-center pt-3">{index + 1}</td>
+
+                                                        <td>
+                                                            <TextField
+                                                                fullWidth
+                                                                size="small"
+                                                                value={detail.productName}
+                                                                onChange={(e) => handleDetailChange(index, 'productName', e.target.value)}
+                                                                onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                error={!!detailErrors[index]?.productName}
+                                                                helperText={detailErrors[index]?.productName}
+                                                            />
+                                                        </td>
+
+                                                        <td>
+                                                            <FormControl fullWidth size="small" error={!!detailErrors[index]?.category}>
+                                                                <InputLabel>Category *</InputLabel>
+                                                                <Select
+                                                                    value={detail.category}
+                                                                    label="Category *"
+                                                                    onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                    onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
                                                                 >
-                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                                                        Action
-                                                                    </th>
-                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                                                        S.No
-                                                                    </th>
-                                                                    <th className="px-2 py-2 text-white text-center">Category*</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Sub Category</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Product Name*</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Description</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Quantity</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Amount*</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Status</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Remarks</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {opportunityDetailsData.map((row, index) => (
-                                                                    <tr key={row.id}>
-                                                                        <td className="border px-2 py-2 text-center">
-                                                                            <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                                                        </td>
-                                                                        <td className="text-center pt-3">{index + 1}</td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.category}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'category', e.target.value)}
-                                                                                error={!!opportunityDetailsErrors[index]?.category}
-                                                                                helperText={opportunityDetailsErrors[index]?.category}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.subCategory}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'subCategory', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.productName}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'productName', e.target.value)}
-                                                                                error={!!opportunityDetailsErrors[index]?.productName}
-                                                                                helperText={opportunityDetailsErrors[index]?.productName}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.description}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'description', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type="number"
-                                                                                value={row.quantity}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'quantity', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type="number"
-                                                                                value={row.opportunityAmount}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'opportunityAmount', e.target.value)}
-                                                                                error={!!opportunityDetailsErrors[index]?.opportunityAmount}
-                                                                                helperText={opportunityDetailsErrors[index]?.opportunityAmount}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.status}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'status', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.remarks}
-                                                                                onChange={(e) => handleDetailChange(row.id, 'remarks', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </Box>
+                                                                    <MenuItem value=""><em>Select Category</em></MenuItem>
+                                                                    {categoryList.map(cat => (
+                                                                        <MenuItem key={cat.id} value={cat.categoryName}>
+                                                                            {cat.categoryName}
+                                                                        </MenuItem>
+                                                                    ))}
+                                                                </Select>
+                                                                {detailErrors[index]?.category && (
+                                                                    <FormHelperText>{detailErrors[index].category}</FormHelperText>
+                                                                )}
+                                                            </FormControl>
+                                                        </td>
+
+                                                        <td>
+                                                            <FormControl fullWidth size="small">
+                                                                <InputLabel>Sub Category</InputLabel>
+                                                                <Select
+                                                                    value={detail.subCategory}
+                                                                    label="Sub Category"
+                                                                    onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
+                                                                >
+                                                                    <MenuItem value=""><em>Select Sub Category</em></MenuItem>
+                                                                    {subCategoryList.map(sub => (
+                                                                        <MenuItem key={sub.id} value={sub.subCategoryName}>
+                                                                            {sub.subCategoryName}
+                                                                        </MenuItem>
+                                                                    ))}
+                                                                </Select>
+                                                            </FormControl>
+                                                        </td>
+
+                                                        <td>
+                                                            <TextField
+                                                                fullWidth
+                                                                size="small"
+                                                                type="number"
+                                                                label="Amount"
+                                                                value={detail.opportunityAmount}
+                                                                onChange={(e) => handleDetailChange(index, 'opportunityAmount', e.target.value)}
+                                                                onBlur={(e) => validateDetailField(index, 'opportunityAmount', e.target.value)}
+                                                                error={!!detailErrors[index]?.opportunityAmount}
+                                                                helperText={detailErrors[index]?.opportunityAmount}
+                                                                inputProps={{ min: 0, step: "0.01" }}
+                                                            />
+                                                        </td>
+
+                                                        <td>
+                                                            <TextField
+                                                                fullWidth
+                                                                size="small"
+                                                                type="number"
+                                                                label="Quantity"
+                                                                value={detail.quantity}
+                                                                onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                                                                inputProps={{ min: 1 }}
+                                                            />
+                                                        </td>
+
+                                                        <td>
+                                                            <FormControl fullWidth size="small">
+                                                                <InputLabel>Status</InputLabel>
+                                                                <Select
+                                                                    value={detail.status}
+                                                                    label="Status"
+                                                                    onChange={(e) => handleDetailChange(index, 'status', e.target.value)}
+                                                                >
+                                                                    {productStatusOptions.map(status => (
+                                                                        <MenuItem key={status} value={status}>{status}</MenuItem>
+                                                                    ))}
+                                                                </Select>
+                                                            </FormControl>
+                                                        </td>
+
+                                                        <td>
+                                                            <TextField
+                                                                fullWidth
+                                                                size="small"
+                                                                label="Remarks"
+                                                                value={detail.remarks}
+                                                                onChange={(e) => handleDetailChange(index, 'remarks', e.target.value)}
+                                                            />
+                                                        </td>
+
+                                                        <td>
+                                                            <TextField
+                                                                fullWidth
+                                                                size="small"
+                                                                label="Description"
+                                                                value={detail.description}
+                                                                onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
+                                                                multiline
+                                                                rows={2}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </>
                     ) : (
