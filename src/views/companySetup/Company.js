@@ -414,7 +414,7 @@ const Company = () => {
     try {
       const response = await apiCalls(
         'post',
-        `/commonmaster/uploadCompanyLogoInBloob?id=${generatedId}`,
+        `/commonmaster/uploadCompanyLogo?id=${generatedId}`,
         formData,
         {},
         { 'Content-Type': 'multipart/form-data' }
