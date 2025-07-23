@@ -492,6 +492,7 @@ const EmployeeDetails = () => {
   };
 
   const columns = [
+    { accessorKey: 'employeeCode', header: 'Code', size: 140 },
     {
       accessorKey: 'employee',
       header: 'Name',
@@ -505,7 +506,6 @@ const EmployeeDetails = () => {
         </span>
       )
     },
-    { accessorKey: 'employeeCode', header: 'Code', size: 140 },
     { accessorKey: 'joiningDate', header: 'Date of Join', size: 140 },
     { accessorKey: 'department', header: 'Department', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },

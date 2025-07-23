@@ -219,7 +219,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
         data={tableData && tableData}
         enableColumnOrdering={false}
         enableColumnActions={false}
-        enableEditing
+        enableEditing={enableEditing}
         renderRowActions={renderRowActions}
         initialState={{ density: "compact" }}
         localization={customLocalization}
