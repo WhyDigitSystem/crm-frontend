@@ -1,7 +1,6 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-// import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -40,7 +39,7 @@ const Task = () => {
   // Form state
   const [formData, setFormData] = useState({
     taskId: '',
-    taskDate: dayjs(),
+    taskDate: dayjs().format('YYYY-MM-DD'),
     clientName: '',
     branch: branch,
     customerName: '',
@@ -48,8 +47,8 @@ const Task = () => {
     taskType: '',
     duration: '',
     status: 'Pending',
-    startDate: dayjs(),
-    endDate: dayjs(),
+    startDate: dayjs().format('YYYY-MM-DD'),
+    endDate: dayjs().format('YYYY-MM-DD'),
     priority: 'Medium',
     startTime: '',
     endTime: '',
@@ -70,6 +69,7 @@ const Task = () => {
     branch: '',
     startDate: '',
     startTime: '',
+    endTime: '',
     status: '',
     assignedTo: ''
   });
@@ -111,13 +111,6 @@ const Task = () => {
     try {
       const branchData = await getAllActiveBranches(orgId);
       setBranchList(branchData);
-      // if (branchData.length > 0) {
-      //   setFormData(prev => ({
-      //     ...prev,
-      //     branch: branchData[0].branch,
-      //     branchCode: branchData[0].branchCode
-      //   }));
-      // }
     } catch (error) {
       console.error('Error fetching branches:', error);
       showToast('error', 'Failed to load branches');
@@ -168,21 +161,14 @@ const Task = () => {
     try {
       const response = await apiCalls('get', `/activities/getTaskById?id=${id}`);
 
-      console.log('Editing task ID:', id);
       if (response.status === true) {
         const task = response.paramObjectsMap.taskVO;
         setEditId(id);
         setListView(false);
-        // Handle date formatting correctly
-        const formatDate = (dateString) => {
-          if (!dateString) return null;
-          // Ensure date is in YYYY-MM-DD format
-          return dayjs(dateString).format('YYYY-MM-DD');
-        };
         setImg(response.paramObjectsMap.taskVO.attachments);
         setFormData({
           taskId: task.docId || '',
-          taskDate: task.docDate ? dayjs(task.docDate).format('YYYY-MM-DD') : null,
+          taskDate: task.docDate || dayjs().format('YYYY-MM-DD'),
           taskName: task.taskName || '',
           taskType: task.taskType || '',
           clientName: task.clientName || '',
@@ -190,10 +176,10 @@ const Task = () => {
           branch: task.branch || '',
           branchCode: task.branchCode || '',
           priority: task.priority || '',
-          startDate: task.startDate ? dayjs(task.startDate).format('YYYY-MM-DD') : null,
-          startTime: task.startTime ? task.startTime.slice(0, 5) : '', // Ensure HH:mm format
-          endDate: task.endDate ? dayjs(task.endDate).format('YYYY-MM-DD') : null,
-          endTime: task.endTime ? task.endTime.slice(0, 5) : '', // Ensure HH:mm format
+          startDate: task.startDate || dayjs().format('YYYY-MM-DD'),
+          startTime: task.startTime ? task.startTime.slice(0, 5) : '',
+          endDate: task.endDate || dayjs().format('YYYY-MM-DD'),
+          endTime: task.endTime ? task.endTime.slice(0, 5) : '',
           duration: task.duration || '',
           status: task.status || 'Pending',
           assignedTo: task.assignedTo || '',
@@ -210,8 +196,8 @@ const Task = () => {
   };
 
   // Helper function to validate time format
-  const isValidTime = (time) => {
-    return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+  const isValidTime = (value) => {
+    return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
   };
 
   // Calculate duration between start and end times
@@ -242,9 +228,7 @@ const Task = () => {
 
     // Validation
     let errorMessage = '';
-    if (name === 'startTime' && value && !isValidTime(value)) {
-      errorMessage = 'Invalid time format (HH:mm required)';
-    } else if (name === 'endTime' && value && !isValidTime(value)) {
+    if ((name === 'startTime' || name === 'endTime') && value && !isValidTime(value)) {
       errorMessage = 'Invalid time format (HH:mm required)';
     }
 
@@ -280,10 +264,9 @@ const Task = () => {
   };
 
   const handleClear = () => {
-    // const firstBranch = branchList[0] || null;
     setFormData({
       taskId: '',
-      taskDate: dayjs(),
+      taskDate: dayjs().format('YYYY-MM-DD'),
       taskName: '',
       taskType: 'General',
       clientName: '',
@@ -291,9 +274,9 @@ const Task = () => {
       branch: branch,
       branchCode: branchCode,
       priority: 'Medium',
-      startDate: dayjs(),
+      startDate: dayjs().format('YYYY-MM-DD'),
       startTime: '',
-      endDate: dayjs(),
+      endDate: dayjs().format('YYYY-MM-DD'),
       endTime: '',
       duration: '',
       status: 'Pending',
@@ -317,7 +300,7 @@ const Task = () => {
     if (!formData.status) errors.status = 'Status is required';
     if (!formData.assignedTo) errors.assignedTo = 'Assign To is required';
 
-    // Additional time validation
+    // Time validation
     if (formData.startTime && !isValidTime(formData.startTime)) {
       errors.startTime = 'Invalid start time format (HH:mm)';
     }
@@ -336,18 +319,6 @@ const Task = () => {
 
     setIsLoading(true);
 
-    // Prepare API payload
-    // const payload = {
-    //   ...formData,
-    //   ...(editId && { id: editId }),
-    //   finYear: finYear,
-    //   createdBy: loginUserName,
-    //   orgId: parseInt(orgId),
-    //   docId: formData.taskId,
-    //   docDate: formData.taskDate,
-    //   duration: formData.duration,
-    //   active: formData.active
-    // };
     const payload = {
       ...(editId && { id: editId }),
       createdBy: loginUserName,
@@ -361,15 +332,19 @@ const Task = () => {
       clientName: formData.clientName,
       customerName: formData.customerName,
       description: formData.description,
-      endDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null,
+      endDate: formData.endDate,
       endTime: formData.endTime,
       priority: formData.priority,
-      startDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
+      startDate: formData.startDate,
       startTime: formData.startTime,
       status: formData.status,
       taskName: formData.taskName,
       taskType: formData.taskType,
+      docId: formData.taskId,
+      docDate: formData.taskDate,
+      duration: formData.duration
     };
+    
     try {
       const response = await apiCalls('put', '/activities/createUpdateTask', payload);
 
@@ -377,11 +352,7 @@ const Task = () => {
         showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
         const generatedId = response.paramObjectsMap.taskVO.id;
         if (generatedId && typeof supportingImg === 'object') {
-          console.log('Generated ID:', generatedId);
-          console.log('Uploaded Item', supportingImg);
           handleFileUpload(generatedId);
-        } else {
-          console.log('handle Img Upload failed');
         }
         handleClear();
         getAllTasks();
@@ -412,11 +383,7 @@ const Task = () => {
     }
   };
   const handleFileUpload = async (generatedId) => {
-    if (!generatedId) {
-      console.warn('Generated ID is missing');
-      showToast('error', 'Generated ID is required');
-      return;
-    }
+    if (!generatedId) return;
     const formData = new FormData();
     formData.append('file', supportingImg);
     try {
@@ -427,17 +394,15 @@ const Task = () => {
         {},
         { 'Content-Type': 'multipart/form-data' }
       );
-      console.log('Img Upload Response:', response);
 
       if (response.status === true) {
         showToast('success', response.message || 'Image Uploaded successfully!');
       } else {
-        console.warn('Img upload failed:', response);
-        showToast('error', 'Img upload failed');
+        showToast('error', 'Image upload failed');
       }
     } catch (error) {
       console.error('Img Upload Error:', error);
-      showToast('error', 'Failed to upload Img');
+      showToast('error', 'Failed to upload image');
     }
   };
   useEffect(() => {
@@ -462,7 +427,6 @@ const Task = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
@@ -505,7 +469,7 @@ const Task = () => {
                     <DatePicker
                       label="Task Date "
                       disabled
-                      value={formData.taskDate ? dayjs(formData.taskDate, 'YYYY-MM-DD') : null}
+                      value={dayjs(formData.taskDate, 'YYYY-MM-DD')}
                       onChange={(date) => handleDateChange('taskDate', date)}
                       slotProps={{
                         textField: {
@@ -628,7 +592,7 @@ const Task = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Start Date *"
-                      value={formData.startDate ? dayjs(formData.startDate, 'YYYY-MM-DD') : null}
+                      value={dayjs(formData.startDate, 'YYYY-MM-DD')}
                       onChange={(date) => handleDateChange('startDate', date)}
                       slotProps={{
                         textField: {
@@ -649,7 +613,7 @@ const Task = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="End Date"
-                      value={formData.endDate ? dayjs(formData.endDate, 'YYYY-MM-DD') : null}
+                      value={dayjs(formData.endDate, 'YYYY-MM-DD')}
                       onChange={(date) => handleDateChange('endDate', date)}
                       slotProps={{ textField: { size: 'small' } }}
                       format="DD-MM-YYYY"
@@ -666,11 +630,17 @@ const Task = () => {
                   size="small"
                   fullWidth
                   name="startTime"
+                  type="time"
                   value={formData.startTime}
                   onChange={handleInputChange}
-                  placeholder="HH:mm (e.g., 09:30)"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  inputProps={{
+                    step: 300,
+                  }}
                   error={!!fieldErrors.startTime}
-                // helperText={fieldErrors.startTime || "Format: HH:mm (24-hour)"}
+                  // helperText={fieldErrors.startTime || "Format: HH:mm"}
                 />
               </div>
 
@@ -682,13 +652,20 @@ const Task = () => {
                   size="small"
                   fullWidth
                   name="endTime"
+                  type="time"
                   value={formData.endTime}
                   onChange={handleInputChange}
-                  placeholder="HH:mm (e.g., 10:45)"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  inputProps={{
+                    step: 300,
+                  }}
                   error={!!fieldErrors.endTime}
-                // helperText={fieldErrors.endTime || "Format: HH:mm (24-hour)"}
+                  // helperText={fieldErrors.endTime || "Format: HH:mm"}
                 />
               </div>
+
 
               {/* Duration */}
               <div className="col-md-3 mb-3">
@@ -701,18 +678,18 @@ const Task = () => {
                   value={formData.duration}
                   InputProps={{
                     readOnly: true,
-                    style: {
+                    style: { 
                       fontWeight: 'bold',
-                      color: formData.duration.includes('Invalid') ||
-                        formData.duration.includes('before')
-                        ? '#d32f2f' : '#1976d2'
+                      color: formData.duration.includes('Invalid') || 
+                             formData.duration.includes('before') 
+                             ? '#d32f2f' : '#1976d2'
                     }
                   }}
-                  error={formData.duration.includes('Invalid') ||
-                    formData.duration.includes('before')}
-                // helperText={formData.duration.includes('Invalid') ||
-                //   formData.duration.includes('before')
-                //   ? formData.duration : "Calculated automatically"}
+                  error={formData.duration.includes('Invalid') || 
+                         formData.duration.includes('before')}
+                  helperText={formData.duration.includes('Invalid') ||
+                              formData.duration.includes('before')
+                              ? formData.duration : ""}
                 />
               </div>
 
@@ -759,8 +736,6 @@ const Task = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  // multiline
-                  // rows={3}
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
@@ -845,7 +820,6 @@ const Task = () => {
                     />
                   }
                   label="Active"
-                  // style={{ marginTop: '16px' }}
                 />
               </div>
             </div>

@@ -73,8 +73,12 @@ export const Calls = () => {
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
 
     // Helper function to validate time format
-    const isValidTime = (time) => {
-        return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+    // const isValidTime = (time) => {
+    //     return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+    // };
+    const isValidTime = (value) => {
+        // Matches HH:mm 24-hour format
+        return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
     };
 
     // Calculate duration between start and end times
@@ -252,6 +256,8 @@ export const Calls = () => {
             [name]: type === 'checkbox' ? checked : value
         }));
     };
+
+    
 
     const handleDateChange = (field, date) => {
         const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
@@ -604,11 +610,17 @@ export const Calls = () => {
                                 size="small"
                                 fullWidth
                                 name="timeStart"
+                                type="time"
                                 value={formData.timeStart}
                                 onChange={handleInputChange}
-                                placeholder="HH:mm (e.g., 09:30)"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 300, // 5 min interval
+                                }}
                                 error={!!fieldErrors.timeStart}
-                            // helperText={fieldErrors.timeStart || "Format: HH:mm (24-hour)"}
+                            // helperText={fieldErrors.timeStart || "Format: HH:mm"}
                             />
                         </div>
 
@@ -620,13 +632,20 @@ export const Calls = () => {
                                 size="small"
                                 fullWidth
                                 name="timeEnd"
+                                type="time"
                                 value={formData.timeEnd}
                                 onChange={handleInputChange}
-                                placeholder="HH:mm (e.g., 10:45)"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 300,
+                                }}
                                 error={!!fieldErrors.timeEnd}
-                            // helperText={fieldErrors.timeEnd || "Format: HH:mm (24-hour)"}
+                            // helperText={fieldErrors.timeEnd || "Format: HH:mm"}
                             />
                         </div>
+
 
                         {/* Duration */}
                         <div className="col-md-3 mb-3">
@@ -691,14 +710,14 @@ export const Calls = () => {
                         </div>
 
                         {/* Description */}
-                        <div className="col-md-6 mb-3">
+                        <div className="col-md-3 mb-3">
                             <TextField
                                 label="Description"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                multiline
-                                rows={3}
+                                // multiline
+                                // rows={3}
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}

@@ -60,7 +60,14 @@ const companySetup = {
           type: 'item',
           url: '/companysetup/companysetup',
           icon: icons2.IconSettingsPlus
-        }
+        },
+        // {
+        //   id: 'branch',
+        //   title: 'Branch',
+        //   type: 'item',
+        //   url: '/companysetup/branch',
+        //   icon: icons2.IconSettingsPlus
+        // }
       ]
     }
   ]

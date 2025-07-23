@@ -2,12 +2,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { Box, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import dayjs from 'dayjs';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
+import dayjs from 'dayjs';
 
-const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf }) => {
+const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf,enableEditing }) => {
   const [tableData, setTableData] = useState(data || []);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
@@ -50,6 +50,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         }
       };
     }
+
     if (column.accessorKey === 'active') {
       console.log('the columns are:', column);
 
@@ -57,7 +58,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         ...column,
         Cell: ({ cell }) => (
           <Chip
-            label={cell.getValue() === 'Active' ? 'Active' : 'Inactive'}
+            label={cell.getValue() === 'Active' ? 'Active' : 'In-Active'}
             sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
           />
         )
@@ -84,24 +85,93 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
       {!disableEditIcon && <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />}
     </Box>
   );
-
+  const customLocalization = {
+    toggleDensity: "Wide View",
+  };
   return (
     <>
       <MaterialReactTable
         displayColumnDefOptions={{
-          'mrt-row-actions': {
+          "mrt-row-actions": {
             muiTableHeadCellProps: {
-              align: 'center'
+              align: "center",
+              sx: {
+                backgroundColor: "#2d3e98",
+                color: "white",
+                fontWeight: "bold",
+                // height: "40px",
+                borderBottom: "2px solid #D1D5DB",
+              },
             },
-            size: 120
-          }
+            size: 100,
+          },
         }}
-        columns={customColumns}
+
+        columns={customColumns.map((col) => ({
+          ...col,
+          muiTableHeadCellProps: {
+            sx: {
+              backgroundColor: "#2d3e98",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "13px",
+              textAlign: "left",
+              borderBottom: "2px solid #D1D5DB",
+            },
+          },
+          muiTableBodyCellProps: {
+            sx: {
+              fontSize: "14px",
+              color: "#374151",
+              textAlign: "left",
+              borderBottom: "1px solid #E5E7EB",
+            },
+          },
+        }))}
+
         data={tableData && tableData}
-        enableColumnOrdering
+        enableColumnOrdering={false}
+        enableColumnActions={false}
         enableEditing
         renderRowActions={renderRowActions}
-        renderTopToolbarCustomActions={() => <Stack direction="row" spacing={2} className="ml-5 "></Stack>}
+        initialState={{ density: "compact" }}
+        localization={customLocalization}
+        muiTableContainerProps={{
+          sx: {
+            background: "#FFFFFF",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            border: "1px solid #E5E7EB",
+          },
+        }}
+        muiTableProps={{
+          sx: {
+            backgroundColor: "#FFFFFF",
+            borderRadius: "10px",
+            overflow: "hidden",
+            border: "1px solid #E5E7EB",
+          },
+        }}
+        muiTableBodyRowProps={{
+          sx: {
+            height: "42px",
+            "&:nth-of-type(even)": { backgroundColor: "#F9FAFB" },
+            "&:hover": {
+              backgroundColor: "#E5E7EB",
+              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
+              transition: "0.2s ease-in-out",
+            },
+          },
+        }}
+        renderTopToolbarCustomActions={() => (
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              marginLeft: "20px",
+            }}
+          ></Stack>
+        )}
       />
     </>
   );
