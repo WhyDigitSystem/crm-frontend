@@ -18,7 +18,7 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-export const documentType = () => {
+export const DocumentType = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
@@ -362,4 +362,4 @@ export const documentType = () => {
     </>
   );
 };
-export default documentType;
+export default DocumentType;

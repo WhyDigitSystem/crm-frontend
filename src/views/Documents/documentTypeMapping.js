@@ -21,7 +21,7 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-export const documentTypeMapping = () => {
+export const DocumentTypeMapping = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
@@ -457,4 +457,4 @@ export const documentTypeMapping = () => {
     </>
   );
 };
-export default documentTypeMapping;
+export default DocumentTypeMapping;
