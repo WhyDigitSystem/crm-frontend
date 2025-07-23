@@ -110,21 +110,21 @@ const basicMaster = {
         },
         {
           id: 'PriceMaster',
-          title: 'Price Master',
+          title: 'Price',
           type: 'item',
           url: '/basicMaster/PriceMaster',
           icon: icons.IconCurrencyRupee
         },
         {
           id: 'UnitMaster',
-          title: 'Unit Master',
+          title: 'Unit',
           type: 'item',
           url: '/basicMaster/UnitMaster',
           icon: icons.IconRulerMeasure
         },
         {
           id: 'CategoryMaster',
-          title: 'Category Master',
+          title: 'Category',
           type: 'item',
           url: '/basicMaster/CategoryMaster',
           icon: icons.IconTags

@@ -32,8 +32,8 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           component="div"
           style={{
             height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-            paddingLeft: '16px',
-            paddingRight: '16px'
+            paddingLeft: '14px',
+            paddingRight: '14px'
           }}
         >
           <MenuList />
