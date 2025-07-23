@@ -49,6 +49,7 @@ const EmployeeDetails = () => {
     firstName: '',
     lastName: '',
     employeeCode: '',
+    // employeeName:'',
     employeeAddress: '',
     branch: '',
     gender: '',
@@ -75,6 +76,7 @@ const EmployeeDetails = () => {
     firstName: '',
     lastName: '',
     employeeCode: '',
+    employeeName: '',
     branch: '',
     gender: '',
     email: '',
@@ -254,6 +256,7 @@ const EmployeeDetails = () => {
       firstName: '',
       lastName: '',
       employeeCode: '',
+      employeeName: '',
       employeeAddress: '',
       branch: '',
       gender: '',
@@ -316,6 +319,7 @@ const EmployeeDetails = () => {
       setIsLoading(true);
 
       const saveFormData = {
+        ...(editId && { id: editId }),
         active: formData.active,
         address: formData.employeeAddress,
         branch: formData.branch,
@@ -328,6 +332,7 @@ const EmployeeDetails = () => {
         designation: formData.designation,
         email: formData.email,
         employeeCode: formData.employeeCode,
+        employeeName: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
         fatherName: formData.fatherName,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -341,7 +346,7 @@ const EmployeeDetails = () => {
         age: parseInt(formData.age) || 0,
         assignedUserName: formData.assignedUserName,
         reportingTo: formData.reportingTo,
-        id: editId || 0
+        cancelRemark: null,
       };
 
       try {
@@ -379,6 +384,7 @@ const EmployeeDetails = () => {
           firstName: employee.firstName || '',
           lastName: employee.lastName || '',
           employeeCode: employee.employeeCode || '',
+          // employeeName:employee.employeeName || '',
           employeeAddress: employee.address || '',
           branch: employee.branch || '',
           gender: employee.gender || '',
@@ -495,7 +501,7 @@ const EmployeeDetails = () => {
           style={{ color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }}
           onClick={() => getEmployeeDetailsById(row)}
         >
-          {`${row.original.firstName || ''}`}
+          {`${row.original.employeeName || ''}`}
         </span>
       )
     },
@@ -569,8 +575,14 @@ const EmployeeDetails = () => {
                     })}
                   renderInput={(params) => (
                     <TextField
+                      // {...params}
+                      // label="Company *"
                       {...params}
-                      label="Company *"
+                      label={
+                        <span>
+                          Company <span className="asterisk">*</span>
+                        </span>
+                      }
                       name="company"
                       error={Boolean(fieldErrors.company)}
                       helperText={fieldErrors.company || ''}
@@ -601,7 +613,12 @@ const EmployeeDetails = () => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Branch *"
+                      // label="Branch *"
+                      label={
+                        <span>
+                          Branch <span className="asterisk">*</span>
+                        </span>
+                      }
                       name="branch"
                       error={Boolean(fieldErrors.branch)}
                       helperText={fieldErrors.branch || ''}
@@ -617,7 +634,12 @@ const EmployeeDetails = () => {
               {/* First Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="First Name *"
+                  // label="First Name *"
+                  label={
+                    <span>
+                      First Name <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -632,7 +654,12 @@ const EmployeeDetails = () => {
               {/* Last Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Last Name *"
+                  // label="Last Name *"
+                  label={
+                    <span>
+                      Last Name <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -644,24 +671,30 @@ const EmployeeDetails = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Employee Name"
                   variant="outlined"
                   size="small"
+                  name='employeeName'
                   fullWidth
                   value={`${formData.firstName || ''} ${formData.lastName || ''}`.trim()}
                   disabled
                   InputProps={{
-                    style: { color: 'rgba(0, 0, 0, 0.87)' } // Maintain visible text color
+                    style: { color: 'rgba(0, 0, 0, 0.87)' } 
                   }}
                 />
-              </div>
+              </div> */}
 
               {/* Father's Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Father's Name"
+                  // label="Father's Name"
+                  label={
+                    <span>
+                      Father's Name <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -689,7 +722,12 @@ const EmployeeDetails = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date of Birth *"
+                      // label="Date of Birth *"
+                      label={
+                        <span>
+                          Date of Birth <span className="asterisk">*</span>
+                        </span>
+                      }
                       value={formData.dob ? dayjs(formData.dob, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('dob', date)}
                       maxDate={maxDate}
@@ -742,7 +780,12 @@ const EmployeeDetails = () => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Gender *"
+                      // label="Gender *"
+                      label={
+                        <span>
+                          Gender <span className="asterisk">*</span>
+                        </span>
+                      }
                       name="gender"
                       error={Boolean(fieldErrors.gender)}
                       helperText={fieldErrors.gender || ''}
@@ -787,7 +830,12 @@ const EmployeeDetails = () => {
               {/* Email */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Email *"
+                  // label="Email *"
+                  label={
+                    <span>
+                      Email <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -802,7 +850,12 @@ const EmployeeDetails = () => {
               {/* Mobile Number */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Mobile No *"
+                  // label="Mobile No *"
+                  label={
+                    <span>
+                      Mobile No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -823,7 +876,12 @@ const EmployeeDetails = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date of Join *"
+                      // label="Date of Join *"
+                      label={
+                        <span>
+                          Date of Join <span className="asterisk">*</span>
+                        </span>
+                      }
                       value={formData.doj ? dayjs(formData.doj, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
@@ -915,7 +973,12 @@ const EmployeeDetails = () => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Designation *"
+                      // label="Designation *"
+                      label={
+                        <span>
+                          Designation <span className="asterisk">*</span>
+                        </span>
+                      }
                       name="designation"
                       error={Boolean(fieldErrors.designation)}
                       helperText={fieldErrors.designation || ''}

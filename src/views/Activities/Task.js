@@ -344,7 +344,7 @@ const Task = () => {
       docDate: formData.taskDate,
       duration: formData.duration
     };
-    
+
     try {
       const response = await apiCalls('put', '/activities/createUpdateTask', payload);
 
@@ -487,7 +487,12 @@ const Task = () => {
               {/* Task Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Task Name *"
+                  // label="Task Name *"
+                  label={
+                    <span>
+                      Task Name <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -502,10 +507,15 @@ const Task = () => {
               {/* Branch */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                  <InputLabel id="branch-label">Branch *</InputLabel>
+                  <InputLabel id="branch-label">Branch <span className="asterisk">*</span></InputLabel>
                   <Select
                     labelId="branch-label"
-                    label="Branch *"
+                    // label="Branch *"
+                    label={
+                      <span>
+                        Branch <span className="asterisk">*</span>
+                      </span>
+                    }
                     value={formData.branch}
                     onChange={handleBranchChange}
                     name="branch"
@@ -591,7 +601,12 @@ const Task = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Start Date *"
+                      // label="Start Date *"
+                      label={
+                        <span>
+                          Start Date <span className="asterisk">*</span>
+                        </span>
+                      }
                       value={dayjs(formData.startDate, 'YYYY-MM-DD')}
                       onChange={(date) => handleDateChange('startDate', date)}
                       slotProps={{
@@ -625,7 +640,12 @@ const Task = () => {
               {/* Start Time */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Start Time *"
+                  // label="Start Time *"
+                  label={
+                    <span>
+                      Start Time <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -640,7 +660,7 @@ const Task = () => {
                     step: 300,
                   }}
                   error={!!fieldErrors.startTime}
-                  // helperText={fieldErrors.startTime || "Format: HH:mm"}
+                // helperText={fieldErrors.startTime || "Format: HH:mm"}
                 />
               </div>
 
@@ -662,7 +682,7 @@ const Task = () => {
                     step: 300,
                   }}
                   error={!!fieldErrors.endTime}
-                  // helperText={fieldErrors.endTime || "Format: HH:mm"}
+                // helperText={fieldErrors.endTime || "Format: HH:mm"}
                 />
               </div>
 
@@ -678,28 +698,33 @@ const Task = () => {
                   value={formData.duration}
                   InputProps={{
                     readOnly: true,
-                    style: { 
+                    style: {
                       fontWeight: 'bold',
-                      color: formData.duration.includes('Invalid') || 
-                             formData.duration.includes('before') 
-                             ? '#d32f2f' : '#1976d2'
+                      color: formData.duration.includes('Invalid') ||
+                        formData.duration.includes('before')
+                        ? '#d32f2f' : '#1976d2'
                     }
                   }}
-                  error={formData.duration.includes('Invalid') || 
-                         formData.duration.includes('before')}
+                  error={formData.duration.includes('Invalid') ||
+                    formData.duration.includes('before')}
                   helperText={formData.duration.includes('Invalid') ||
-                              formData.duration.includes('before')
-                              ? formData.duration : ""}
+                    formData.duration.includes('before')
+                    ? formData.duration : ""}
                 />
               </div>
 
               {/* Status */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status-label">Status *</InputLabel>
+                  <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
                   <Select
                     labelId="status-label"
-                    label="Status *"
+                    // label="Status *"
+                    label={
+                      <span>
+                        Status <span className="asterisk">*</span>
+                      </span>
+                    }
                     value={formData.status}
                     onChange={handleInputChange}
                     name="status"
@@ -717,7 +742,12 @@ const Task = () => {
               {/* Assign To */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Assign To *"
+                  // label="Assign To *"
+                  label={
+                    <span>
+                      Assign To <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth

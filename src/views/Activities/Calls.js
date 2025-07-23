@@ -257,7 +257,7 @@ export const Calls = () => {
         }));
     };
 
-    
+
 
     const handleDateChange = (field, date) => {
         const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
@@ -437,7 +437,7 @@ export const Calls = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Call Date *"
+                                        label="Call Date"
                                         value={formData.calldate ? dayjs(formData.calldate, 'YYYY-MM-DD') : null}
                                         onChange={(date) => handleDateChange('calldate', date)}
                                         slotProps={{
@@ -457,7 +457,12 @@ export const Calls = () => {
                         {/* Client Name */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Client Name *"
+                                // label="Client Name *"
+                                label={
+                                    <span>
+                                        Client Name <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -472,10 +477,15 @@ export const Calls = () => {
                         {/* Branch */}
                         <div className="col-md-3 mb-3">
                             <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                                <InputLabel id="branch-label">Branch *</InputLabel>
+                                <InputLabel id="branch-label">Branch <span className="asterisk">*</span></InputLabel>
                                 <Select
                                     labelId="branch-label"
-                                    label="Branch *"
+                                    // label="Branch *"
+                                    label={
+                                        <span>
+                                            Branch <span className="asterisk">*</span>
+                                        </span>
+                                    }
                                     value={formData.branch}
                                     onChange={handleBranchChange}
                                     name="branch"
@@ -493,7 +503,12 @@ export const Calls = () => {
                         {/* Contact Name */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Contact Name *"
+                                // label="Contact Name *"
+                                label={
+                                    <span>
+                                        Contact Name <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -571,7 +586,12 @@ export const Calls = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Start Date *"
+                                        // label="Start Date *"
+                                        label={
+                                            <span>
+                                                Start Date <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         value={formData.dateStart ? dayjs(formData.dateStart, 'YYYY-MM-DD') : null}
                                         onChange={(date) => handleDateChange('dateStart', date)}
                                         slotProps={{
@@ -605,7 +625,12 @@ export const Calls = () => {
                         {/* Start Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Start Time *"
+                                // label="Start Time *"
+                                label={
+                                    <span>
+                                        Start Time <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -676,10 +701,15 @@ export const Calls = () => {
                         {/* Status */}
                         <div className="col-md-3 mb-3">
                             <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                                <InputLabel id="status-label">Status *</InputLabel>
+                                <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
                                 <Select
                                     labelId="status-label"
-                                    label="Status *"
+                                    // label="Status *"
+                                    label={
+                                        <span>
+                                            Status <span className="asterisk">*</span>
+                                        </span>
+                                    }
                                     value={formData.status}
                                     onChange={handleInputChange}
                                     name="status"

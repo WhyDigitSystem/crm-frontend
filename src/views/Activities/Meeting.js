@@ -505,7 +505,7 @@ export const Meeting = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Meeting Date *"
+                                        label="Meeting Date"
                                         value={formData.meetingDate ? dayjs(formData.meetingDate, 'YYYY-MM-DD') : null}
                                         onChange={(date) => handleDateChange('meetingDate', date)}
                                         slotProps={{
@@ -525,7 +525,12 @@ export const Meeting = () => {
                         {/* Client Name */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Client Name *"
+                                // label="Client Name *"
+                                label={
+                                    <span>
+                                        Client Name <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -540,7 +545,13 @@ export const Meeting = () => {
                         {/* Branch */}
                         <div className="col-md-3 mb-3">
                             <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                                <InputLabel id="branch-label">Branch *</InputLabel>
+                                {/* <InputLabel id="branch-label">Branch *</InputLabel> */}
+                                <InputLabel id="branch-label">{
+                                    <span>
+                                        Branch <span className="asterisk">*</span>
+                                    </span>
+                                }
+                                </InputLabel>
                                 <Select
                                     labelId="branch-label"
                                     label="Branch *"
@@ -561,7 +572,12 @@ export const Meeting = () => {
                         {/* Contact Name */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Contact Name *"
+                                // label="Contact Name *"
+                                label={
+                                    <span>
+                                        Contact Name <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -605,7 +621,12 @@ export const Meeting = () => {
                         {/* Venue */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Venue *"
+                                // label="Venue *"
+                                label={
+                                    <span>
+                                        Venue <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -622,7 +643,12 @@ export const Meeting = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Start Date *"
+                                        // label="Start Date *"
+                                        label={
+                                            <span>
+                                                Start Date <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         value={formData.startDate}
                                         onChange={(date) => handleDateChange('startDate', date)}
                                         slotProps={{
@@ -658,7 +684,12 @@ export const Meeting = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <TimePicker
-                                        label="Start Time *"
+                                        // label="Start Time *"
+                                        label={
+                                            <span>
+                                                Start Time <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         value={formData.startTime}
                                         onChange={(time) => handleTimeChange('startTime', time)}
                                         slotProps={{
@@ -723,10 +754,15 @@ export const Meeting = () => {
                         {/* Status */}
                         <div className="col-md-3 mb-3">
                             <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                                <InputLabel id="status-label">Status *</InputLabel>
+                                <InputLabel id="status-label">Status<span className="asterisk">*</span></InputLabel>
                                 <Select
                                     labelId="status-label"
-                                    label="Status *"
+                                    // label="Status *"
+                                    label={
+                                        <span>
+                                            Status <span className="asterisk">*</span>
+                                        </span>
+                                    }
                                     value={formData.status}
                                     onChange={handleInputChange}
                                     name="status"
@@ -744,7 +780,12 @@ export const Meeting = () => {
                         {/* Assign To */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Assign To *"
+                                // label="Assign To *"
+                                label={
+                                    <span>
+                                        Assign To <span className="asterisk">*</span>
+                                    </span>
+                                }
                                 variant="outlined"
                                 size="small"
                                 fullWidth
