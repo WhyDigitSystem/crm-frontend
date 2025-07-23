@@ -36,6 +36,7 @@
     "html2canvas": "^1.4.1",
     "install": "^0.13.0",
     "jspdf": "^2.5.2",
+    "jspdf-autotable": "^5.0.2",
     "material-react-table": "^1.15.1",
     "material-ui-popup-state": "^5.0.10",
     "npm": "^10.7.0",
