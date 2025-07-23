@@ -4,6 +4,7 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+import { element } from 'prop-types';
 
 
 
@@ -29,6 +30,14 @@ const PriceMaster = Loadable(lazy(() => import('views/basicMaster/PriceMaster'))
 const UnitMaster = Loadable(lazy(() => import('views/basicMaster/UnitMaster')));
 const CategoryMaster = Loadable(lazy(() => import('views/basicMaster/CategoryMaster')));
 const SubCategory = Loadable(lazy(() => import('views/basicMaster/SubCategory')));
+
+// documents
+const DocumentType = Loadable(lazy(() => import('views/Documents/documentType')));
+const DocumentTypeMapping = Loadable(lazy(() => import('views/Documents/documentTypeMapping')));
+const MultipleDocumentIdGeneration = Loadable(lazy(() => import('views/Documents/multipleDocumentIdGeneration')));
+
+
+
 
 // companySetup
 const CreateCompany = Loadable(lazy(() => import('views/companySetup/CreateCompany')));
@@ -146,6 +155,20 @@ const FinanceRoute = {
     {
       path: '/basicMaster/ScreenNames',
       element: <ScreenNames />
+    },
+
+    // Document
+    {
+      path: '/Documents/documentType',
+      element: <DocumentType />
+    },
+    {
+      path: '/Documents/documentTypeMapping',
+      element: <DocumentTypeMapping />
+    },
+    {
+      path: '/Documents/multipleDocumentIdGeneration',
+      element: <MultipleDocumentIdGeneration />
     },
 
     // Activities

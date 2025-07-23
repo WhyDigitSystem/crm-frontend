@@ -1,5 +1,6 @@
 import admin from './admin';
 import basicMaster from './basicMaster';
+import Documents from './Documents';
 import companySetup from './companySetup';
 import dashboard from './dashboard';
 import Activities from './Activities'
@@ -15,6 +16,7 @@ const getMenuItems = () => {
       dashboard,
       admin,
       basicMaster,
+      Documents,
       Activities,
       Transaction,
     ]
@@ -24,7 +26,7 @@ const getMenuItems = () => {
   switch (localStorageValue) {
     case 'ROLE_SUPER_ADMIN':
       return {
-        items: [dashboard, companySetup, basicMaster, Activities,Transaction]
+        items: [dashboard, companySetup, basicMaster, Documents, Activities, Transaction]
       };
     case 'ROLE_ADMIN':
       return {
@@ -33,6 +35,7 @@ const getMenuItems = () => {
           companySetup,
           admin,
           basicMaster,
+          Documents,
           Activities,
           Transaction,
         ]

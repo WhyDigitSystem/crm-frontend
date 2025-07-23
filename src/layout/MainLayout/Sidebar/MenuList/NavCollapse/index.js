@@ -34,9 +34,10 @@ const NavCollapse = ({ menu, level }) => {
       menu?.id !== 'companySetup' &&
       menu?.id !== 'rolesAndResponsibilities' &&
       menu?.id !== 'basicMasters' &&
+      menu?.id !== 'Documents' &&
       menu?.id !== 'finance' &&
-      menu?.id !== 'Activities' && 
-      menu?.id  !=='Transaction' 
+      menu?.id !== 'Activities' &&
+      menu?.id !== 'Transaction'
     ) {
       navigate(menu.children[0]?.url);
     }
@@ -104,7 +105,7 @@ const NavCollapse = ({ menu, level }) => {
     <>
       <ListItemButton
         sx={{
-           borderRadius: `${customization.borderRadius}px`,
+          borderRadius: `${customization.borderRadius}px`,
           // mb: 0, // Reduce margin-bottom
           alignItems: 'center', // Align vertically centered
           backgroundColor: level > 1 ? 'transparent !important' : 'inherit',

@@ -144,26 +144,12 @@ const basicMaster = {
           icon: icons.IconCurrencyDollar
         },
         {
-          id: 'finYear',
-          title: 'FinYear',
-          type: 'item',
-          url: '/basicMaster/finYear',
-          icon: icons.IconCalendarStats
-        },
-        {
           id: 'roles',
           title: 'Roles',
           type: 'item',
           url: '/basicMaster/roles',
           icon: icons.IconShieldLock
         },
-        {
-          id: 'screenNames',
-          title: 'Screen Names',
-          type: 'item',
-          url: '/basicMaster/ScreenNames',
-          icon: icons.IconLayoutDashboard
-        }
       ]
     }
   ]
