@@ -3,12 +3,14 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import { DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import IconButton from '@mui/material/IconButton';
-import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
+import { Avatar, Typography, Autocomplete, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
@@ -30,68 +32,74 @@ const Lead = () => {
     const [listView, setListView] = useState(false);
     const [docId, setDocId] = useState('');
     const [open, setOpen] = useState(false);
-    const [clientTypes] = useState(['Corporate', 'Individual', 'Government', 'Non-Profit']);
-    const [sources] = useState(['Website', 'Referral', 'Social Media', 'Advertisement', 'Other']);
-    const [industries] = useState(['IT', 'Finance', 'Healthcare', 'Education', 'Manufacturing', 'Retail']);
+    const [cityList, setCityList] = useState([]);
+    const [sources] = useState(['Call', 'Email', 'Existing Customer', 'Partner', 'Public Relations', 'Campaign', 'Website', 'Other']);
+    const [clientTypes] = useState(['Company', 'Individual']);
+    const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'Manufacturing', 'Construction']);
 
     const [formData, setFormData] = useState({
-        clientName: '',
-        clientType: '',
-        contactNo: '',
-        mail: '',
-        industry: '',
+        docDate: dayjs(),
         source: '',
-        address: '',
+        clientType: '',
+        clientName: '',
+        mail: '',
+        contactNo: '',
+        industry: '',
+        website: '',
         city: '',
         state: '',
         country: '',
         pinCode: '',
-        website: '',
         customer: '',
+        address: '',
+        probability: '',
+        assignTo: '',
         finYear: finYear,
         orgId: orgId,
         branch: branch,
         branchCode: branchCode,
-        createdBy: createdBy,
+        createdBy: createdBy
     });
 
     const [fieldErrors, setFieldErrors] = useState({
-        clientName: '',
-        clientType: '',
-        contactNo: '',
-        mail: '',
-        industry: '',
         source: '',
+        clientType: '',
+        clientName: '',
+        city: '',
+        state: '',
+        country: '',
+        pinCode: '',
+        address: '',
     });
 
     const [leadBranches, setLeadBranches] = useState([{
-        address: '',
         branch: '',
-        branchCode: '',
-        city: '',
-        country: '',
         gstNo: '',
-        state: ''
+        city: '',
+        state: '',
+        country: '',
+        address: '',
     }]);
 
     const [branchErrors, setBranchErrors] = useState([{
         branch: '',
-        branchCode: '',
         address: '',
         city: '',
         country: '',
-        state: ''
+        state: '',
+        gstNo: ''
     }]);
 
     const [leadContacts, setLeadContacts] = useState([{
+        preferredContact: false,
         branchName: '',
+        name: '',
+        mobileNo: '',
+        email: '',
         designation: '',
         dob: '',
-        email: '',
-        mobileNo: '',
-        name: '',
-        preferredContact: false,
-        workAnniversaryDate: ''
+        workAnniversaryDate: '',
+        anniversaryDate: ''
     }]);
 
     const [contactErrors, setContactErrors] = useState([{
@@ -113,20 +121,17 @@ const Lead = () => {
     ];
 
     useEffect(() => {
-        const fetchInitialData = async () => {
-            await getAllLeads();
-            await getLeadDocId();
-        };
-        fetchInitialData();
+        getAllLeads();
+        getLeadDocId();
+        getCityName();
     }, []);
-
     const getLeadDocId = async () => {
         if (editId) return;
         try {
             setIsDocIdLoading(true);
             const response = await apiCalls(
                 'get',
-                `/transaction/getLeadDocId?branch=BANGALORE&branchCode=BLR&finYear=${formData.finYear}&orgId=${orgId}`
+                `/transaction/getLeadDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
             if (response.status) {
                 setDocId(response.paramObjectsMap.leadDocId);
@@ -141,8 +146,10 @@ const Lead = () => {
 
     const getAllLeads = async () => {
         try {
-            const response = await apiCalls('get', `/transaction/getAllLeadByOrgId?branchCode=BLR&finYear=2025&orgId=${orgId}`);
-            if (response.status) {
+            const response = await apiCalls('get', `/transaction/getAllLeadByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+            console.log("getAll Leads", response.status);
+
+            if (response.status === true) {
                 setListViewData(response.paramObjectsMap.leadVO);
             } else {
                 showToast('error', response.message || 'Failed to fetch leads');
@@ -160,24 +167,26 @@ const Lead = () => {
             if (response.status) {
                 setListView(false);
                 const lead = response.paramObjectsMap.leadVO;
-
+                setCompanyLogo(response.paramObjectsMap.leadVO.companyLogo);
                 // Map API fields to formData state
                 setFormData({
-                    address: lead.addres || '',
-                    cancelRemarks: lead.cancelRemarks || '',
+                    address: lead.address || '',
+                    docDate: lead.docDate || null,
                     city: lead.city || '',
                     clientName: lead.clientName || '',
                     clientType: lead.clientType || '',
                     contactNo: lead.contactNo || '',
                     country: lead.country || '',
                     customer: lead.customer || '',
-                    finYear: lead.finYear || '2025',
+                    finYear: lead.finYear || '',
                     industry: lead.industry || '',
                     mail: lead.mail || '',
                     pinCode: lead.pinCode || '',
                     source: lead.source || '',
                     state: lead.state || '',
                     website: lead.website || '',
+                    probability: lead.probability || '',
+                    assignTo: lead.assignTo || '',
                 });
 
                 // Set document ID
@@ -187,7 +196,7 @@ const Lead = () => {
                 const branches = lead.leadBranchVO?.map(branch => ({
                     address: branch.address || '',
                     branch: branch.branch || '',
-                    branchCode: branch.branchCode || '',
+                    // branchCode: branch.branchCode || '',
                     city: branch.city || '',
                     country: branch.country || '',
                     gstNo: branch.gstNo || '',
@@ -195,7 +204,7 @@ const Lead = () => {
                 })) || [];
 
                 setLeadBranches(branches.length > 0 ? branches : [{
-                    address: '', branch: '', branchCode: '', city: '', country: '', gstNo: '', state: ''
+                    address: '', branch: '', city: '', country: '', gstNo: '', state: ''
                 }]);
 
                 // Map contacts
@@ -206,13 +215,13 @@ const Lead = () => {
                     email: contact.email || '',
                     mobileNo: contact.mobileNo || '',
                     name: contact.name || '',
-                    preferredContact: contact.preferedContact === 1,
+                    preferredContact: contact.preferedContact,
                     workAnniversaryDate: contact.workAniversaryDate || ''
                 })) || [];
 
                 setLeadContacts(contacts.length > 0 ? contacts : [{
                     branchName: '', designation: '', dob: '', email: '', mobileNo: '', name: '',
-                    preferredContact: false, workAnniversaryDate: ''
+                    preferredContact: 0, workAnniversaryDate: ''
                 }]);
             }
         } catch (error) {
@@ -220,7 +229,20 @@ const Lead = () => {
             showToast('error', 'Failed to fetch lead details');
         }
     };
-
+    const getCityName = async () => {
+        try {
+            const response = await apiCalls('get', `/commonmaster/getCityNameFromMaster?orgId=${orgId}`);
+            if (response.status === true) {
+                setCityList(response.paramObjectsMap.cityName || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         // Convert to string if it's the contactNo field
@@ -266,7 +288,7 @@ const Lead = () => {
         const newErrors = [...branchErrors];
         if (!newErrors[index]) newErrors[index] = {};
 
-        if (!value && ['branch', 'branchCode', 'address', 'city', 'country', 'state'].includes(field)) {
+        if (!value && ['branch', 'address', 'city', 'country', 'state'].includes(field)) {
             newErrors[index][field] = 'This field is required';
         } else {
             newErrors[index][field] = '';
@@ -300,7 +322,7 @@ const Lead = () => {
         const errors = leadBranches.map(branch => {
             const error = {};
             if (!branch.branch.trim()) error.branch = 'Branch name is required';
-            if (!branch.branchCode.trim()) error.branchCode = 'Branch code is required';
+            // if (!branch.branchCode.trim()) error.branchCode = 'Branch code is required';
             if (!branch.address.trim()) error.address = 'Address is required';
             if (!branch.city.trim()) error.city = 'City is required';
             if (!branch.country.trim()) error.country = 'Country is required';
@@ -350,10 +372,9 @@ const Lead = () => {
         // Prepare API payload
         const payload = {
             ...(editId && { id: editId }),
-            addres: formData.address || '',
-            branch: leadBranches[0]?.branch || '',
-            branchCode: leadBranches[0]?.branchCode || '',
-            cancelRemarks: formData.cancelRemarks || '',
+            address: formData.address || '',
+            branch: branch || '',
+            branchCode: branchCode || '',
             city: formData.city || '',
             clientName: formData.clientName,
             clientType: formData.clientType,
@@ -370,10 +391,12 @@ const Lead = () => {
             source: formData.source,
             state: formData.state || '',
             website: formData.website || '',
+            assignTo: formData.assignTo || '',
+            probability: formData.probability || '',
             leadBranchDTO: leadBranches.map(branch => ({
                 address: branch.address,
                 branch: branch.branch,
-                branchCode: branch.branchCode,
+                // branchCode: branch.branchCode,
                 city: branch.city,
                 country: branch.country,
                 gstNo: branch.gstNo || '',
@@ -388,12 +411,14 @@ const Lead = () => {
                 mobileNo: contact.mobileNo,
                 name: contact.name,
                 preferedContact: contact.preferredContact ? 1 : 0,
-                workAniversaryDate: contact.workAnniversaryDate || ''
+                workAniversaryDate: contact.workAnniversaryDate || null
             }))
         };
 
         try {
             const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
+            console.log("data to save", payload);
+
             if (response.status) {
                 showToast('success', editId ? 'Lead updated successfully' : 'Lead created successfully');
                 const generatedId = response.paramObjectsMap.leadVO.id;
@@ -420,78 +445,79 @@ const Lead = () => {
     const handleClear = () => {
         setCompanyLogo(null);
         setFormData({
-            address: '',
-            branch: '',
-            branchCode: '',
-            cancelRemarks: '',
-            city: '',
-            clientName: '',
-            clientType: '',
-            contactNo: '',
-            country: '',
-            customer: '',
-            finYear: '2025',
-            industry: '',
-            mail: '',
-            pinCode: '',
+            docDate: dayjs(),
             source: '',
-            state: '',
+            clientType: '',
+            clientName: '',
+            mail: '',
+            contactNo: '',
+            industry: '',
             website: '',
-        });
-
-        setFieldErrors({
-            clientName: '',
-            clientType: '',
-            contactNo: '',
-            mail: '',
-            industry: '',
-            source: '',
-        });
-
-        setLeadBranches([{
-            address: '',
-            branch: '',
-            branchCode: '',
             city: '',
+            state: '',
             country: '',
+            pinCode: '',
+            customer: '',
+            address: '',
+            probability: '',
+            assignTo: '',
+            finYear: finYear,
+            orgId: orgId,
+            branch: branch,
+            branchCode: branchCode,
+            createdBy: createdBy
+        });
+        setFieldErrors({
+            source: '',
+            clientType: '',
+            clientName: '',
+            city: '',
+            state: '',
+            country: '',
+            pinCode: '',
+            address: '',
+        });
+        setLeadBranches([{
+            branch: '',
             gstNo: '',
-            state: ''
+            city: '',
+            state: '',
+            country: '',
+            address: '',
         }]);
-
         setLeadContacts([{
+            preferredContact: false,
             branchName: '',
+            name: '',
+            mobileNo: '',
+            email: '',
             designation: '',
             dob: '',
-            email: '',
-            mobileNo: '',
-            name: '',
-            preferredContact: false,
-            workAnniversaryDate: ''
+            workAnniversaryDate: '',
+            anniversaryDate: ''
         }]);
-
         setEditId('');
         getLeadDocId();
     };
 
     const handleAddBranch = () => {
-        const lastBranch = leadBranches[leadBranches.length - 1];
-
-        if (!lastBranch.branch || !lastBranch.branchCode || !lastBranch.address ||
-            !lastBranch.city || !lastBranch.country || !lastBranch.state) {
-            const newErrors = [...branchErrors];
-            const lastIndex = newErrors.length - 1;
-            newErrors[lastIndex] = {
-                branch: !lastBranch.branch ? 'Branch is required' : '',
-                branchCode: !lastBranch.branchCode ? 'Branch code is required' : '',
-                address: !lastBranch.address ? 'Address is required' : '',
-                city: !lastBranch.city ? 'City is required' : '',
-                country: !lastBranch.country ? 'Country is required' : '',
-                state: !lastBranch.state ? 'State is required' : ''
-            };
-            setBranchErrors(newErrors);
-            showToast('warning', 'Please fill current branch before adding new');
-            return;
-        }
+        // const lastBranch = leadBranches[leadBranches.length - 1];
+        // if (!lastBranch.branch || !lastBranch.branchCode || !lastBranch.address ||
+        //     !lastBranch.city || !lastBranch.country || !lastBranch.state) {
+        //     const newErrors = [...branchErrors];
+        //     const lastIndex = newErrors.length - 1;
+        //     newErrors[lastIndex] = {
+        //         branch: !lastBranch.branch ? 'Branch is required' : '',
+        //         // branchCode: !lastBranch.branchCode ? 'Branch code is required' : '',
+        //         address: !lastBranch.address ? 'Address is required' : '',
+        //         city: !lastBranch.city ? 'City is required' : '',
+        //         country: !lastBranch.country ? 'Country is required' : '',
+        //         state: !lastBranch.state ? 'State is required' : ''
+        //     };
+        //     setBranchErrors(newErrors);
+        //     showToast('warning', 'Please fill current branch before adding new');
+        //     return;
+        // }
 
         setLeadBranches((prev) => [...prev, {
             address: '',
@@ -539,21 +565,20 @@ const Lead = () => {
     };
 
     const handleAddContact = () => {
-        const lastContact = leadContacts[leadContacts.length - 1];
-
-        if (!lastContact.name || !lastContact.mobileNo || !lastContact.email || !lastContact.designation) {
-            const newErrors = [...contactErrors];
-            const lastIndex = newErrors.length - 1;
-            newErrors[lastIndex] = {
-                name: !lastContact.name ? 'Name is required' : '',
-                mobileNo: !lastContact.mobileNo ? 'Mobile number is required' : '',
-                email: !lastContact.email ? 'Email is required' : '',
-                designation: !lastContact.designation ? 'Designation is required' : ''
-            };
-            setContactErrors(newErrors);
-            showToast('warning', 'Please fill current contact before adding new');
-            return;
-        }
+        // const lastContact = leadContacts[leadContacts.length - 1];
+        // if (!lastContact.name || !lastContact.mobileNo || !lastContact.email || !lastContact.designation) {
+        //     const newErrors = [...contactErrors];
+        //     const lastIndex = newErrors.length - 1;
+        //     newErrors[lastIndex] = {
+        //         name: !lastContact.name ? 'Name is required' : '',
+        //         mobileNo: !lastContact.mobileNo ? 'Mobile number is required' : '',
+        //         email: !lastContact.email ? 'Email is required' : '',
+        //         designation: !lastContact.designation ? 'Designation is required' : ''
+        //     };
+        //     setContactErrors(newErrors);
+        //     showToast('warning', 'Please fill current contact before adding new');
+        //     return;
+        // }
 
         setLeadContacts((prev) => [...prev, {
             branchName: '',
@@ -646,15 +671,17 @@ const Lead = () => {
         };
     }, [companyLogo]);
     const handleRemoveLogo = () => setCompanyLogo(null);
+    const handleDateChange = (field, date) => {
+        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+        setFormData(prev => ({ ...prev, [field]: formattedDate }));
+    };
     return (
         <>
-            <div>
-                <ToastComponent />
-            </div>
+            <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
                         <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} disabled={isLoading} />
@@ -663,7 +690,6 @@ const Lead = () => {
                     {!listView ? (
                         <>
                             <div className="row d-flex ml">
-                                {/* Lead ID */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Lead ID"
@@ -673,16 +699,30 @@ const Lead = () => {
                                         disabled
                                         name="leadDocId"
                                         value={isDocIdLoading ? "Generating..." : docId}
-                                        InputProps={{
-                                            style: { backgroundColor: '#f5f5f5' }
-                                        }}
                                     />
                                 </div>
-
+                                <div className="col-md-3 mb-3">
+                                    <FormControl fullWidth variant="filled" size="small">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="Doc Date"
+                                                value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                                                onChange={(date) => handleDateChange('docDate', date)}
+                                                slotProps={{
+                                                    textField: {
+                                                        size: 'small',
+                                                    }
+                                                }}
+                                                format="DD-MM-YYYY"
+                                                disabled
+                                            />
+                                        </LocalizationProvider>
+                                    </FormControl>
+                                </div>
                                 {/* Source */}
                                 <div className="col-md-3 mb-3">
                                     <FormControl fullWidth size="small">
-                                        <InputLabel>Source *</InputLabel>
+                                        <InputLabel>Source<span className="asterisk">*</span></InputLabel>
                                         <Select
                                             label="Source *"
                                             name="source"
@@ -700,7 +740,7 @@ const Lead = () => {
                                 {/* Client Type */}
                                 <div className="col-md-3 mb-3">
                                     <FormControl fullWidth size="small">
-                                        <InputLabel>Client Type *</InputLabel>
+                                        <InputLabel>Client Type<span className="asterisk">*</span></InputLabel>
                                         <Select
                                             label="Client Type *"
                                             name="clientType"
@@ -718,7 +758,11 @@ const Lead = () => {
                                 {/* Client Name */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Client Name *"
+                                        label={
+                                            <span>
+                                                Client Name <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -730,11 +774,9 @@ const Lead = () => {
                                         onBlur={(e) => validateMainField('clientName', e.target.value)}
                                     />
                                 </div>
-
-                                {/* Email */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Email *"
+                                        label="Email"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -750,29 +792,24 @@ const Lead = () => {
                                 {/* Contact No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Contact No *"
+                                        label="Contact No"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
                                         name="contactNo"
                                         value={formData.contactNo}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.contactNo}
-                                        helperText={fieldErrors.contactNo}
                                         onBlur={(e) => validateMainField('contactNo', e.target.value)}
                                     />
                                 </div>
-
-                                {/* Industry */}
                                 <div className="col-md-3 mb-3">
                                     <FormControl fullWidth size="small">
-                                        <InputLabel>Industry *</InputLabel>
+                                        <InputLabel>Industry</InputLabel>
                                         <Select
-                                            label="Industry *"
+                                            label="Industry"
                                             name="industry"
                                             value={formData.industry}
                                             onChange={handleInputChange}
-                                            error={!!fieldErrors.industry}
                                         >
                                             {industries.map((industry) => (
                                                 <MenuItem key={industry} value={industry}>{industry}</MenuItem>
@@ -780,8 +817,6 @@ const Lead = () => {
                                         </Select>
                                     </FormControl>
                                 </div>
-
-                                {/* Website */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Website"
@@ -793,38 +828,71 @@ const Lead = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-
-                                {/* City */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="City"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="city"
-                                        value={formData.city}
-                                        onChange={handleInputChange}
+                                    <Autocomplete
+                                        options={cityList}
+                                        getOptionLabel={(option) =>
+                                            option?.city ? `${option.city}` : ''
+                                        }
+                                        value={
+                                            cityList.find((item) => item.city === formData.city) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    city: newValue.city,
+                                                    state: newValue.state,
+                                                    country: newValue.country || '',
+                                                }));
+                                            } else {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    city: '',
+                                                    state: '',
+                                                    country: ''
+                                                }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        City <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                fullWidth
+                                            />
+                                        )}
                                     />
                                 </div>
-
-                                {/* State */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="State"
+                                        label={
+                                            <span>
+                                                State <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
                                         size="small"
                                         fullWidth
                                         name="state"
+                                        disabled
                                         value={formData.state}
                                         onChange={handleInputChange}
                                     />
                                 </div>
-
-                                {/* Country */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Country"
+                                        label={
+                                            <span>
+                                                Country <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
+                                        disabled
                                         size="small"
                                         fullWidth
                                         name="country"
@@ -836,7 +904,11 @@ const Lead = () => {
                                 {/* PIN Code */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="PIN Code"
+                                        label={
+                                            <span>
+                                                Pin Code <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -849,26 +921,58 @@ const Lead = () => {
 
                                 {/* Customer */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Customer"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="customer"
-                                        value={formData.customer}
-                                        onChange={handleInputChange}
-                                    />
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel id="demo-simple-select-label">
+                                            Customer <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+                                        </InputLabel>
+                                        <Select
+                                            labelId="customerLabel"
+                                            value={formData.customer}
+                                            onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                                            label="Customer"
+                                            error={!!fieldErrors.customer}
+                                        >
+                                            <MenuItem value="Yes">Yes</MenuItem>
+                                            <MenuItem value="No">No</MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </div>
-
-                                {/* Address */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Address"
+                                        label={
+                                            <span>
+                                                Address <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
                                         size="small"
                                         fullWidth
                                         name="address"
+                                        multiline
                                         value={formData.address}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Probability"
+                                        variant="outlined"
+                                        type='number'
+                                        size="small"
+                                        fullWidth
+                                        name="probability"
+                                        value={formData.probability}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Assign To"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="assignTo"
+                                        value={formData.assignTo}
                                         onChange={handleInputChange}
                                     />
                                 </div>
@@ -963,10 +1067,9 @@ const Lead = () => {
                                                             <thead>
                                                                 <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center">Branch *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Branch Code *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">GST No</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Reg No *</th>
                                                                     <th className="px-2 py-2 text-white text-center">City *</th>
                                                                     <th className="px-2 py-2 text-white text-center">State *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Country *</th>
@@ -980,7 +1083,6 @@ const Lead = () => {
                                                                             <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteBranch(index)} />
                                                                         </td>
                                                                         <td className="text-center pt-3">{index + 1}</td>
-
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
@@ -992,45 +1094,76 @@ const Lead = () => {
                                                                                 helperText={branchErrors[index]?.branch}
                                                                             />
                                                                         </td>
-
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={branch.branchCode}
-                                                                                onChange={(e) => handleBranchChange(index, 'branchCode', e.target.value)}
-                                                                                onBlur={(e) => validateBranchField(index, 'branchCode', e.target.value)}
-                                                                                error={!!branchErrors[index]?.branchCode}
-                                                                                helperText={branchErrors[index]?.branchCode}
-                                                                            />
-                                                                        </td>
-
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={branch.gstNo}
                                                                                 onChange={(e) => handleBranchChange(index, 'gstNo', e.target.value)}
+                                                                                error={!!branchErrors[index]?.gstNo}
+                                                                                helperText={branchErrors[index]?.gstNo}
                                                                             />
                                                                         </td>
 
                                                                         <td>
-                                                                            <TextField
+                                                                            <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                <Autocomplete
+                                                                                    options={cityList}
+                                                                                    getOptionLabel={(option) =>
+                                                                                        option?.city ? `${option.city}` : ''
+                                                                                    }
+                                                                                    value={
+                                                                                        cityList.find((item) => item.city === branch.city) || null
+                                                                                    }
+                                                                                    onChange={(event, newValue) => {
+                                                                                        const updatedBranches = [...leadBranches];
+                                                                                        if (newValue) {
+                                                                                            updatedBranches[index] = {
+                                                                                                ...updatedBranches[index],
+                                                                                                city: newValue.city,
+                                                                                                state: newValue.state,
+                                                                                                country: newValue.country || '',
+                                                                                            };
+                                                                                        } else {
+                                                                                            updatedBranches[index] = {
+                                                                                                ...updatedBranches[index],
+                                                                                                city: '',
+                                                                                                state: '',
+                                                                                                country: '',
+                                                                                            };
+                                                                                        }
+                                                                                        setLeadBranches(updatedBranches);
+                                                                                    }}
+                                                                                    renderInput={(params) => (
+                                                                                        <TextField
+                                                                                            {...params}
+                                                                                            label={
+                                                                                                <span>
+                                                                                                    City <span className="asterisk">*</span>
+                                                                                                </span>
+                                                                                            }
+                                                                                            size="small"
+                                                                                            fullWidth
+                                                                                        />
+                                                                                    )}
+                                                                                />
+                                                                            </Box>
+                                                                            {/* <TextField
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={branch.city}
                                                                                 onChange={(e) => handleBranchChange(index, 'city', e.target.value)}
                                                                                 onBlur={(e) => validateBranchField(index, 'city', e.target.value)}
                                                                                 error={!!branchErrors[index]?.city}
-                                                                                helperText={branchErrors[index]?.city}
-                                                                            />
+                                                                                helperText={branchErrors[index]?.city} 
+                                                                            />*/}
                                                                         </td>
-
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={branch.state}
+                                                                                disabled
                                                                                 onChange={(e) => handleBranchChange(index, 'state', e.target.value)}
                                                                                 onBlur={(e) => validateBranchField(index, 'state', e.target.value)}
                                                                                 error={!!branchErrors[index]?.state}
@@ -1043,6 +1176,7 @@ const Lead = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={branch.country}
+                                                                                disabled
                                                                                 onChange={(e) => handleBranchChange(index, 'country', e.target.value)}
                                                                                 onBlur={(e) => validateBranchField(index, 'country', e.target.value)}
                                                                                 error={!!branchErrors[index]?.country}
@@ -1054,6 +1188,7 @@ const Lead = () => {
                                                                             <TextField
                                                                                 fullWidth
                                                                                 size="small"
+                                                                                multiline
                                                                                 value={branch.address}
                                                                                 onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
                                                                                 onBlur={(e) => validateBranchField(index, 'address', e.target.value)}
@@ -1085,7 +1220,7 @@ const Lead = () => {
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
                                                                     <th className="px-2 py-2 text-white text-center">Preferred Contact</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Branch Name</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Branch Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Mobile No *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Email *</th>
@@ -1112,16 +1247,38 @@ const Lead = () => {
                                                                                 }
                                                                             />
                                                                         </td>
-
                                                                         <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={contact.branchName}
-                                                                                onChange={(e) => handleContactChange(index, 'branchName', e.target.value)}
-                                                                            />
+                                                                            <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                <Autocomplete
+                                                                                    options={leadBranches}
+                                                                                    getOptionLabel={(option) => option?.branch || ''}
+                                                                                    value={
+                                                                                        leadBranches.find((item) => item.branch === contact.branchName) || null
+                                                                                    }
+                                                                                    onChange={(event, newValue) => {
+                                                                                        const updatedContacts = [...leadContacts];
+                                                                                        updatedContacts[index] = {
+                                                                                            ...updatedContacts[index],
+                                                                                            branchName: newValue?.branch || '',
+                                                                                        };
+                                                                                        setLeadContacts(updatedContacts);
+                                                                                    }}
+                                                                                    isOptionEqualToValue={(option, value) => option.branch === value.branch}
+                                                                                    renderInput={(params) => (
+                                                                                        <TextField
+                                                                                            {...params}
+                                                                                            label={
+                                                                                                <span>
+                                                                                                    Branch Name <span className="asterisk">*</span>
+                                                                                                </span>
+                                                                                            }
+                                                                                            size="small"
+                                                                                            fullWidth
+                                                                                        />
+                                                                                    )}
+                                                                                />
+                                                                            </Box>
                                                                         </td>
-
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
