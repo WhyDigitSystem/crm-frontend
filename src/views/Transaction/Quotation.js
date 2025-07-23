@@ -35,7 +35,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
-import FullScreenLoader from 'utils/FullScreenLoader';
+// import FullScreenLoader from 'utils/FullScreenLoader';
 
 export const Quotation = () => {
     const [isLoading, setIsLoading] = useState(false);
