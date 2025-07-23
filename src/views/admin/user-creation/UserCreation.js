@@ -27,7 +27,8 @@ const UserCreation = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
   const [listViewData, setListViewData] = useState([]);
-
+  const branchCode = localStorage.getItem('branchcode') || '';
+  const finYear = localStorage.getItem('finYear') || '';
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [branchData, setBranchData] = useState([]);
@@ -226,7 +227,7 @@ const UserCreation = () => {
 
   const getAllUsers = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
