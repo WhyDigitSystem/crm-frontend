@@ -3,8 +3,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText } from '@mui/material';
+import { TextField, Autocomplete, FormControl, InputLabel, MenuItem, Select, Box, Tab, Tabs, } from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -22,8 +21,11 @@ const Opportunity = () => {
     const [listView, setListView] = useState(false);
     const [editId, setEditId] = useState('');
     const [docId, setDocId] = useState('');
-    const [toggle, setToggle] = useState({});
+    const [clientNameList, setClientNameList] = useState([]);
     const [branchList, setBranchList] = useState([]);
+    const [contactNameList, setContactNameList] = useState([]);
+    const [productNameList, setProductNameList] = useState([]);
+    const [value, setValue] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
     const [isBranchLoading, setIsBranchLoading] = useState(false);
@@ -37,22 +39,22 @@ const Opportunity = () => {
 
     // Static options
     const statusOptions = ['Open', 'Closed', 'Lost', 'Won', 'In Progress'];
-    const productStatusOptions = ['Active', 'Inactive'];
+    const productStatusOptions = ['New', 'Assigned', 'Open', 'In-Progress', 'Recycled', 'Dead', 'Completed'];
 
     // Form data
     const [formData, setFormData] = useState({
         address: '',
-        branch:'',
-        branchCode:'',
-        branchName:'',
-        cancelRemarks: '',
+        branch: '',
+        branchCode: '',
+        branchName: '',
         clientName: '',
-        closedDate: dayjs().add(30, 'day').format('YYYY-MM-DD'),
+        opportunityDate: dayjs(),
+        closedDate: dayjs().add(30, 'day'),
         contactName: '',
         description: '',
         designation: '',
         email: '',
-        finYear: finYear.toString(),
+        finYear: finYear,
         gstNo: '',
         mobileNo: '',
         status: 'Open',
@@ -106,14 +108,13 @@ const Opportunity = () => {
 
     // Initial data fetch
     useEffect(() => {
-        const fetchInitialData = async () => {
-            await getAllOpportunities();
-            await getOpportunityDocId();
-            await getAllBranches();
-            await getAllCategories();
-            await getAllSubCategories();
-        };
-        fetchInitialData();
+        getAllOpportunities();
+        getOpportunityDocId();
+        getAllBranches();
+        getAllCategories();
+        getAllSubCategories();
+        getClientName();
+        getProductName();
     }, []);
 
     // API calls
@@ -179,16 +180,60 @@ const Opportunity = () => {
             showToast('error', 'Failed to load categories');
         }
     };
-    const handleBranchChange = (e) => {
-        const branchName = e.target.value;
-        const selectedBranch = branchList.find(b => b.branch === branchName);
-
-        if (selectedBranch) {
-            setFormData(prev => ({
-                ...prev,
-                branch: branchName,
-                branchCode: selectedBranch.branchCode
-            }));
+    const getBranch = async (clientName) => {
+        try {
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${clientName}&orgId=${orgId}`);
+            if (response.status === true) {
+                setBranchList(response.paramObjectsMap.branchName || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
+    const getClientName = async () => {
+        try {
+            const response = await apiCalls('get', `/transaction/getClientNameFromLeadScreen?orgId=${orgId}`);
+            if (response.status === true) {
+                setClientNameList(response.paramObjectsMap.clientName || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
+    const getContactName = async (branchName, clientName) => {
+        try {
+            const response = await apiCalls('get', `/transaction/getContactNameFromLeadContact?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`);
+            if (response.status === true) {
+                setContactNameList(response.paramObjectsMap.contactDetails || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
+    const getProductName = async () => {
+        try {
+            const response = await apiCalls('get', `/transaction/getProductNameFromProduct?orgId=${orgId}`);
+            if (response.status === true) {
+                setProductNameList(response.paramObjectsMap.productName || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
         }
     };
 
@@ -221,9 +266,8 @@ const Opportunity = () => {
                 'get',
                 `/transaction/getOpportunityByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
-
             if (response.status) {
-                const opportunities = response.paramObjectsMap?.opportunityVO || [];
+                const opportunities = response.paramObjectsMap?.opportunityVO.reverse() || [];
                 setListViewData(opportunities.map(opp => ({
                     ...opp,
                     totalAmount: opp.opportunityDetailsVO?.reduce((sum, item) => sum + (item.opportunityAmount || 0), 0) || 0
@@ -251,14 +295,14 @@ const Opportunity = () => {
                     showToast('error', 'Opportunity not found');
                     return;
                 }
-
-                // Set form data
+                getContactName(opportunity.branch, opportunity.clientName)
+                getBranch(opportunity.clientName);
                 setFormData({
                     address: opportunity.address || '',
+                    opportunityDate: opportunity.docDate || '',
                     branchCode: opportunity.branchCode || branchCode,
-                    branch:opportunity.branch || branch,
+                    branch: opportunity.branch || branch,
                     branchName: opportunity.branchName || '',
-                    cancelRemarks: opportunity.cancelRemarks || '',
                     clientName: opportunity.clientName || '',
                     closedDate: opportunity.closedDate || dayjs().add(30, 'day').format('YYYY-MM-DD'),
                     contactName: opportunity.contactName || '',
@@ -472,7 +516,6 @@ const Opportunity = () => {
             branch: formData.branch,
             branchName: formData.branchName,
             branchCode: formData.branchCode,
-            cancelRemarks: formData.cancelRemarks,
             clientName: formData.clientName,
             closedDate: formData.closedDate,
             contactName: formData.contactName,
@@ -517,10 +560,12 @@ const Opportunity = () => {
     };
 
     const handleClear = () => {
+        setBranchList([]);
+        setContactNameList([]);
         setFormData({
             address: '',
+            opportunityDate: dayjs(),
             branchName: '',
-            cancelRemarks: '',
             clientName: '',
             closedDate: dayjs().add(30, 'day').format('YYYY-MM-DD'),
             contactName: '',
@@ -637,16 +682,17 @@ const Opportunity = () => {
     };
 
     const handleView = () => setListView(!listView);
-
+    const handleDateChange = (field, date) => {
+        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+        setFormData(prev => ({ ...prev, [field]: formattedDate }));
+    };
     return (
         <>
-            <div>
-                <ToastComponent />
-            </div>
+            <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
                         <ActionButton
@@ -670,96 +716,200 @@ const Opportunity = () => {
                                         fullWidth
                                         disabled
                                         value={isDocIdLoading ? "Generating..." : docId}
-                                        InputProps={{
-                                            style: { backgroundColor: '#f5f5f5' }
-                                        }}
                                     />
                                 </div>
-
-                                {/* Client Name */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Client Name *"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="clientName"
-                                        value={formData.clientName}
-                                        onChange={handleInputChange}
-                                        error={!!fieldErrors.clientName}
-                                        helperText={fieldErrors.clientName}
-                                        onBlur={(e) => validateMainField('clientName', e.target.value)}
-                                    />
-                                </div>
-
-                                {/* Branch Dropdown - Updated */}
-                                <div className="col-md-3 mb-3">
-                                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                                        <InputLabel id="branch-label">Branch Name *</InputLabel>
-                                        <Select
-                                            labelId="branch-label"
-                                            label="Branch Name *"
-                                            value={formData.branch}
-                                            onChange={handleBranchChange}
-                                            name="branch"
-                                        >
-                                            {branchList.map((branch) => (
-                                                <MenuItem key={branch.id} value={branch.branch}>
-                                                    {branch.branch}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
+                                    <FormControl fullWidth variant="filled" size="small">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="Opportunity Date"
+                                                value={formData.opportunityDate ? dayjs(formData.opportunityDate, 'YYYY-MM-DD') : null}
+                                                onChange={(date) => handleDateChange('opportunityDate', date)}
+                                                slotProps={{
+                                                    textField: {
+                                                        size: 'small',
+                                                    }
+                                                }}
+                                                format="DD-MM-YYYY"
+                                                disabled
+                                            />
+                                        </LocalizationProvider>
                                     </FormControl>
                                 </div>
-                                
-                                {/* Contact Name */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Contact Name *"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="contactName"
-                                        value={formData.contactName}
-                                        onChange={handleInputChange}
-                                        error={!!fieldErrors.contactName}
-                                        helperText={fieldErrors.contactName}
-                                        onBlur={(e) => validateMainField('contactName', e.target.value)}
+                                    <Autocomplete
+                                        options={clientNameList}
+                                        getOptionLabel={(option) =>
+                                            option?.clientName
+                                                ? `${option.clientName}`
+                                                : ''
+                                        }
+                                        value={
+                                            clientNameList.find((item) => item.clientName === formData.clientName) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    clientName: newValue.clientName,
+                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, clientName: '' }));
+                                                getBranch(newValue.clientName);
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, clientName: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, clientName: 'Client Name is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Client Name <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                error={!!fieldErrors.clientName}
+                                                helperText={fieldErrors.clientName}
+                                                fullWidth
+                                            />
+                                        )}
                                     />
                                 </div>
-
-                                {/* Designation */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Designation"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="designation"
-                                        value={formData.designation}
-                                        onChange={handleInputChange}
+                                    <Autocomplete
+                                        options={branchList}
+                                        getOptionLabel={(option) =>
+                                            option?.branch
+                                                ? `${option.branch}`
+                                                : ''
+                                        }
+                                        value={
+                                            branchList.find((item) => item.branch === formData.branch) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    branch: newValue.branch,
+                                                    gstNo: newValue.gstNo,
+                                                    address: newValue.address,
+                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
+                                                getContactName(newValue.branch, formData.clientName);
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, branch: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, branch: 'Branch is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Branch <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                error={!!fieldErrors.branch}
+                                                helperText={fieldErrors.branch}
+                                                fullWidth
+                                            />
+                                        )}
                                     />
                                 </div>
-
-                                {/* GST No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="GST No"
+                                        label={
+                                            <span>
+                                                Gst No <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
                                         size="small"
+                                        disabled
                                         fullWidth
                                         name="gstNo"
                                         value={formData.gstNo}
                                         onChange={handleInputChange}
                                     />
                                 </div>
-
-                                {/* Mobile No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Mobile No *"
+                                        label={
+                                            <span>
+                                                Address <span className="asterisk">*</span>
+                                            </span>
+                                        }
                                         variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="address"
+                                        disabled
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        multiline
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <Autocomplete
+                                        options={contactNameList}
+                                        getOptionLabel={(option) =>
+                                            option?.name
+                                                ? `${option.name}`
+                                                : ''
+                                        }
+                                        value={
+                                            contactNameList.find((item) => item.name === formData.contactName) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    contactName: newValue.name,
+                                                    designation: newValue.designation,
+                                                    mobileNo: newValue.mobileNumber,
+                                                    email: newValue.email,
+                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, contactName: '', designation: '', mobileNo: '', email: '' }));
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, contactName: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, contactName: 'Contact Name is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Contact Name <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                error={!!fieldErrors.contactName}
+                                                helperText={fieldErrors.contactName}
+                                                fullWidth
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Designation"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        disabled
+                                        name="designation"
+                                        value={formData.designation}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Mobile No"
+                                        variant="outlined"
+                                        disabled
                                         size="small"
                                         fullWidth
                                         name="mobileNo"
@@ -774,7 +924,8 @@ const Opportunity = () => {
                                 {/* Email */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Email *"
+                                        label="Email"
+                                        disabled
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -786,61 +937,23 @@ const Opportunity = () => {
                                         onBlur={(e) => validateMainField('email', e.target.value)}
                                     />
                                 </div>
-
-                                {/* Address */}
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Address"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                        multiline
-                                        rows={2}
-                                    />
-                                </div>
-
-                                {/* Status */}
-                                <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Status</InputLabel>
-                                        <Select
-                                            label="Status"
-                                            value={formData.status}
-                                            onChange={(e) => handleInputChange({
-                                                target: { name: 'status', value: e.target.value }
-                                            })}
-                                        >
-                                            {statusOptions.map(status => (
-                                                <MenuItem key={branch.branchCode} value={branch.branchCode}>
-                                                    {branch.branchName}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
+                                    <FormControl fullWidth variant="filled" size="small">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="Expected Closed Date"
+                                                value={formData.closedDate ? dayjs(formData.closedDate, 'YYYY-MM-DD') : null}
+                                                onChange={(date) => handleDateChange('closedDate', date)}
+                                                slotProps={{
+                                                    textField: {
+                                                        size: 'small',
+                                                    }
+                                                }}
+                                                format="DD-MM-YYYY"
+                                            />
+                                        </LocalizationProvider>
                                     </FormControl>
                                 </div>
-
-                                {/* Expected Close Date */}
-                                <div className="col-md-3 mb-3">
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker
-                                            label="Expected Close Date"
-                                            value={dayjs(formData.closedDate)}
-                                            onChange={(newValue) =>
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    closedDate: newValue.format('YYYY-MM-DD')
-                                                }))
-                                            }
-                                            renderInput={(params) =>
-                                                <TextField {...params} size="small" fullWidth />}
-                                        />
-                                    </LocalizationProvider>
-                                </div>
-
-                                {/* Description */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Description"
@@ -851,171 +964,182 @@ const Opportunity = () => {
                                         value={formData.description}
                                         onChange={handleInputChange}
                                         multiline
-                                        rows={2}
                                     />
                                 </div>
                             </div>
 
 
                             <div className="row mt-2">
-                                <div className="mb-1">
-                                    <ActionButton
-                                        title="Add Product"
-                                        icon={AddIcon}
-                                        onClick={handleAddDetail}
-                                    />
-                                </div>
-                                <div className="col-lg-12">
-                                    <div className="table-responsive">
-                                        <table className="table table-bordered">
-                                            <thead>
-                                                <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
-                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
-                                                    <th className="px-2 py-2 text-white text-center">Product Name *</th>
-                                                    <th className="px-2 py-2 text-white text-center">Category *</th>
-                                                    <th className="px-2 py-2 text-white text-center">Sub Category</th>
-                                                    <th className="px-2 py-2 text-white text-center">Amount *</th>
-                                                    <th className="px-2 py-2 text-white text-center">Quantity</th>
-                                                    <th className="px-2 py-2 text-white text-center">Status</th>
-                                                    <th className="px-2 py-2 text-white text-center">Remarks</th>
-                                                    <th className="px-2 py-2 text-white text-center">Description</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {opportunityDetails.map((detail, index) => (
-                                                    <tr key={index}>
-                                                        <td className="border px-2 py-2 text-center">
-                                                            <ActionButton
-                                                                title="Delete"
-                                                                icon={DeleteIcon}
-                                                                onClick={() => handleDeleteDetail(index)}
-                                                                aria-label={`Delete product ${index + 1}`}
-                                                            />
-                                                        </td>
-                                                        <td className="text-center pt-3">{index + 1}</td>
+                                <Box sx={{ width: '100%' }}>
+                                    <Tabs value={value} textColor="secondary" indicatorColor="secondary">
+                                        <Tab value={0} label="Details" />
+                                    </Tabs>
+                                </Box>
 
-                                                        <td>
-                                                            <TextField
-                                                                fullWidth
-                                                                size="small"
-                                                                value={detail.productName}
-                                                                onChange={(e) => handleDetailChange(index, 'productName', e.target.value)}
-                                                                onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                error={!!detailErrors[index]?.productName}
-                                                                helperText={detailErrors[index]?.productName}
-                                                            />
-                                                        </td>
+                                <Box sx={{ padding: 2 }}>
+                                    {value === 0 && (
+                                        <>
+                                            <div className="mb-1">
+                                                <ActionButton
+                                                    title="Add Product"
+                                                    icon={AddIcon}
+                                                    onClick={handleAddDetail}
+                                                />
+                                            </div>
+                                            <div className="col-lg-12">
+                                                <div className="table-responsive">
+                                                    <table className="table table-bordered">
+                                                        <thead>
+                                                            <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
+                                                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
+                                                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
+                                                                <th className="px-2 py-2 text-white text-center">Product Name *</th>
+                                                                <th className="px-2 py-2 text-white text-center">Category *</th>
+                                                                <th className="px-2 py-2 text-white text-center">Sub Category</th>
+                                                                <th className="px-2 py-2 text-white text-center">Amount *</th>
+                                                                <th className="px-2 py-2 text-white text-center">Quantity</th>
+                                                                <th className="px-2 py-2 text-white text-center">Status</th>
+                                                                <th className="px-2 py-2 text-white text-center">Remarks</th>
+                                                                <th className="px-2 py-2 text-white text-center">Description</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {opportunityDetails.map((detail, index) => (
+                                                                <tr key={index}>
+                                                                    <td className="border px-2 py-2 text-center">
+                                                                        <ActionButton
+                                                                            title="Delete"
+                                                                            icon={DeleteIcon}
+                                                                            onClick={() => handleDeleteDetail(index)}
+                                                                            aria-label={`Delete product ${index + 1}`}
+                                                                        />
+                                                                    </td>
+                                                                    <td className="text-center pt-3">{index + 1}</td>
+                                                                    <td>
+                                                                        <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                            <Autocomplete
+                                                                                options={productNameList}
+                                                                                getOptionLabel={(option) => option?.productName || ''}
+                                                                                value={
+                                                                                    productNameList.find((item) => item.productName === detail.productName) || null
+                                                                                }
+                                                                                onChange={(event, newValue) => {
+                                                                                    const updatedOpportunities = [...opportunityDetails];
+                                                                                    if (newValue) {
+                                                                                        updatedOpportunities[index] = {
+                                                                                            ...updatedOpportunities[index],
+                                                                                            productName: newValue.productName,
+                                                                                            category: newValue.category,
+                                                                                            subCategory: newValue.subCategory || '',
+                                                                                        };
+                                                                                    } else {
+                                                                                        updatedOpportunities[index] = {
+                                                                                            ...updatedOpportunities[index],
+                                                                                            productName: '',
+                                                                                            subCategory: '',
+                                                                                            category: '',
+                                                                                        };
+                                                                                    }
+                                                                                    setOpportunityDetails(updatedOpportunities);
+                                                                                }}
+                                                                                renderInput={(params) => (
+                                                                                    <TextField
+                                                                                        {...params}
+                                                                                        size="small"
+                                                                                        fullWidth
+                                                                                    />
+                                                                                )}
+                                                                            />
+                                                                        </Box>
+                                                                    </td>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            value={detail.category}
+                                                                            disabled
+                                                                            onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                            onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
+                                                                            error={!!detailErrors[index]?.category}
+                                                                            helperText={detailErrors[index]?.category}
+                                                                        />
+                                                                    </td>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            value={detail.subCategory}
+                                                                            disabled
+                                                                            onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
+                                                                            onBlur={(e) => validateDetailField(index, 'subCategory', e.target.value)}
+                                                                        />
+                                                                    </td>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            type="number"
+                                                                            value={detail.opportunityAmount}
+                                                                            onChange={(e) => handleDetailChange(index, 'opportunityAmount', e.target.value)}
+                                                                            onBlur={(e) => validateDetailField(index, 'opportunityAmount', e.target.value)}
+                                                                            error={!!detailErrors[index]?.opportunityAmount}
+                                                                            helperText={detailErrors[index]?.opportunityAmount}
+                                                                            inputProps={{ min: 0, step: "0.01" }}
+                                                                        />
+                                                                    </td>
 
-                                                        <td>
-                                                            <FormControl fullWidth size="small" error={!!detailErrors[index]?.category}>
-                                                                <InputLabel>Category *</InputLabel>
-                                                                <Select
-                                                                    value={detail.category}
-                                                                    label="Category *"
-                                                                    onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                                                                    onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
-                                                                >
-                                                                    <MenuItem value=""><em>Select Category</em></MenuItem>
-                                                                    {categoryList.map(cat => (
-                                                                        <MenuItem key={cat.id} value={cat.categoryName}>
-                                                                            {cat.categoryName}
-                                                                        </MenuItem>
-                                                                    ))}
-                                                                </Select>
-                                                                {detailErrors[index]?.category && (
-                                                                    <FormHelperText>{detailErrors[index].category}</FormHelperText>
-                                                                )}
-                                                            </FormControl>
-                                                        </td>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            type="number"
+                                                                            value={detail.quantity}
+                                                                            onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                                                                            inputProps={{ min: 1 }}
+                                                                        />
+                                                                    </td>
 
-                                                        <td>
-                                                            <FormControl fullWidth size="small">
-                                                                <InputLabel>Sub Category</InputLabel>
-                                                                <Select
-                                                                    value={detail.subCategory}
-                                                                    label="Sub Category"
-                                                                    onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                                                >
-                                                                    <MenuItem value=""><em>Select Sub Category</em></MenuItem>
-                                                                    {subCategoryList.map(sub => (
-                                                                        <MenuItem key={sub.id} value={sub.subCategoryName}>
-                                                                            {sub.subCategoryName}
-                                                                        </MenuItem>
-                                                                    ))}
-                                                                </Select>
-                                                            </FormControl>
-                                                        </td>
+                                                                    <td>
+                                                                        <FormControl fullWidth size="small">
+                                                                            <Select
+                                                                                value={detail.status}
+                                                                                onChange={(e) => handleDetailChange(index, 'status', e.target.value)}
+                                                                            >
+                                                                                {productStatusOptions.map(status => (
+                                                                                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                                                                                ))}
+                                                                            </Select>
+                                                                        </FormControl>
+                                                                    </td>
 
-                                                        <td>
-                                                            <TextField
-                                                                fullWidth
-                                                                size="small"
-                                                                type="number"
-                                                                label="Amount"
-                                                                value={detail.opportunityAmount}
-                                                                onChange={(e) => handleDetailChange(index, 'opportunityAmount', e.target.value)}
-                                                                onBlur={(e) => validateDetailField(index, 'opportunityAmount', e.target.value)}
-                                                                error={!!detailErrors[index]?.opportunityAmount}
-                                                                helperText={detailErrors[index]?.opportunityAmount}
-                                                                inputProps={{ min: 0, step: "0.01" }}
-                                                            />
-                                                        </td>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            multiline
+                                                                            value={detail.remarks}
+                                                                            onChange={(e) => handleDetailChange(index, 'remarks', e.target.value)}
+                                                                        />
+                                                                    </td>
 
-                                                        <td>
-                                                            <TextField
-                                                                fullWidth
-                                                                size="small"
-                                                                type="number"
-                                                                label="Quantity"
-                                                                value={detail.quantity}
-                                                                onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
-                                                                inputProps={{ min: 1 }}
-                                                            />
-                                                        </td>
-
-                                                        <td>
-                                                            <FormControl fullWidth size="small">
-                                                                <InputLabel>Status</InputLabel>
-                                                                <Select
-                                                                    value={detail.status}
-                                                                    label="Status"
-                                                                    onChange={(e) => handleDetailChange(index, 'status', e.target.value)}
-                                                                >
-                                                                    {productStatusOptions.map(status => (
-                                                                        <MenuItem key={status} value={status}>{status}</MenuItem>
-                                                                    ))}
-                                                                </Select>
-                                                            </FormControl>
-                                                        </td>
-
-                                                        <td>
-                                                            <TextField
-                                                                fullWidth
-                                                                size="small"
-                                                                label="Remarks"
-                                                                value={detail.remarks}
-                                                                onChange={(e) => handleDetailChange(index, 'remarks', e.target.value)}
-                                                            />
-                                                        </td>
-
-                                                        <td>
-                                                            <TextField
-                                                                fullWidth
-                                                                size="small"
-                                                                label="Description"
-                                                                value={detail.description}
-                                                                onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
-                                                                multiline
-                                                                rows={2}
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                                                    <td>
+                                                                        <TextField
+                                                                            fullWidth
+                                                                            size="small"
+                                                                            value={detail.description}
+                                                                            onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
+                                                                            multiline
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </Box>
                             </div>
                         </>
                     ) : (

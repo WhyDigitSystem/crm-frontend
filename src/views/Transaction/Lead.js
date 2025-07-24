@@ -33,6 +33,7 @@ const Lead = () => {
     const [docId, setDocId] = useState('');
     const [open, setOpen] = useState(false);
     const [cityList, setCityList] = useState([]);
+    const [assignToList, setAssignToList] = useState([]);
     const [sources] = useState(['Call', 'Email', 'Existing Customer', 'Partner', 'Public Relations', 'Campaign', 'Website', 'Other']);
     const [clientTypes] = useState(['Company', 'Individual']);
     const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'Manufacturing', 'Construction']);
@@ -54,6 +55,7 @@ const Lead = () => {
         address: '',
         probability: '',
         assignTo: '',
+        stage: '',
         finYear: finYear,
         orgId: orgId,
         branch: branch,
@@ -124,6 +126,7 @@ const Lead = () => {
         getAllLeads();
         getLeadDocId();
         getCityName();
+        getAssignTo();
     }, []);
     const getLeadDocId = async () => {
         if (editId) return;
@@ -150,7 +153,7 @@ const Lead = () => {
             console.log("getAll Leads", response.status);
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.leadVO);
+                setListViewData(response.paramObjectsMap.leadVO.reverse());
             } else {
                 showToast('error', response.message || 'Failed to fetch leads');
             }
@@ -184,6 +187,7 @@ const Lead = () => {
                     pinCode: lead.pinCode || '',
                     source: lead.source || '',
                     state: lead.state || '',
+                    stage: lead.stage || '',
                     website: lead.website || '',
                     probability: lead.probability || '',
                     assignTo: lead.assignTo || '',
@@ -234,6 +238,20 @@ const Lead = () => {
             const response = await apiCalls('get', `/commonmaster/getCityNameFromMaster?orgId=${orgId}`);
             if (response.status === true) {
                 setCityList(response.paramObjectsMap.cityName || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
+    const getAssignTo = async () => {
+        try {
+            const response = await apiCalls('get', `/master/getUserNameAndAssigned?orgId=${orgId}`);
+            if (response.status === true) {
+                setAssignToList(response.paramObjectsMap.userName || []);
             } else {
                 console.error('API Error:', response);
                 return response;
@@ -378,7 +396,6 @@ const Lead = () => {
             city: formData.city || '',
             clientName: formData.clientName,
             clientType: formData.clientType,
-            companyLogo: '',
             contactNo: formData.contactNo,
             country: formData.country || '',
             createdBy: createdBy,
@@ -390,6 +407,7 @@ const Lead = () => {
             pinCode: formData.pinCode ? parseInt(formData.pinCode) : 0,
             source: formData.source,
             state: formData.state || '',
+            stage: formData.stage || '',
             website: formData.website || '',
             assignTo: formData.assignTo || '',
             probability: formData.probability || '',
@@ -403,7 +421,7 @@ const Lead = () => {
                 state: branch.state
             })),
             leadContactDTO: leadContacts.map(contact => ({
-                aniversary: contact.dob || '',
+                dob: contact.dob || null,
                 branchName: contact.branchName || '',
                 designation: contact.designation,
                 dob: contact.dob || '',
@@ -411,7 +429,8 @@ const Lead = () => {
                 mobileNo: contact.mobileNo,
                 name: contact.name,
                 preferedContact: contact.preferredContact ? 1 : 0,
-                workAniversaryDate: contact.workAnniversaryDate || null
+                workAniversaryDate: contact.workAnniversaryDate || null,
+                aniversary: contact.anniversaryDate || null
             }))
         };
 
@@ -450,6 +469,7 @@ const Lead = () => {
             clientType: '',
             clientName: '',
             mail: '',
+            stage: '',
             contactNo: '',
             industry: '',
             website: '',
@@ -918,8 +938,6 @@ const Lead = () => {
                                         type="number"
                                     />
                                 </div>
-
-                                {/* Customer */}
                                 <div className="col-md-3 mb-3">
                                     <FormControl fullWidth size="small">
                                         <InputLabel id="demo-simple-select-label">
@@ -955,7 +973,7 @@ const Lead = () => {
                                 </div>
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Probability"
+                                        label="Probability %"
                                         variant="outlined"
                                         type='number'
                                         size="small"
@@ -966,15 +984,61 @@ const Lead = () => {
                                     />
                                 </div>
                                 <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Assign To"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="assignTo"
-                                        value={formData.assignTo}
-                                        onChange={handleInputChange}
+                                    <Autocomplete
+                                        options={assignToList}
+                                        getOptionLabel={(option) =>
+                                            option?.userName ? `${option.userName}` : ''
+                                        }
+                                        value={
+                                            assignToList.find((item) => item.userName === formData.assignTo) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    assignTo: newValue.userName
+                                                }));
+                                            } else {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    assignTo: ''
+                                                }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Assign To
+                                                    </span>
+                                                }
+                                                size="small"
+                                                fullWidth
+                                            />
+                                        )}
                                     />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel id="demo-simple-select-label">
+                                            Stage
+                                        </InputLabel>
+                                        <Select
+                                            labelId="stage"
+                                            value={formData.stage}
+                                            onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
+                                            label="Stage"
+                                        >
+                                            <MenuItem value="Progressing">Progressing</MenuItem>
+                                            <MenuItem value="Prospecting">Prospecting</MenuItem>
+                                            <MenuItem value="Qualification">Qualification</MenuItem>
+                                            <MenuItem value="Proposal">Proposal</MenuItem>
+                                            <MenuItem value="Negotiation">Negotiation</MenuItem>
+                                            <MenuItem value="Closed Won">Closed Won</MenuItem>
+                                            <MenuItem value="Closed Lost">Closed Lost</MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </div>
                                 <div className="col-md-3 mb-3">
                                     <Box display="flex" alignItems="center" gap={1}>
@@ -1218,7 +1282,7 @@ const Lead = () => {
                                                             <thead>
                                                                 <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center">Preferred Contact</th>
                                                                     <th className="px-2 py-2 text-white text-center">Branch Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Name *</th>
@@ -1226,6 +1290,7 @@ const Lead = () => {
                                                                     <th className="px-2 py-2 text-white text-center">Email *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Designation *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Date of Birth</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Anniversary</th>
                                                                     <th className="px-2 py-2 text-white text-center">Work Anniversary</th>
                                                                 </tr>
                                                             </thead>
@@ -1337,7 +1402,16 @@ const Lead = () => {
                                                                                 InputLabelProps={{ shrink: true }}
                                                                             />
                                                                         </td>
-
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                type="date"
+                                                                                value={contact.anniversaryDate || ''}
+                                                                                onChange={(e) => handleContactChange(index, 'anniversaryDate', e.target.value)}
+                                                                                InputLabelProps={{ shrink: true }}
+                                                                            />
+                                                                        </td>
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
