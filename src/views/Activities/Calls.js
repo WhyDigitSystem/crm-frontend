@@ -484,7 +484,7 @@ export const Calls = () => {
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
-            showToast('error', 'Please fix the validation errors');
+            // showToast('error', 'Please fix the validation errors');
             return;
         }
 
@@ -920,7 +920,7 @@ export const Calls = () => {
                             />
                         </div>
 
-                        <div className="col-md-3 mb-3 d-flex align-items-center">
+                        <div className="col-md-3 .mb-3 d-flex align-items-center">
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -930,7 +930,7 @@ export const Calls = () => {
                                     />
                                 }
                                 label="Active"
-                                style={{ marginTop: '16px' }}
+                                // style={{ marginTop: '16px' }}
                             />
                         </div>
                     </div>
