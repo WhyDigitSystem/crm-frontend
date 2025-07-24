@@ -10,7 +10,8 @@ import { element } from 'prop-types';
 
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
-
+// Calendar
+const Calendar = Loadable(lazy(() => import('views/Calendar/Calendar')));
 
 // basicmaster
 const Country = Loadable(lazy(() => import('views/basicMaster/country')));
@@ -35,8 +36,6 @@ const SubCategory = Loadable(lazy(() => import('views/basicMaster/SubCategory'))
 const DocumentType = Loadable(lazy(() => import('views/Documents/documentType')));
 const DocumentTypeMapping = Loadable(lazy(() => import('views/Documents/documentTypeMapping')));
 const MultipleDocumentIdGeneration = Loadable(lazy(() => import('views/Documents/multipleDocumentIdGeneration')));
-
-
 
 
 // companySetup
@@ -71,6 +70,11 @@ const FinanceRoute = {
     {
       path: '/',
       element: <DashboardDefault />
+    },
+    // Calendar
+    {
+      path: '/calendar',
+      element: <Calendar />
     },
     // companysetup
     {

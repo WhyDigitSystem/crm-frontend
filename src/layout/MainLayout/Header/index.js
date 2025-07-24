@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // material-ui
-import { Avatar, Box, ButtonBase,Chip } from '@mui/material';
+import { Avatar, Box, ButtonBase, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -141,19 +141,19 @@ const Header = ({ handleLeftDrawerToggle }) => {
         </Avatar>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-  <h6 style={{ marginTop: '-12px', marginBottom: 1 }}>
-    {localStorage.getItem('companyName')}
-  </h6>
-  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-  <Chip 
-    label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`} 
-    size="small" 
-    color="primary" 
-    sx={{ fontSize: '11px', height: '20px' }} 
-  />
-</div>
+          <div style={{ marginTop: '1px', marginBottom: 0,fontWeight:700,fontSize:'12px'}}>
+            {localStorage.getItem('companyName')}
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Chip
+              label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`}
+              size="small"
+              color="primary"
+              sx={{ fontSize: '11px', height: '20px' }}
+            />
+          </div>
 
-</div>
+        </div>
       </div>
       <NotificationSection />
       <GlobalSection />

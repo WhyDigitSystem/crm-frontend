@@ -10,7 +10,8 @@ import {
     FormControl,
     InputLabel,
     MenuItem,
-    Select
+    Select,
+    Autocomplete
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
@@ -28,15 +29,17 @@ export const Calls = () => {
     const [editId, setEditId] = useState('');
     const [branchList, setBranchList] = useState([]);
     const [orgId] = useState(localStorage.getItem('orgId'));
+    const [finYear] = useState(localStorage.getItem('finYear'));
+    const [branchcode] = useState(localStorage.getItem('branchcode'));
+    const [branch] = useState(localStorage.getItem('branch'));
     const [loginUserName] = useState(localStorage.getItem('userName'));
     const [listView, setListView] = useState(false);
     const [listViewData, setListViewData] = useState([]);
-    const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         callDocId: '',
-        calldate: null,
+        calldate: dayjs().format('YYYY-MM-DD'), // Set current date by default
         clientName: '',
         contactName: '',
         email: '',
@@ -72,10 +75,6 @@ export const Calls = () => {
     // Status options
     const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
 
-    // Helper function to validate time format
-    // const isValidTime = (time) => {
-    //     return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
-    // };
     const isValidTime = (value) => {
         // Matches HH:mm 24-hour format
         return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
@@ -84,7 +83,6 @@ export const Calls = () => {
     // Calculate duration between start and end times
     const calculateDuration = (startTime, endTime) => {
         if (!startTime || !endTime) return '';
-        // if (!isValidTime(startTime) return 'Invalid start time';
         if (!isValidTime(startTime)) return 'Invalid start time';
         if (!isValidTime(endTime)) return 'Invalid end time';
 
@@ -388,6 +386,12 @@ export const Calls = () => {
 
     ];
 
+    const clientOptions = [
+        { label: 'Client A', value: 'clientA' },
+        { label: 'Client B', value: 'clientB' },
+        { label: 'Client C', value: 'clientC' }
+    ];
+
     return (
         <>
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -456,21 +460,33 @@ export const Calls = () => {
 
                         {/* Client Name */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                // label="Client Name *"
-                                label={
-                                    <span>
-                                        Client Name <span className="asterisk">*</span>
-                                    </span>
-                                }
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="clientName"
-                                value={formData.clientName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.clientName}
-                                helperText={fieldErrors.clientName}
+                            <Autocomplete
+                                options={clientOptions}
+                                getOptionLabel={(option) => option.label}
+                                value={clientOptions.find((opt) => opt.value === formData.clientName) || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'clientName',
+                                            value: newValue ? newValue.value : ''
+                                        }
+                                    });
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label={
+                                            <span>
+                                                Client Name <span className="asterisk">*</span>
+                                            </span>
+                                        }
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        error={!!fieldErrors.clientName}
+                                        helperText={fieldErrors.clientName}
+                                    />
+                                )}
                             />
                         </div>
 
@@ -765,7 +781,6 @@ export const Calls = () => {
                                     />
                                 }
                                 label="Active"
-                                style={{ marginTop: '16px' }}
                             />
                         </div>
                     </div>
