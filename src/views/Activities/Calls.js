@@ -37,16 +37,31 @@ export const Calls = () => {
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
 
+    // Status and Direction options
+    const statusOptions = ['Planned', 'Held', 'Not Held', 'Re-Schedule'];
+    const directionOptions = ['Call Received', 'Call Made'];
+
+    const [clientOptions, setClientOptions] = useState([]);
+    const [branchOptions, setBranchOptions] = useState([]);
+    const [contactOptions, setContactOptions] = useState([]);
+    const [isClientLoading, setIsClientLoading] = useState(false);
+    const [isBranchLoading, setIsBranchLoading] = useState(false);
+    const [isContactLoading, setIsContactLoading] = useState(false);
+    const [isParentLoading, setIsParentLoading] = useState(false);
+
+    const [parentOptions, setParentOptions] = useState([]);
+    const isCreating = editId === undefined || editId === null || editId === '';
+
     const [formData, setFormData] = useState({
         callDocId: '',
-        calldate: dayjs().format('YYYY-MM-DD'), // Set current date by default
+        calldate: dayjs().format('YYYY-MM-DD'),
         clientName: '',
         contactName: '',
         email: '',
         mobile: '',
         Parent: '',
-        branch: '',
-        branchCode: '',
+        branch: branch || '',
+        branchCode: branchcode || '',
         dateStart: null,
         timeStart: '',
         dateEnd: null,
@@ -72,15 +87,10 @@ export const Calls = () => {
         direction: ''
     });
 
-    // Status options
-    const statusOptions = ['Completed', 'Pending', 'Rescheduled', 'Cancelled'];
-
     const isValidTime = (value) => {
-        // Matches HH:mm 24-hour format
         return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
     };
 
-    // Calculate duration between start and end times
     const calculateDuration = (startTime, endTime) => {
         if (!startTime || !endTime) return '';
         if (!isValidTime(startTime)) return 'Invalid start time';
@@ -105,13 +115,15 @@ export const Calls = () => {
 
     useEffect(() => {
         getAllBranches();
+        fetchClientOptions();
+        getCallDocId();
     }, []);
 
-    useEffect(() => {
-        if (formData.branch && formData.branchCode && !editId) {
-            getCallDocId();
-        }
-    }, [formData.branch, formData.branchCode, editId]);
+    // useEffect(() => {
+    //     if (formData.branch || formData.branchCode || isCreating) {
+    //         getCallDocId();
+    //     }
+    // }, [formData.branch, formData.branchCode, isCreating]);
 
     useEffect(() => {
         if (formData.branchCode) {
@@ -119,7 +131,14 @@ export const Calls = () => {
         }
     }, [formData.branchCode]);
 
-    // Recalculate duration when times change
+    useEffect(() => {
+        if (formData.clientName) {
+            fetchParentOptions(formData.clientName);
+        } else {
+            setParentOptions([]);
+        }
+    }, [formData.clientName]);
+
     useEffect(() => {
         if (formData.timeStart && formData.timeEnd) {
             const duration = calculateDuration(formData.timeStart, formData.timeEnd);
@@ -129,17 +148,107 @@ export const Calls = () => {
         }
     }, [formData.timeStart, formData.timeEnd]);
 
+    const fetchClientOptions = async () => {
+        setIsClientLoading(true);
+        try {
+            const response = await apiCalls(
+                'get',
+                `/activities/getClientNameFromLead?orgId=${orgId}`
+            );
+
+            if (response.status && response.paramObjectsMap.clientName) {
+                setClientOptions(response.paramObjectsMap.clientName);
+            } else {
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch clients');
+            }
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+            showToast('error', 'Failed to fetch clients');
+        } finally {
+            setIsClientLoading(false);
+        }
+    };
+
+    const fetchParentOptions = async (clientName) => {
+        setIsParentLoading(true);
+        try {
+            const response = await apiCalls(
+                'get',
+                `/activities/getParentFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+            );
+
+            if (response.status && response.paramObjectsMap.parentName) {
+                setParentOptions(response.paramObjectsMap.parentName.map(p => ({
+                    label: p.parent,
+                    value: p.parent
+                })));
+            } else {
+                setParentOptions([]);
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch parent options');
+            }
+        } catch (error) {
+            console.error('Error fetching parent options:', error);
+            showToast('error', 'Failed to fetch parent options');
+            setParentOptions([]);
+        } finally {
+            setIsParentLoading(false);
+        }
+    };
+
+    const fetchBranchOptions = async (clientName) => {
+        if (!clientName) return;
+
+        setIsBranchLoading(true);
+        try {
+            const response = await apiCalls(
+                'get',
+                `/activities/getBranchNameFromLeadFillGrid?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+            );
+
+            if (response.status && response.paramObjectsMap.branchName) {
+                setBranchOptions(response.paramObjectsMap.branchName);
+            } else {
+                setBranchOptions([]);
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch branches');
+            }
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+            showToast('error', 'Failed to fetch branches');
+            setBranchOptions([]);
+        } finally {
+            setIsBranchLoading(false);
+        }
+    };
+
+    const fetchContactOptions = async (clientName, branchName) => {
+        if (!clientName || !branchName) return;
+
+        setIsContactLoading(true);
+        try {
+            const response = await apiCalls(
+                'get',
+                `/activities/getContactNameFromLeadFillGrid?branchName=${encodeURIComponent(branchName)}&clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+            );
+
+            if (response.status && response.paramObjectsMap.contactDetails) {
+                setContactOptions(response.paramObjectsMap.contactDetails);
+            } else {
+                setContactOptions([]);
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch contacts');
+            }
+        } catch (error) {
+            console.error('Error fetching contacts:', error);
+            showToast('error', 'Failed to fetch contacts');
+            setContactOptions([]);
+        } finally {
+            setIsContactLoading(false);
+        }
+    };
+
     const getAllBranches = async () => {
         try {
             const branchData = await getAllActiveBranches(orgId);
             setBranchList(branchData);
-            if (branchData.length > 0) {
-                setFormData(prev => ({
-                    ...prev,
-                    branch: branchData[0].branch,
-                    branchCode: branchData[0].branchCode
-                }));
-            }
         } catch (error) {
             console.error('Error fetching branches:', error);
             showToast('error', 'Failed to load branches');
@@ -165,13 +274,13 @@ export const Calls = () => {
     };
 
     const getCallDocId = async () => {
-        if (!formData.branch || !formData.branchCode) return;
+        // if (!formData.branch || !formData.branchCode) return;
 
         setIsDocIdLoading(true);
         try {
             const response = await apiCalls(
                 'get',
-                `/ncontroller/getCallsDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+                `/activities/getCallsDocId?branch=${formData.branch}&branchCode=${branchcode}&finYear=${finYear}&orgId=${orgId}`
             );
 
             if (response.status === true && response.paramObjectsMap.callsDocId) {
@@ -208,15 +317,15 @@ export const Calls = () => {
                     branch: call.branch || '',
                     branchCode: call.branchCode || '',
                     dateStart: call.dateStart || null,
-                    timeStart: call.timeStart ? call.timeStart.substring(0, 5) : '', // Extract HH:mm
+                    timeStart: call.timeStart ? call.timeStart.substring(0, 5) : '',
                     dateEnd: call.dateEnd || null,
-                    timeEnd: call.timeEnd ? call.timeEnd.substring(0, 5) : '', // Extract HH:mm
-                    duration: call.duratrion || '', // Note: Typo in response field
+                    timeEnd: call.timeEnd ? call.timeEnd.substring(0, 5) : '',
+                    duration: call.duratrion || '',
                     description: call.description || '',
                     direction: call.direction || '',
                     status: call.status || '',
-                    followUpDate: call.follwUpDate || null, // Note: Typo in response field
-                    active: call.active === "Active" // Convert to boolean
+                    followUpDate: call.follwUpDate || null,
+                    active: call.active === "Active"
                 });
             } else {
                 showToast('error', response.paramObjectsMap.message || 'Failed to fetch call details');
@@ -255,31 +364,77 @@ export const Calls = () => {
         }));
     };
 
+    const handleClientSelect = (event, newValue) => {
+        const clientName = newValue ? newValue.clientName : '';
 
+        setFormData(prev => ({
+            ...prev,
+            clientName: clientName,
+            branch: '',
+            contactName: '',
+            email: '',
+            mobile: '',
+            Parent: ''
+        }));
+
+        if (clientName) {
+            fetchBranchOptions(clientName);
+        } else {
+            setBranchOptions([]);
+            setContactOptions([]);
+            setParentOptions([]);
+        }
+    };
+
+    const handleBranchSelect = (event, newValue) => {
+        const branchName = newValue ? newValue.branch : '';
+
+        setFormData(prev => ({
+            ...prev,
+            branch: branchName,
+            contactName: '',
+            email: '',
+            mobile: ''
+        }));
+
+        if (branchName && formData.clientName) {
+            fetchContactOptions(formData.clientName, branchName);
+        } else {
+            setContactOptions([]);
+        }
+    };
+
+    const handleContactSelect = (event, newValue) => {
+        if (newValue) {
+            const cleanMobile = newValue.mobileNumber ?
+                newValue.mobileNumber.replace(/\D/g, '').substring(0, 10) : '';
+
+            setFormData(prev => ({
+                ...prev,
+                contactName: newValue.name || '',
+                email: newValue.email || '',
+                mobile: cleanMobile
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                contactName: '',
+                email: '',
+                mobile: ''
+            }));
+        }
+    };
 
     const handleDateChange = (field, date) => {
         const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
         setFormData(prev => ({ ...prev, [field]: formattedDate }));
     };
 
-    const handleBranchChange = (e) => {
-        const branchName = e.target.value;
-        const selectedBranch = branchList.find(b => b.branch === branchName);
-
-        if (selectedBranch) {
-            setFormData(prev => ({
-                ...prev,
-                branch: branchName,
-                branchCode: selectedBranch.branchCode
-            }));
-        }
-    };
-
     const handleClear = () => {
         const firstBranch = branchList[0] || null;
         setFormData({
-            callDocId: '',
-            calldate: null,
+            // callDocId: '',
+            calldate: dayjs().format('YYYY-MM-DD'),
             clientName: '',
             contactName: '',
             email: '',
@@ -300,12 +455,14 @@ export const Calls = () => {
         });
         setEditId('');
         setFieldErrors({});
+        setBranchOptions([]);
+        setContactOptions([]);
+        setParentOptions([]);
     };
 
     const handleSave = async () => {
         // Validation
         const errors = {};
-        // if (!formData.calldate) errors.calldate = 'Call Date is required';
         if (!formData.clientName) errors.clientName = 'Client name is required';
         if (!formData.contactName) errors.contactName = 'Contact name is required';
         if (!formData.branch) errors.branch = 'Branch is required';
@@ -383,13 +540,6 @@ export const Calls = () => {
         { accessorKey: 'status', header: 'Status', size: 120 },
         { accessorKey: 'duration', header: 'Duration', size: 100 },
         { accessorKey: 'active', header: 'Active', size: 100 },
-
-    ];
-
-    const clientOptions = [
-        { label: 'Client A', value: 'clientA' },
-        { label: 'Client B', value: 'clientB' },
-        { label: 'Client C', value: 'clientC' }
     ];
 
     return (
@@ -427,7 +577,7 @@ export const Calls = () => {
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                disabled
+                                disabled={true}
                                 name="callDocId"
                                 value={isDocIdLoading ? "Generating..." : formData.callDocId}
                                 InputProps={{
@@ -444,13 +594,7 @@ export const Calls = () => {
                                         label="Call Date"
                                         value={formData.calldate ? dayjs(formData.calldate, 'YYYY-MM-DD') : null}
                                         onChange={(date) => handleDateChange('calldate', date)}
-                                        slotProps={{
-                                            textField: {
-                                                size: 'small',
-                                                error: !!fieldErrors.calldate,
-                                                helperText: fieldErrors.calldate
-                                            }
-                                        }}
+                                        slotProps={{ textField: { size: 'small' } }}
                                         format="DD-MM-YYYY"
                                         disabled
                                     />
@@ -462,24 +606,14 @@ export const Calls = () => {
                         <div className="col-md-3 mb-3">
                             <Autocomplete
                                 options={clientOptions}
-                                getOptionLabel={(option) => option.label}
-                                value={clientOptions.find((opt) => opt.value === formData.clientName) || null}
-                                onChange={(event, newValue) => {
-                                    handleInputChange({
-                                        target: {
-                                            name: 'clientName',
-                                            value: newValue ? newValue.value : ''
-                                        }
-                                    });
-                                }}
+                                getOptionLabel={(option) => option.clientName}
+                                value={clientOptions.find(c => c.clientName === formData.clientName) || null}
+                                onChange={handleClientSelect}
+                                loading={isClientLoading}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label={
-                                            <span>
-                                                Client Name <span className="asterisk">*</span>
-                                            </span>
-                                        }
+                                        label={<span>Client Name <span className="asterisk">*</span></span>}
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -487,52 +621,53 @@ export const Calls = () => {
                                         helperText={fieldErrors.clientName}
                                     />
                                 )}
+                                noOptionsText="No clients found"
                             />
                         </div>
 
                         {/* Branch */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                                <InputLabel id="branch-label">Branch <span className="asterisk">*</span></InputLabel>
-                                <Select
-                                    labelId="branch-label"
-                                    // label="Branch *"
-                                    label={
-                                        <span>
-                                            Branch <span className="asterisk">*</span>
-                                        </span>
-                                    }
-                                    value={formData.branch}
-                                    onChange={handleBranchChange}
-                                    name="branch"
-                                >
-                                    {branchList.map((branch) => (
-                                        <MenuItem key={branch.id} value={branch.branch}>
-                                            {branch.branch}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
-                            </FormControl>
+                            <Autocomplete
+                                options={branchOptions}
+                                getOptionLabel={(option) => option.branch}
+                                value={branchOptions.find(b => b.branch === formData.branch) || null}
+                                onChange={handleBranchSelect}
+                                loading={isBranchLoading}
+                                disabled={!formData.clientName}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Branch"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                    />
+                                )}
+                                noOptionsText="No branches found"
+                            />
                         </div>
 
                         {/* Contact Name */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                // label="Contact Name *"
-                                label={
-                                    <span>
-                                        Contact Name <span className="asterisk">*</span>
-                                    </span>
-                                }
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="contactName"
-                                value={formData.contactName}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.contactName}
-                                helperText={fieldErrors.contactName}
+                            <Autocomplete
+                                options={contactOptions}
+                                getOptionLabel={(option) => option.name}
+                                value={contactOptions.find(c => c.name === formData.contactName) || null}
+                                onChange={handleContactSelect}
+                                loading={isContactLoading}
+                                disabled={!formData.clientName || !formData.branch}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label={<span>Contact Name <span className="asterisk">*</span></span>}
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        error={!!fieldErrors.contactName}
+                                        helperText={fieldErrors.contactName}
+                                    />
+                                )}
+                                noOptionsText="No contacts found"
                             />
                         </div>
 
@@ -548,6 +683,7 @@ export const Calls = () => {
                                 onChange={handleInputChange}
                                 error={!!fieldErrors.email}
                                 helperText={fieldErrors.email}
+                                disabled
                             />
                         </div>
 
@@ -564,36 +700,66 @@ export const Calls = () => {
                                 error={!!fieldErrors.mobile}
                                 helperText={fieldErrors.mobile}
                                 inputProps={{ maxLength: 10 }}
+                                disabled
                             />
                         </div>
 
                         {/* Parent */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Parent"
-                                variant="outlined"
+                            <Autocomplete
                                 size="small"
-                                fullWidth
-                                name="Parent"
-                                value={formData.Parent}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.Parent}
-                                helperText={fieldErrors.Parent}
+                                options={parentOptions}
+                                getOptionLabel={(option) => option.label}
+                                value={parentOptions.find((opt) => opt.value === formData.Parent) || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'Parent',
+                                            value: newValue ? newValue.value : ''
+                                        }
+                                    });
+                                }}
+                                loading={isParentLoading}
+                                disabled={!formData.clientName}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Parent"
+                                        variant="outlined"
+                                        fullWidth
+                                        error={!!fieldErrors.Parent}
+                                        helperText={fieldErrors.Parent}
+                                    />
+                                )}
+                                noOptionsText="No parent options found"
                             />
                         </div>
 
                         {/* Direction */}
                         <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Direction"
-                                variant="outlined"
+                            <Autocomplete
                                 size="small"
-                                fullWidth
-                                name="direction"
-                                value={formData.direction}
-                                onChange={handleInputChange}
-                                error={!!fieldErrors.direction}
-                                helperText={fieldErrors.direction}
+                                options={directionOptions}
+                                value={formData.direction || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'direction',
+                                            value: newValue || ''
+                                        }
+                                    });
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label={<span>Direction <span className="asterisk">*</span></span>}
+                                        variant="outlined"
+                                        fullWidth
+                                        error={!!fieldErrors.direction}
+                                        helperText={fieldErrors.direction}
+                                    />
+                                )}
+                                noOptionsText="No direction options found"
                             />
                         </div>
 
@@ -602,12 +768,7 @@ export const Calls = () => {
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        // label="Start Date *"
-                                        label={
-                                            <span>
-                                                Start Date <span className="asterisk">*</span>
-                                            </span>
-                                        }
+                                        label={<span>Start Date <span className="asterisk">*</span></span>}
                                         value={formData.dateStart ? dayjs(formData.dateStart, 'YYYY-MM-DD') : null}
                                         onChange={(date) => handleDateChange('dateStart', date)}
                                         slotProps={{
@@ -641,12 +802,7 @@ export const Calls = () => {
                         {/* Start Time */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                // label="Start Time *"
-                                label={
-                                    <span>
-                                        Start Time <span className="asterisk">*</span>
-                                    </span>
-                                }
+                                label={<span>Start Time <span className="asterisk">*</span></span>}
                                 variant="outlined"
                                 size="small"
                                 fullWidth
@@ -654,14 +810,10 @@ export const Calls = () => {
                                 type="time"
                                 value={formData.timeStart}
                                 onChange={handleInputChange}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                inputProps={{
-                                    step: 300, // 5 min interval
-                                }}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ step: 300 }}
                                 error={!!fieldErrors.timeStart}
-                            // helperText={fieldErrors.timeStart || "Format: HH:mm"}
+                                helperText={fieldErrors.timeStart}
                             />
                         </div>
 
@@ -676,17 +828,12 @@ export const Calls = () => {
                                 type="time"
                                 value={formData.timeEnd}
                                 onChange={handleInputChange}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                inputProps={{
-                                    step: 300,
-                                }}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ step: 300 }}
                                 error={!!fieldErrors.timeEnd}
-                            // helperText={fieldErrors.timeEnd || "Format: HH:mm"}
+                                helperText={fieldErrors.timeEnd}
                             />
                         </div>
-
 
                         {/* Duration */}
                         <div className="col-md-3 mb-3">
@@ -708,36 +855,39 @@ export const Calls = () => {
                                 }}
                                 error={formData.duration.includes('Invalid') ||
                                     formData.duration.includes('before')}
-                            // helperText={formData.duration.includes('Invalid') || 
-                            //            formData.duration.includes('before')
-                            //     ? formData.duration : "Calculated automatically"}
                             />
                         </div>
 
                         {/* Status */}
                         <div className="col-md-3 mb-3">
-                            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                                <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
-                                <Select
-                                    labelId="status-label"
-                                    // label="Status *"
-                                    label={
-                                        <span>
-                                            Status <span className="asterisk">*</span>
-                                        </span>
-                                    }
-                                    value={formData.status}
-                                    onChange={handleInputChange}
-                                    name="status"
-                                >
-                                    {statusOptions.map((status) => (
-                                        <MenuItem key={status} value={status}>
-                                            {status}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
-                            </FormControl>
+                            <Autocomplete
+                                size="small"
+                                options={statusOptions}
+                                value={formData.status || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'status',
+                                            value: newValue || '',
+                                        },
+                                    });
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label={
+                                            <span>
+                                                Status <span className="asterisk">*</span>
+                                            </span>
+                                        }
+                                        variant="outlined"
+                                        fullWidth
+                                        error={!!fieldErrors.status}
+                                        helperText={fieldErrors.status}
+                                    />
+                                )}
+                                noOptionsText="No status options found"
+                            />
                         </div>
 
                         {/* Follow-up Date */}
@@ -762,15 +912,14 @@ export const Calls = () => {
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                // multiline
-                                // rows={3}
                                 name="description"
                                 value={formData.description}
                                 onChange={handleInputChange}
+                                // multiline
+                                // rows={3}
                             />
                         </div>
 
-                        {/* Active */}
                         <div className="col-md-3 mb-3 d-flex align-items-center">
                             <FormControlLabel
                                 control={
@@ -781,6 +930,7 @@ export const Calls = () => {
                                     />
                                 }
                                 label="Active"
+                                style={{ marginTop: '16px' }}
                             />
                         </div>
                     </div>
