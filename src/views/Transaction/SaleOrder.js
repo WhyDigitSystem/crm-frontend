@@ -953,6 +953,7 @@ const SalesOrder = () => {
                                                     mobileNumber: newValue.mobileNo,
                                                     email: newValue.email,
                                                 }));
+                                                getProductName(newValue.docId, formData.clientName);
                                                 setFieldErrors((prev) => ({ ...prev, quotationName: '', quotationId: '', contactName: '', mobileNumber: '', email: '' }));
                                             } else {
                                                 setFormData((prev) => ({ ...prev, quotationName: '', quotationId: '', contactName: '', mobileNumber: '', email: '' }));
@@ -1118,6 +1119,7 @@ const SalesOrder = () => {
                                                                                                     productName: newValue.productName,
                                                                                                     category: newValue.category,
                                                                                                     subCategory: newValue.subCategory || '',
+                                                                                                    sellingPrice: newValue.price
                                                                                                 };
                                                                                             } else {
                                                                                                 updatedOpportunities[index] = {
@@ -1166,6 +1168,7 @@ const SalesOrder = () => {
                                                                                     fullWidth
                                                                                     size="small"
                                                                                     type="number"
+                                                                                    disabled
                                                                                     value={detail.sellingPrice}
                                                                                     onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                                                                     onBlur={(e) => validateDetailField(index, 'sellingPrice', e.target.value)}

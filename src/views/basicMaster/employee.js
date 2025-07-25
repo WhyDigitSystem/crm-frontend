@@ -24,15 +24,16 @@ import autoTable from 'jspdf-autotable';
 
 const EmployeeDetails = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [data, setData] = useState([]);
   const [loginUserName, setLoginUserName] = useState(() => localStorage.getItem('userName') || '');
-  const [empCode, setEmpCode] = useState(() => localStorage.getItem('employeeCode') || '');
-  const [value, setValue] = useState(0);
+  const orgId = parseInt(localStorage.getItem('orgId'));
+  const finYear = parseInt(localStorage.getItem('finYear'));
+  const branch = localStorage.getItem('branch') || '';
+  const branchCode = localStorage.getItem('branchcode') || '';
   const [editId, setEditId] = useState();
   const [branchList, setBranchList] = useState([]);
   const [departmentList, setDepartmentList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
+  const [docId, setDocId] = useState('');
   const [companyList, setCompanyList] = useState([]);
   const [assignedUsers, setAssignedUsers] = useState([]);
   const [regionList, setRegionList] = useState([]);
@@ -101,6 +102,7 @@ const EmployeeDetails = () => {
   ];
 
   useEffect(() => {
+    getSalesOrderDocId();
     getAllBranches();
     getAllEmployees();
     getAllDesignation();
@@ -128,7 +130,24 @@ const EmployeeDetails = () => {
       setRegionList([]);
     }
   };
+  const getSalesOrderDocId = async () => {
+    if (editId) return;
 
+    try {
+      const response = await apiCalls(
+        'get',
+        `/master/getEmployeeDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+
+      if (response.status && response.paramObjectsMap?.employeeDocId) {
+        setDocId(response.paramObjectsMap.employeeDocId);
+      } else {
+        
+      }
+    } catch (err) {
+      console.error('Error fetching sales order docId:', err);
+    }
+  };
   const getAllBranches = async () => {
     const orgId = parseInt(localStorage.getItem('orgId')) || 0;
     try {
@@ -368,7 +387,6 @@ const EmployeeDetails = () => {
         age: parseInt(formData.age) || 0,
         assignedUserName: formData.assignedUserName,
         reportingTo: formData.reportingTo,
-        cancelRemark: null,
       };
 
       try {
@@ -565,14 +583,11 @@ const EmployeeDetails = () => {
               margin="0 10px 0 10px"
             />
           )}
-        </div>
-
+        </div>  
         {showForm ? (
           <>
             <div className="row">
               <h5 className="mb-4">Employee Details</h5>
-
-              {/* Employee Code */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Employee Code"
@@ -580,7 +595,8 @@ const EmployeeDetails = () => {
                   size="small"
                   fullWidth
                   name="employeeCode"
-                  value={formData.employeeCode}
+                  disabled
+                  value={docId}
                   onChange={handleInputChange}
                 />
               </div>
