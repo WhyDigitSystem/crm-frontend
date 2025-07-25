@@ -1,9 +1,5 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { useState, useEffect } from 'react';
@@ -11,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import Box from '@mui/material/Box';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
+import { Avatar, Typography, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl, Autocomplete } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
@@ -21,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+// import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoToneIcon';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
 const Task = () => {
@@ -36,12 +33,21 @@ const Task = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [open, setOpen] = useState(false);
+  const [supportingImg, setImg] = useState(null);
+
+  // API data states
+  const [clientOptions, setClientOptions] = useState([]);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [customerOptions, setCustomerOptions] = useState([]);
+  const [assignedToOptions, setAssignedToOptions] = useState([]);
+
   // Form state
   const [formData, setFormData] = useState({
     taskId: '',
     taskDate: dayjs().format('YYYY-MM-DD'),
     clientName: '',
     branch: branch,
+    branchName: '',
     customerName: '',
     taskName: '',
     taskType: '',
@@ -84,12 +90,17 @@ const Task = () => {
     { accessorKey: 'startDate', header: 'Start Date', size: 120 },
     { accessorKey: 'status', header: 'Status', size: 120 },
     { accessorKey: 'assignedTo', header: 'Assigned To', size: 150 },
-    { accessorKey: 'active', header: 'Active', size: 100 },
+    {
+      accessorKey: 'active', header: 'Active', size: 100,
+      Cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive'
+    },
   ];
 
   useEffect(() => {
     getAllBranches();
     getAllTasks();
+    fetchClientOptions();
+    fetchAssignedToOptions();
   }, []);
 
   useEffect(() => {
@@ -106,6 +117,87 @@ const Task = () => {
       setFormData(prev => ({ ...prev, duration: '' }));
     }
   }, [formData.startTime, formData.endTime]);
+
+  useEffect(() => {
+    if (formData.clientName) {
+      fetchBranchOptions(formData.clientName);
+      fetchCustomerOptions(formData.clientName);
+    } else {
+      setBranchOptions([]);
+      setCustomerOptions([]);
+    }
+  }, [formData.clientName]);
+
+  // Fetch client names from API
+  const fetchClientOptions = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/activities/getClientNameFromLead?orgId=${orgId}`
+      );
+
+      if (response.status === true && response.paramObjectsMap.clientName) {
+        setClientOptions(response.paramObjectsMap.clientName);
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      showToast('error', 'Failed to load clients');
+    }
+  };
+
+  // Fetch branches based on client selection
+  const fetchBranchOptions = async (clientName) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/activities/getBranchNameFromLeadFillGrid?clientName=${clientName}&orgId=${orgId}`
+      );
+
+      if (response.status === true && response.paramObjectsMap.branchName) {
+        setBranchOptions(response.paramObjectsMap.branchName);
+      }
+    } catch (error) {
+      console.error('Error fetching branches:', error);
+      showToast('error', 'Failed to load branches for this client');
+    }
+  };
+
+  // Fetch customers based on client selection
+  const fetchCustomerOptions = async (clientName) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/activities/getCustomerNameFromLead?clientName=${clientName}&orgId=${orgId}`
+      );
+
+      if (response.status === true && response.paramObjectsMap.customerName) {
+        setCustomerOptions(response.paramObjectsMap.customerName);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      showToast('error', 'Failed to load customers for this client');
+    }
+  };
+
+  // Fetch assigned users from API
+  const fetchAssignedToOptions = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/activities/getAssignedUserName?orgId=${orgId}`
+      );
+
+      if (response.status === true && response.paramObjectsMap.assginedUserName) {
+        setAssignedToOptions(response.paramObjectsMap.assginedUserName.map(user => ({
+          assignedTo: user.assignedTo,
+          assignedUser: user.assignedUser
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching assigned users:', error);
+      showToast('error', 'Failed to load assigned users');
+    }
+  };
 
   const getAllBranches = async () => {
     try {
@@ -124,7 +216,10 @@ const Task = () => {
       );
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.taskVO.reverse());
+        setListViewData(response.paramObjectsMap.taskVO.map(task => ({
+          ...task,
+          active: task.active === "Active" || task.active === true
+        })));
       } else {
         showToast('error', response.message || 'Failed to fetch tasks');
       }
@@ -165,7 +260,7 @@ const Task = () => {
         const task = response.paramObjectsMap.taskVO;
         setEditId(id);
         setListView(false);
-        setImg(response.paramObjectsMap.taskVO.attachments);
+        setImg(task.attachments);
         setFormData({
           taskId: task.docId || '',
           taskDate: task.docDate || dayjs().format('YYYY-MM-DD'),
@@ -173,9 +268,10 @@ const Task = () => {
           taskType: task.taskType || '',
           clientName: task.clientName || '',
           customerName: task.customerName || '',
-          branch: task.branch || '',
-          branchCode: task.branchCode || '',
-          priority: task.priority || '',
+          branch: task.branch || branch,
+          branchCode: task.branchCode || branchCode,
+          branchName: task.branchName || '',
+          priority: task.priority || 'Medium',
           startDate: task.startDate || dayjs().format('YYYY-MM-DD'),
           startTime: task.startTime ? task.startTime.slice(0, 5) : '',
           endDate: task.endDate || dayjs().format('YYYY-MM-DD'),
@@ -183,8 +279,9 @@ const Task = () => {
           duration: task.duration || '',
           status: task.status || 'Pending',
           assignedTo: task.assignedTo || '',
+          assignedName: task.assignedName || task.assignedTo || '',
           description: task.description || '',
-          active: task.active !== undefined ? task.active : true
+          active: task.active === "Active" || task.active === true
         });
       } else {
         showToast('error', response.message || 'Failed to fetch task details');
@@ -281,6 +378,7 @@ const Task = () => {
       duration: '',
       status: 'Pending',
       assignedTo: '',
+      assignedName: '',
       description: '',
       active: true
     });
@@ -324,10 +422,10 @@ const Task = () => {
       createdBy: loginUserName,
       finYear: finYear,
       orgId: orgId,
-      branch: branch,
-      branchCode: branchCode,
-      active: formData.active === 'Active' ? true : false,
-      assignedName: formData.assignedName,
+      branch: formData.branch,
+      branchCode: formData.branchCode,
+      active: formData.active ? "Active" : "In-Active",
+      assignedName: formData.assignedName || formData.assignedTo,
       assignedTo: formData.assignedTo,
       clientName: formData.clientName,
       customerName: formData.customerName,
@@ -350,13 +448,12 @@ const Task = () => {
 
       if (response.status === true) {
         showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
-        const generatedId = response.paramObjectsMap.taskVO.id;
-        if (generatedId && typeof supportingImg === 'object') {
-          handleFileUpload(generatedId);
+        const generatedId = response.paramObjectsMap?.taskVO?.id || editId;
+        if (generatedId && supportingImg && typeof supportingImg === 'object') {
+          await handleFileUpload(generatedId);
         }
         handleClear();
         getAllTasks();
-        getTaskDocId();
       } else {
         showToast('error', response.paramObjectsMap?.message || 'Operation failed');
       }
@@ -371,9 +468,10 @@ const Task = () => {
   const handleView = () => {
     setListView(!listView);
   };
-  const [supportingImg, setImg] = useState(null);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const handleImgChange = (e) => {
     const file = e.target.files[0];
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
@@ -382,6 +480,7 @@ const Task = () => {
       showToast('error', 'Please upload a valid image (PNG or JPEG).');
     }
   };
+
   const handleFileUpload = async (generatedId) => {
     if (!generatedId) return;
     const formData = new FormData();
@@ -405,14 +504,9 @@ const Task = () => {
       showToast('error', 'Failed to upload image');
     }
   };
-  useEffect(() => {
-    return () => {
-      if (supportingImg && typeof supportingImg === 'object') {
-        URL.revokeObjectURL(supportingImg);
-      }
-    };
-  }, [supportingImg]);
+
   const handleRemoveImg = () => setImg(null);
+
   // Task type options
   const taskTypeOptions = ['General', 'Meeting', 'Call', 'Email', 'Other'];
 
@@ -484,10 +578,96 @@ const Task = () => {
                 </FormControl>
               </div>
 
+              {/* Client Name */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  size="small"
+                  fullWidth
+                  options={clientOptions}
+                  getOptionLabel={(option) => option.clientName || ''}
+                  value={clientOptions.find(opt => opt.clientName === formData.clientName) || null}
+                  onChange={(event, newValue) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      clientName: newValue ? newValue.clientName : '',
+                      branch: branch,
+                      customerName: ''
+                    }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Client Name"
+                      variant="outlined"
+                    />
+                  )}
+                />
+              </div>
+
+              {/* Branch */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  size="small"
+                  fullWidth
+                  options={branchOptions}
+                  getOptionLabel={(option) => option.branch || ''}
+                  value={branchOptions.find(opt => opt.branch === formData.branch) || null}
+                  onChange={(event, newValue) => {
+                    const branchName = newValue ? newValue.branch : branch;
+                    const selectedBranch = branchList.find(b => b.branch === branchName);
+
+                    setFormData(prev => ({
+                      ...prev,
+                      branch: branchName,
+                      branchCode: selectedBranch ? selectedBranch.branchCode : branchCode,
+                      branchName: branchName
+                    }));
+                  }}
+                  disabled={!formData.clientName}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Branch <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      error={!!fieldErrors.branch}
+                      helperText={fieldErrors.branch}
+                    />
+                  )}
+                />
+              </div>
+
+              {/* Customer Name */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  size="small"
+                  fullWidth
+                  options={customerOptions}
+                  getOptionLabel={(option) => option.customerName || ''}
+                  value={customerOptions.find(opt => opt.customerName === formData.customerName) || null}
+                  onChange={(event, newValue) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      customerName: newValue ? newValue.customerName : ''
+                    }));
+                  }}
+                  disabled={!formData.clientName}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Customer Name"
+                      variant="outlined"
+                    />
+                  )}
+                />
+              </div>
+
               {/* Task Name */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  // label="Task Name *"
                   label={
                     <span>
                       Task Name <span className="asterisk">*</span>
@@ -504,95 +684,59 @@ const Task = () => {
                 />
               </div>
 
-              {/* Branch */}
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                  <InputLabel id="branch-label">Branch <span className="asterisk">*</span></InputLabel>
-                  <Select
-                    labelId="branch-label"
-                    // label="Branch *"
-                    label={
-                      <span>
-                        Branch <span className="asterisk">*</span>
-                      </span>
-                    }
-                    value={formData.branch}
-                    onChange={handleBranchChange}
-                    name="branch"
-                  >
-                    {branchList.map((branch) => (
-                      <MenuItem key={branch.id} value={branch.branch}>
-                        {branch.branch}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
-                </FormControl>
-              </div>
-
               {/* Task Type */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth>
-                  <InputLabel id="taskType-label">Task Type</InputLabel>
-                  <Select
-                    labelId="taskType-label"
-                    label="Task Type"
-                    value={formData.taskType}
-                    onChange={handleInputChange}
-                    name="taskType"
-                  >
-                    {taskTypeOptions.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-
-              {/* Priority */}
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth>
-                  <InputLabel id="priority-label">Priority</InputLabel>
-                  <Select
-                    labelId="priority-label"
-                    label="Priority"
-                    value={formData.priority}
-                    onChange={handleInputChange}
-                    name="priority"
-                  >
-                    {priorityOptions.map((priority) => (
-                      <MenuItem key={priority} value={priority}>
-                        {priority}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-
-              {/* Client Name */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Client Name"
-                  variant="outlined"
+                <Autocomplete
                   size="small"
                   fullWidth
-                  name="clientName"
-                  value={formData.clientName}
-                  onChange={handleInputChange}
+                  options={taskTypeOptions}
+                  value={formData.taskType || ''}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'taskType',
+                        value: newValue || ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Task Type"
+                      variant="outlined"
+                    />
+                  )}
                 />
               </div>
 
-              {/* Customer Name */}
+              {/* Status */}
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Customer Name"
-                  variant="outlined"
+                <Autocomplete
                   size="small"
                   fullWidth
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleInputChange}
+                  options={statusOptions}
+                  value={formData.status || ''}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'status',
+                        value: newValue || ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Status <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      error={!!fieldErrors.status}
+                      helperText={fieldErrors.status}
+                    />
+                  )}
                 />
               </div>
 
@@ -601,7 +745,6 @@ const Task = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      // label="Start Date *"
                       label={
                         <span>
                           Start Date <span className="asterisk">*</span>
@@ -640,7 +783,6 @@ const Task = () => {
               {/* Start Time */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  // label="Start Time *"
                   label={
                     <span>
                       Start Time <span className="asterisk">*</span>
@@ -660,7 +802,7 @@ const Task = () => {
                     step: 300,
                   }}
                   error={!!fieldErrors.startTime}
-                // helperText={fieldErrors.startTime || "Format: HH:mm"}
+                  helperText={fieldErrors.startTime}
                 />
               </div>
 
@@ -682,10 +824,9 @@ const Task = () => {
                     step: 300,
                   }}
                   error={!!fieldErrors.endTime}
-                // helperText={fieldErrors.endTime || "Format: HH:mm"}
+                  helperText={fieldErrors.endTime}
                 />
               </div>
-
 
               {/* Duration */}
               <div className="col-md-3 mb-3">
@@ -696,71 +837,40 @@ const Task = () => {
                   fullWidth
                   name="duration"
                   value={formData.duration}
+                  disabled
                   InputProps={{
-                    readOnly: true,
-                    style: {
-                      fontWeight: 'bold',
-                      color: formData.duration.includes('Invalid') ||
-                        formData.duration.includes('before')
-                        ? '#d32f2f' : '#1976d2'
-                    }
+                    style: { backgroundColor: '#f5f5f5' }
                   }}
-                  error={formData.duration.includes('Invalid') ||
-                    formData.duration.includes('before')}
-                  helperText={formData.duration.includes('Invalid') ||
-                    formData.duration.includes('before')
-                    ? formData.duration : ""}
                 />
               </div>
 
-              {/* Status */}
+              {/* Priority */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
-                  <Select
-                    labelId="status-label"
-                    // label="Status *"
-                    label={
-                      <span>
-                        Status <span className="asterisk">*</span>
-                      </span>
-                    }
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    name="status"
-                  >
-                    {statusOptions.map((status) => (
-                      <MenuItem key={status} value={status}>
-                        {status}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              {/* Assign To */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  // label="Assign To *"
-                  label={
-                    <span>
-                      Assign To <span className="asterisk">*</span>
-                    </span>
-                  }
-                  variant="outlined"
+                <Autocomplete
                   size="small"
                   fullWidth
-                  name="assignedTo"
-                  value={formData.assignedTo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.assignedTo}
-                  helperText={fieldErrors.assignedTo}
+                  options={priorityOptions}
+                  value={formData.priority || ''}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'priority',
+                        value: newValue || ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Priority"
+                      variant="outlined"
+                    />
+                  )}
                 />
               </div>
 
               {/* Description */}
-              <div className="col-md-3 mb-3">
+              <div className="col-md-6 mb-3">
                 <TextField
                   label="Description"
                   variant="outlined"
@@ -769,8 +879,67 @@ const Task = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
+                  multiline
+                  rows={3}
                 />
               </div>
+
+              {/* Assign To */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  size="small"
+                  fullWidth
+                  options={assignedToOptions}
+                  getOptionLabel={(option) => option.assignedUser || ''}
+                  value={assignedToOptions.find(opt => opt.assignedTo === formData.assignedTo) || null}
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      setFormData(prev => ({
+                        ...prev,
+                        assignedTo: newValue.assignedTo,
+                        assignedName: newValue.assignedUser
+                      }));
+                    } else {
+                      setFormData(prev => ({
+                        ...prev,
+                        assignedTo: '',
+                        assignedName: ''
+                      }));
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Assign To <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      error={!!fieldErrors.assignedTo}
+                      helperText={fieldErrors.assignedTo}
+                    />
+                  )}
+                />
+              </div>
+
+              {/* Assigned Name */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Assigned Name"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="assignedName"
+                  value={formData.assignedName}
+                  disabled
+                  InputProps={{
+                    style: { backgroundColor: '#f5f5f5' }
+                  }}
+                />
+              </div>
+
+              {/* Image Upload */}
               <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>
                   <Button
@@ -780,8 +949,7 @@ const Task = () => {
                     startIcon={<CloudUploadIcon />}
                     sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
                   >
-                    {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : '') : 'Upload Img'}
-
+                    {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : 'Image Uploaded') : 'Upload Img'}
                     <input type="file" hidden accept="image/png, image/jpeg" onChange={handleImgChange} />
                   </Button>
 
@@ -823,7 +991,7 @@ const Task = () => {
                     ) : (
                       <Box>
                         <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                          <Typography variant="caption">Upload Img</Typography>
+                          <Typography variant="caption">No Image</Typography>
                         </Avatar>
                         <Box display="flex" gap={2} mt={2}>
                           <IconButton
@@ -839,6 +1007,7 @@ const Task = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+
               {/* Active */}
               <div className="col-md-3 mb-3">
                 <FormControlLabel
@@ -847,6 +1016,7 @@ const Task = () => {
                       checked={formData.active}
                       onChange={handleInputChange}
                       name="active"
+                      color="primary"
                     />
                   }
                   label="Active"
