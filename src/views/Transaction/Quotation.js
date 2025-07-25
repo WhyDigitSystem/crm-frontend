@@ -4,6 +4,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { toWords } from 'number-to-words';
 import {
     TextField,
     Checkbox,
@@ -64,6 +65,7 @@ export const Quotation = () => {
     const [clientNameList, setClientNameList] = useState([]);
     const [branchList, setBranchList] = useState([]);
     const [opportunityList, setOpportunityList] = useState([]);
+    const [productList, setProductList] = useState([]);
     // Form structure for Lead
     const [formData, setFormData] = useState({
         quoteId: '',
@@ -126,6 +128,10 @@ export const Quotation = () => {
         getAllQuotation();
         getClientName();
     }, []);
+    useEffect(() => {
+        calculateTotals();
+    }, [quotationPrice]);
+
     const getAllQuotation = async () => {
         try {
             const response = await apiCalls(
@@ -176,15 +182,17 @@ export const Quotation = () => {
                 const lead = response.paramObjectsMap.quotationVO;
                 setEditId(id);
                 setListView(false);
+                getBranch(lead.clientName);
+                getOpportunityName(lead.branchName, lead.clientName);
                 setFormData({
                     quoteId: lead.docId,
                     quoteDate: lead.docDate,
                     clientName: lead.clientName,
-                    branchName: lead.branchName,
+                    branch: lead.branchName,
                     contactName: lead.contactName,
                     oppurtunityName: lead.oppurtunityName,
                     oppurtunityId: lead.oppurtunityId,
-                    email: lead.email,
+                    emailId: lead.email,
                     mobileNumber: lead.mobileNumber,
                     gstNo: lead.gstNo,
                     status: lead.status,
@@ -194,7 +202,7 @@ export const Quotation = () => {
                     discount: lead.discount,
                     netAmount: lead.netAmount,
                     narration: lead.narration,
-                    amountInWords: lead.amountInWords,
+                    amtInWords: lead.amountInWords,
                     finYear: finYear,
                     branch: branch,
                     branchCode: branchCode,
@@ -208,7 +216,7 @@ export const Quotation = () => {
                         subCategory: row.subCategory,
                         sellingPrice: row.sellingPrice,
                         qty: row.qty,
-                        discount: row.discount,
+                        discountPer: row.discount,
                         price: row.price,
                         amount: row.amount
                     }))
@@ -373,11 +381,25 @@ export const Quotation = () => {
             return error;
         }
     };
-    const getOpportunityName = async (clientBranch) => {
+    const getOpportunityName = async (clientBranch, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getOpportunityNameIdAndDetails?branchName=${clientBranch}&clientName=${formData.clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getOpportunityNameIdAndDetails?branchName=${clientBranch}&clientName=${clientName}&orgId=${orgId}`);
             if (response.status === true) {
                 setOpportunityList(response.paramObjectsMap.opportunityDetails || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
+    const getProductName = async (oppurtunityId, clientName) => {
+        try {
+            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${clientName}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
+            if (response.status === true) {
+                setProductList(response.paramObjectsMap.productNameDetails || []);
             } else {
                 console.error('API Error:', response);
                 return response;
@@ -413,6 +435,8 @@ export const Quotation = () => {
 
     const handleClear = () => {
         getQuotationDocId()
+        setOpportunityList([]);
+        setBranchList([]);
         setFormData({
             quoteDate: dayjs(),
             clientName: '',
@@ -528,7 +552,32 @@ export const Quotation = () => {
         { accessorKey: 'mobileNumber', header: 'Contact', size: 150 },
         { accessorKey: 'email', header: 'Email', size: 200 },
     ];
+    const calculateTotals = () => {
+        let gross = 0;
+        let discountAmt = 0;
 
+        quotationPrice.forEach((item) => {
+            const qty = parseFloat(item.qty) || 0;
+            const price = parseFloat(item.sellingPrice) || 0;
+            const discountPer = parseFloat(item.discountPer) || 0;
+
+            const lineTotal = qty * price;
+            const lineDiscount = (lineTotal * discountPer) / 100;
+
+            gross += lineTotal;
+            discountAmt += lineDiscount;
+        });
+
+        const net = gross - discountAmt;
+
+        setFormData((prev) => ({
+            ...prev,
+            grossAmt: gross.toFixed(2),
+            discount: discountAmt.toFixed(2),
+            netAmt: net.toFixed(2),
+            amtInWords: toWords(Math.floor(net)).toUpperCase() + " ONLY"
+        }));
+    };
     return (
         <>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -646,7 +695,7 @@ export const Quotation = () => {
                                                 gstNo: newValue.gstNo,
                                                 address: newValue.address,
                                             }));
-                                            getOpportunityName(newValue.branch);
+                                            getOpportunityName(newValue.branch, formData.clientName);
                                             setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
                                         } else {
                                             setFormData((prev) => ({ ...prev, branch: '' }));
@@ -719,6 +768,7 @@ export const Quotation = () => {
                                                 emailId: newValue.email || '',
                                                 iterations: `${newValue.docId} - ${'doubt'} ` || ''
                                             }));
+                                            getProductName(newValue.docId, formData.clientName)
                                         } else {
                                             setFormData((prev) => ({
                                                 ...prev,
@@ -894,21 +944,48 @@ export const Quotation = () => {
                                                                             <div className="pt-2">{index + 1}</div>
                                                                         </td>
                                                                         <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={quotationPrice.productName}
-                                                                                onChange={(e) => handleDetailChange(index, 'productName', e.target.value)}
-                                                                                // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                                error={!!quotationPriceErrors[index]?.productName}
-                                                                                helperText={quotationPriceErrors[index]?.productName}
-                                                                            />
+                                                                            <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                <Autocomplete
+                                                                                    options={productList}
+                                                                                    getOptionLabel={(option) => option?.productName || ''}
+                                                                                    value={
+                                                                                        productList.find((item) => item.productName === row.productName) || null
+                                                                                    }
+                                                                                    onChange={(event, newValue) => {
+                                                                                        const updatedOpportunities = [...quotationPrice];
+                                                                                        if (newValue) {
+                                                                                            updatedOpportunities[index] = {
+                                                                                                ...updatedOpportunities[index],
+                                                                                                productName: newValue.productName,
+                                                                                                category: newValue.category,
+                                                                                                subCategory: newValue.subCategory || '',
+                                                                                            };
+                                                                                        } else {
+                                                                                            updatedOpportunities[index] = {
+                                                                                                ...updatedOpportunities[index],
+                                                                                                productName: '',
+                                                                                                subCategory: '',
+                                                                                                category: '',
+                                                                                            };
+                                                                                        }
+                                                                                        setQuotationPrice(updatedOpportunities);
+                                                                                    }}
+                                                                                    renderInput={(params) => (
+                                                                                        <TextField
+                                                                                            {...params}
+                                                                                            size="small"
+                                                                                            fullWidth
+                                                                                        />
+                                                                                    )}
+                                                                                />
+                                                                            </Box>
                                                                         </td>
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
                                                                                 size="small"
-                                                                                value={quotationPrice.category}
+                                                                                value={row.category}
+                                                                                disabled
                                                                                 onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
                                                                                 // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                                                                 error={!!quotationPriceErrors[index]?.category}
@@ -919,7 +996,8 @@ export const Quotation = () => {
                                                                             <TextField
                                                                                 fullWidth
                                                                                 size="small"
-                                                                                value={quotationPrice.subCategory}
+                                                                                disabled
+                                                                                value={row.subCategory}
                                                                                 onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
                                                                             // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                                                             />
@@ -929,7 +1007,7 @@ export const Quotation = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type="number"
-                                                                                value={quotationPrice.sellingPrice}
+                                                                                value={row.sellingPrice}
                                                                                 onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                                                                 error={!!quotationPriceErrors[index]?.sellingPrice}
                                                                                 helperText={quotationPriceErrors[index]?.sellingPrice}
@@ -940,7 +1018,7 @@ export const Quotation = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type='number'
-                                                                                value={quotationPrice.qty}
+                                                                                value={row.qty}
                                                                                 onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
                                                                                 // onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
                                                                                 error={!!quotationPriceErrors[index]?.qty}
@@ -952,7 +1030,7 @@ export const Quotation = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type='number'
-                                                                                value={quotationPrice.price}
+                                                                                value={row.price}
                                                                                 onChange={(e) => handleDetailChange(index, 'price', e.target.value)}
                                                                             // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                                                             />
@@ -962,7 +1040,7 @@ export const Quotation = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type='number'
-                                                                                value={quotationPrice.discountPer}
+                                                                                value={row.discountPer}
                                                                                 onChange={(e) => handleDetailChange(index, 'discountPer', e.target.value)}
                                                                             // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                                                             />
@@ -972,7 +1050,7 @@ export const Quotation = () => {
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type='number'
-                                                                                value={quotationPrice.amount}
+                                                                                value={row.amount}
                                                                                 onChange={(e) => handleDetailChange(index, 'amount', e.target.value)}
                                                                                 // onBlur={(e) => validateDetailField(index, 'amount', e.target.value)}
                                                                                 error={!!quotationPriceErrors[index]?.amount}
@@ -995,6 +1073,7 @@ export const Quotation = () => {
                                                     label="Gross Amount"
                                                     variant="outlined"
                                                     size="small"
+                                                    disabled
                                                     fullWidth
                                                     name="grossAmt"
                                                     value={formData.grossAmt}
@@ -1003,8 +1082,9 @@ export const Quotation = () => {
                                             </div>
                                             <div className="col-3 mb-3">
                                                 <TextField
-                                                    label="Discount %"
+                                                    label="Discount"
                                                     variant="outlined"
+                                                    disabled
                                                     size="small"
                                                     fullWidth
                                                     name="discount"
@@ -1016,6 +1096,7 @@ export const Quotation = () => {
                                                 <TextField
                                                     label="Net Amount"
                                                     variant="outlined"
+                                                    disabled
                                                     size="small"
                                                     fullWidth
                                                     name="netAmt"
@@ -1029,6 +1110,7 @@ export const Quotation = () => {
                                                     variant="outlined"
                                                     multiline
                                                     size="small"
+                                                    disabled
                                                     fullWidth
                                                     name="amtInWords"
                                                     value={formData.amtInWords}
@@ -1041,6 +1123,7 @@ export const Quotation = () => {
                                                     variant="outlined"
                                                     size="small"
                                                     fullWidth
+                                                    multiline
                                                     name="narration"
                                                     value={formData.narration}
                                                     onChange={handleInputChange}

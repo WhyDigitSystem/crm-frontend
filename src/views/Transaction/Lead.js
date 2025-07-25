@@ -215,12 +215,13 @@ const Lead = () => {
                 const contacts = lead.leadContactVO?.map(contact => ({
                     branchName: contact.branchName || '',
                     designation: contact.designation || '',
-                    dob: contact.dob || contact.aniversary || '',
+                    dob: contact.dob || null,
                     email: contact.email || '',
                     mobileNo: contact.mobileNo || '',
                     name: contact.name || '',
                     preferredContact: contact.preferedContact,
-                    workAnniversaryDate: contact.workAniversaryDate || ''
+                    workAnniversaryDate: contact.workAniversaryDate || null,
+                    anniversaryDate: contact.aniversary || null
                 })) || [];
 
                 setLeadContacts(contacts.length > 0 ? contacts : [{
@@ -521,44 +522,26 @@ const Lead = () => {
     };
 
     const handleAddBranch = () => {
-        // const lastBranch = leadBranches[leadBranches.length - 1];
-        // if (!lastBranch.branch || !lastBranch.branchCode || !lastBranch.address ||
-        //     !lastBranch.city || !lastBranch.country || !lastBranch.state) {
-        //     const newErrors = [...branchErrors];
-        //     const lastIndex = newErrors.length - 1;
-        //     newErrors[lastIndex] = {
-        //         branch: !lastBranch.branch ? 'Branch is required' : '',
-        //         // branchCode: !lastBranch.branchCode ? 'Branch code is required' : '',
-        //         address: !lastBranch.address ? 'Address is required' : '',
-        //         city: !lastBranch.city ? 'City is required' : '',
-        //         country: !lastBranch.country ? 'Country is required' : '',
-        //         state: !lastBranch.state ? 'State is required' : ''
-        //     };
-        //     setBranchErrors(newErrors);
-        //     showToast('warning', 'Please fill current branch before adding new');
-        //     return;
-        // }
+        setTimeout(() => {
+            setLeadBranches((prev) => [...prev, {
+                branch: '',
+                gstNo: '',
+                city: '',
+                state: '',
+                country: '',
+                address: '',
+            }]);
 
-        setLeadBranches((prev) => [...prev, {
-            address: '',
-            branch: '',
-            branchCode: '',
-            city: '',
-            country: '',
-            gstNo: '',
-            state: ''
-        }]);
-
-        setBranchErrors((prev) => [...prev, {
-            branch: '',
-            branchCode: '',
-            address: '',
-            city: '',
-            country: '',
-            state: ''
-        }]);
+            setBranchErrors((prev) => [...prev, {
+                branch: '',
+                gstNo: '',
+                city: '',
+                state: '',
+                country: '',
+                address: '',
+            }]);
+        }, 0);
     };
-
     const handleDeleteBranch = (index) => {
         if (leadBranches.length <= 1) {
             showToast('warning', 'At least one branch is required');

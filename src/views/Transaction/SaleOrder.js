@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText, Tab, Tabs } from '@mui/material';
+import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText, Tab, Tabs, Autocomplete } from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -22,40 +22,38 @@ const SalesOrder = () => {
     const [listView, setListView] = useState(false);
     const [editId, setEditId] = useState('');
     const [docId, setDocId] = useState('');
-    const [branchList, setBranchList] = useState([]);
-    const [categoryList, setCategoryList] = useState([]);
-    const [subCategoryList, setSubCategoryList] = useState([]);
-    const [quotationList, setQuotationList] = useState([]);
-    const [clientList, setClientList] = useState([]);
-    const [value, setValue] = useState(0);
-    const [isBranchLoading, setIsBranchLoading] = useState(false);
-
+    const [productList, setProductList] = useState([]);
     // User session data
     const orgId = parseInt(localStorage.getItem('orgId'));
     const finYear = parseInt(localStorage.getItem('finYear'));
     const branch = localStorage.getItem('branch') || '';
     const branchCode = localStorage.getItem('branchcode') || '';
     const createdBy = localStorage.getItem('userName');
+    const [clientNameList, setClientNameList] = useState([]);
+    const [branchList, setBranchList] = useState([]);
+    const [quotationList, setQuotationList] = useState([]);
+    const [value, setValue] = useState(0);
 
     // Static options
-    const statusOptions = ['Draft', 'Confirmed', 'Cancelled', 'Completed'];
+    const statusOptions = ['Open', 'In-Progress', 'Completed'];
 
     // Form data
     const [formData, setFormData] = useState({
         address: '',
+        salesDate: dayjs(),
         branch: branch,
         branchCode: branchCode,
         branchName: '',
         clientName: '',
         contactName: '',
         email: '',
-        finYear: finYear.toString(),
+        finYear: finYear,
         gstNo: '',
         mobileNumber: '',
         narration: '',
         quotationId: '',
         quotationName: '',
-        status: 'Draft',
+        status: 'Open',
     });
 
     // Validation errors
@@ -175,122 +173,67 @@ const SalesOrder = () => {
 
     // Initial data fetch
     useEffect(() => {
-        const fetchInitialData = async () => {
-            await getAllSalesOrders();
-            await getSalesOrderDocId();
-            await getAllBranches();
-            await getAllCategories();
-            await getAllSubCategories();
-            await getAllClients();
-        };
-        fetchInitialData();
+        getAllSalesOrders();
+        getSalesOrderDocId();
+        getClientName();
     }, []);
 
-    // API calls
-    const getAllClients = async () => {
+    const getClientName = async () => {
         try {
-            const response = await apiCalls('get', `/transaction/getClientNameFromOpportunity?orgId=${orgId}`);
-            if (response.status) {
-                const clients = response.paramObjectsMap?.clientNameDetails || [];
-                setClientList(clients.map(client => client.clientName));
+            const response = await apiCalls('get', `/transaction/getClientNameFromLeadScreen?orgId=${orgId}`);
+            if (response.status === true) {
+                setClientNameList(response.paramObjectsMap.clientName || []);
             } else {
-                showToast('error', response.message || 'Failed to load clients');
+                console.error('API Error:', response);
+                return response;
             }
         } catch (error) {
-            console.error('Error fetching clients:', error);
-            showToast('error', 'Failed to load clients');
+            console.error('Error fetching data:', error);
+            return error;
         }
     };
-
-    const getQuotationDetails = async (clientName) => {
+    const getBranch = async (clientName) => {
         try {
-            const response = await apiCalls(
-                'get',
-                `/transaction/getQuotationNameIdAndDetails?branchName=${branch}&clientName=${clientName}&orgId=${orgId}`
-            );
-
-            if (response.status) {
-                const quotations = response.paramObjectsMap?.quotationDetails || [];
-                setQuotationList(quotations.map(quote => ({
-                    id: quote.docId, // Using docId as ID since no other ID is provided
-                    docId: quote.docId,
-                    contactName: quote.contactName,
-                    mobileNumber: quote.mobileNo,
-                    quotationName: quote.oppurtunityName,
-                    email: quote.email
-                })));
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${clientName}&orgId=${orgId}`);
+            if (response.status === true) {
+                setBranchList(response.paramObjectsMap.branchName || []);
             } else {
-                showToast('error', response.message || 'Failed to load quotations');
+                console.error('API Error:', response);
+                return response;
             }
         } catch (error) {
-            console.error('Error fetching quotation details:', error);
-            showToast('error', 'Failed to load quotation details');
+            console.error('Error fetching data:', error);
+            return error;
         }
     };
-
-    const getAllBranches = async () => {
-        setIsBranchLoading(true);
+    const getQuotationDetails = async (branchName, clientName) => {
         try {
-            const response = await apiCalls('get', `/master/branch?orgid=${orgId}`);
-            console.log('Branch API Response:', response);
-
-            if (response.status) {
-                const branches = response.data?.branchVO ||
-                    response.paramObjectsMap?.branchVO ||
-                    [];
-
-                setBranchList(branches);
-
-                if (branches.length > 0) {
-                    const defaultBranch = branches.find(b => b.branchCode === branchCode) ||
-                        branches[0];
-
-                    setFormData(prev => ({
-                        ...prev,
-                        branch: defaultBranch.branchCode,
-                        branchName: defaultBranch.branchName,
-                        branchCode: defaultBranch.branchCode
-                    }));
-                }
+            const response = await apiCalls('get', `/transaction/getQuotationNameIdAndDetails?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`);
+            if (response.status === true) {
+                setQuotationList(response.paramObjectsMap.quotationDetails || []);
             } else {
-                showToast('error', response.message || 'Failed to load branches');
+                console.error('API Error:', response);
+                return response;
             }
         } catch (error) {
-            console.error('Error fetching branches:', error);
-            showToast('error', 'Failed to load branches');
-        } finally {
-            setIsBranchLoading(false);
+            console.error('Error fetching data:', error);
+            return error;
         }
     };
-
-    const getAllSubCategories = async () => {
+    const getProductName = async (oppurtunityId, clientName) => {
         try {
-            const response = await apiCalls('get', `/master/getSubCategoryByOrgId?orgId=${orgId}`);
-            if (response.status) {
-                setSubCategoryList(response.paramObjectsMap?.subCategoryVO || []);
+            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${clientName}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
+            if (response.status === true) {
+                setProductList(response.paramObjectsMap.productNameDetails || []);
             } else {
-                showToast('error', response.message || 'Failed to load subcategories');
+                console.error('API Error:', response);
+                return response;
             }
         } catch (error) {
-            console.error('Error fetching subcategories:', error);
-            showToast('error', 'Failed to load subcategories');
+            console.error('Error fetching data:', error);
+            return error;
         }
     };
-
-    const getAllCategories = async () => {
-        try {
-            const response = await apiCalls('get', `/ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
-            if (response.status) {
-                setCategoryList(response.paramObjectsMap?.categoryVO || []);
-            } else {
-                showToast('error', response.message || 'Failed to load categories');
-            }
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-            showToast('error', 'Failed to load categories');
-        }
-    };
-
     const getSalesOrderDocId = async () => {
         if (editId) return;
 
@@ -375,7 +318,7 @@ const SalesOrder = () => {
                     narration: salesOrder.narration || '',
                     quotationId: salesOrder.quotationId || '',
                     quotationName: salesOrder.quotationName || '',
-                    status: salesOrder.status || 'Draft',
+                    status: salesOrder.status || '',
                 });
 
                 setDocId(salesOrder.docId || '');
@@ -427,45 +370,45 @@ const SalesOrder = () => {
         }
 
         // If client is selected, update the client details
-        if (name === 'clientName') {
-            setFormData(prev => ({
-                ...prev,
-                quotationId: '', // Reset quotation when client changes
-                quotationName: '',
-                contactName: '',
-                mobileNumber: '',
-                email: ''
-            }));
-            getQuotationDetails(value);
-        }
+        // if (name === 'clientName') {
+        //     setFormData(prev => ({
+        //         ...prev,
+        //         quotationId: '', // Reset quotation when client changes
+        //         quotationName: '',
+        //         contactName: '',
+        //         mobileNumber: '',
+        //         email: ''
+        //     }));
+        //     getQuotationDetails(value);
+        // }
 
-        // Handle branch selection separately to update branchName
-        if (name === 'branch') {
-            const selectedBranch = branchList.find(b => b.branch === value);
-            setFormData(prev => ({
-                ...prev,
-                branch: value,
-                branchCode: selectedBranch?.branchCode || '',
-                branchName: selectedBranch?.branchName || ''
-            }));
-            return;
-        }
+        // // Handle branch selection separately to update branchName
+        // if (name === 'branch') {
+        //     const selectedBranch = branchList.find(b => b.branch === value);
+        //     setFormData(prev => ({
+        //         ...prev,
+        //         branch: value,
+        //         branchCode: selectedBranch?.branchCode || '',
+        //         branchName: selectedBranch?.branchName || ''
+        //     }));
+        //     return;
+        // }
 
         setFormData(prev => ({ ...prev, [name]: value }));
 
-        // If quotation is selected, update the quotation details
-        if (name === 'quotationId') {
-            const selectedQuotation = quotationList.find(q => q.id === value);
-            if (selectedQuotation) {
-                setFormData(prev => ({
-                    ...prev,
-                    quotationName: selectedQuotation.quotationName || '',
-                    contactName: selectedQuotation.contactName || prev.contactName,
-                    mobileNumber: selectedQuotation.mobileNumber || prev.mobileNumber,
-                    email: selectedQuotation.email || prev.email
-                }));
-            }
-        }
+        // // If quotation is selected, update the quotation details
+        // if (name === 'quotationId') {
+        //     const selectedQuotation = quotationList.find(q => q.id === value);
+        //     if (selectedQuotation) {
+        //         setFormData(prev => ({
+        //             ...prev,
+        //             quotationName: selectedQuotation.quotationName || '',
+        //             contactName: selectedQuotation.contactName || prev.contactName,
+        //             mobileNumber: selectedQuotation.mobileNumber || prev.mobileNumber,
+        //             email: selectedQuotation.email || prev.email
+        //         }));
+        //     }
+        // }
     };
 
     const validateMainField = (field, value) => {
@@ -656,7 +599,7 @@ const SalesOrder = () => {
             active: true,
             salesOrderDetailsDTO: salesOrderDetails.map(detail => ({
                 ...(detail.id && { id: detail.id }),
-                productName: detail.produtName, 
+                productName: detail.produtName,
                 category: detail.category,
                 subCategory: detail.subCategory,
                 sellingPrice: parseFloat(detail.sellingPrice) || 0,
@@ -685,6 +628,7 @@ const SalesOrder = () => {
     const handleClear = () => {
         setFormData({
             address: '',
+            salesDate: dayjs(),
             branch: branch,
             branchCode: branchCode,
             branchName: branchList.find(b => b.branchCode === branchCode)?.branchName || '',
@@ -697,7 +641,7 @@ const SalesOrder = () => {
             narration: '',
             quotationId: '',
             quotationName: '',
-            status: 'Draft',
+            status: 'Open',
         });
 
         setFieldErrors({
@@ -817,7 +761,10 @@ const SalesOrder = () => {
 
     const handleView = () => setListView(!listView);
     const handleTabChange = (_, newValue) => setValue(newValue);
-
+    const handleDateChange = (field, date) => {
+        const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+        setFormData(prev => ({ ...prev, [field]: formattedDate }));
+    };
     return (
         <>
             <div>
@@ -844,7 +791,7 @@ const SalesOrder = () => {
                                 {/* Sales Order ID */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Sales Order ID"
+                                        label="Sales Id"
                                         variant="outlined"
                                         size="small"
                                         fullWidth
@@ -855,79 +802,198 @@ const SalesOrder = () => {
                                         }}
                                     />
                                 </div>
-
-                                {/* Client Name - Updated to dropdown */}
                                 <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small" error={!!fieldErrors.clientName}>
-                                        <InputLabel>Client Name *</InputLabel>
-                                        <Select
-                                            label="Client Name *"
-                                            value={formData.clientName}
-                                            onChange={(e) => {
-                                                handleInputChange(e);
-                                            }}
-                                            name="clientName"
-                                            onBlur={(e) => validateMainField('clientName', e.target.value)}
-                                        >
-                                            <MenuItem value=""><em>Select Client</em></MenuItem>
-                                            {clientList.map((client, index) => (
-                                                <MenuItem key={index} value={client}>
-                                                    {client}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {fieldErrors.clientName && <FormHelperText>{fieldErrors.clientName}</FormHelperText>}
+                                    <FormControl fullWidth variant="filled" size="small">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="Sales Date"
+                                                value={formData.salesDate ? dayjs(formData.salesDate, 'YYYY-MM-DD') : null}
+                                                onChange={(date) => handleDateChange('salesDate', date)}
+                                                slotProps={{
+                                                    textField: {
+                                                        size: 'small',
+                                                    }
+                                                }}
+                                                format="DD-MM-YYYY"
+                                                disabled
+                                            />
+                                        </LocalizationProvider>
                                     </FormControl>
                                 </div>
-
-                                {/* Branch Dropdown */}
                                 <div className="col-md-3 mb-3">
-                                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                                        <InputLabel id="branch-label">Branch Name *</InputLabel>
-                                        <Select
-                                            labelId="branch-label"
-                                            label="Branch Name *"
-                                            value={formData.branch}
-                                            onChange={handleInputChange}
-                                            name="branch"
-                                        >
-                                            {branchList.map((branch) => (
-                                                <MenuItem key={branch.id} value={branch.branch}>
-                                                    {branch.branch}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
-                                    </FormControl>
+                                    <Autocomplete
+                                        options={clientNameList}
+                                        getOptionLabel={(option) =>
+                                            option?.clientName
+                                                ? `${option.clientName}`
+                                                : ''
+                                        }
+                                        value={
+                                            clientNameList.find((item) => item.clientName === formData.clientName) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    clientName: newValue.clientName,
+                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, clientName: '' }));
+                                                getBranch(newValue.clientName);
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, clientName: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, clientName: 'Client Name is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Client Name <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                error={!!fieldErrors.clientName}
+                                                helperText={fieldErrors.clientName}
+                                                fullWidth
+                                            />
+                                        )}
+                                    />
                                 </div>
-
-                                {/* Quotation - Updated to show more details */}
                                 <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Quotation</InputLabel>
-                                        <Select
-                                            label="Quotation"
-                                            value={formData.quotationId}
-                                            onChange={handleInputChange}
-                                            name="quotationId"
-                                            disabled={!formData.clientName}
-                                        >
-                                            <MenuItem value=""><em>Select Quotation</em></MenuItem>
-                                            {quotationList.map(quote => (
-                                                <MenuItem key={quote.id} value={quote.id}>
-                                                    {quote.docId} - {quote.quotationName}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                    <Autocomplete
+                                        options={branchList}
+                                        getOptionLabel={(option) =>
+                                            option?.branch
+                                                ? `${option.branch}`
+                                                : ''
+                                        }
+                                        value={
+                                            branchList.find((item) => item.branch === formData.branch) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    branch: newValue.branch,
+                                                    gstNo: newValue.gstNo,
+                                                    address: newValue.address,
+                                                }));
+                                                getQuotationDetails(newValue.branch, formData.clientName);
+                                                setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, branch: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, branch: 'Branch is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Branch <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                error={!!fieldErrors.branch}
+                                                helperText={fieldErrors.branch}
+                                                fullWidth
+                                            />
+                                        )}
+                                    />
                                 </div>
-
-                                {/* Contact Name */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Contact Name *"
+                                        label="GST No"
                                         variant="outlined"
                                         size="small"
+                                        fullWidth
+                                        disabled
+                                        name="gstNo"
+                                        value={formData.gstNo}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className="col-md-6 mb-3">
+                                    <TextField
+                                        label={
+                                            <span>
+                                                Address <span className="asterisk">*</span>
+                                            </span>
+                                        }
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        name="address"
+                                        disabled
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.address}
+                                        helperText={fieldErrors.address}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <Autocomplete
+                                        options={quotationList}
+                                        getOptionLabel={(option) =>
+                                            option?.oppurtunityName
+                                                ? `${option.oppurtunityName}`
+                                                : ''
+                                        }
+                                        value={
+                                            quotationList.find((item) => item.oppurtunityName === formData.quotationName) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    quotationName: newValue.oppurtunityName,
+                                                    quotationId: newValue.docId,
+                                                    contactName: newValue.contactName,
+                                                    mobileNumber: newValue.mobileNo,
+                                                    email: newValue.email,
+                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, quotationName: '', quotationId: '', contactName: '', mobileNumber: '', email: '' }));
+                                            } else {
+                                                setFormData((prev) => ({ ...prev, quotationName: '', quotationId: '', contactName: '', mobileNumber: '', email: '' }));
+                                                setFieldErrors((prev) => ({ ...prev, quotationName: 'Quotation Name is required' }));
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={
+                                                    <span>
+                                                        Quotation Name <span className="asterisk">*</span>
+                                                    </span>
+                                                }
+                                                size="small"
+                                                fullWidth
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Quotation Id"
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        disabled
+                                        name="quotationId"
+                                        value={formData.quotationId}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.quotationId}
+                                        helperText={fieldErrors.quotationId}
+                                        onBlur={(e) => validateMainField('quotationId', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-md-3 mb-3">
+                                    <TextField
+                                        label="Contact Name"
+                                        variant="outlined"
+                                        size="small"
+                                        disabled
                                         fullWidth
                                         name="contactName"
                                         value={formData.contactName}
@@ -941,9 +1007,10 @@ const SalesOrder = () => {
                                 {/* Mobile No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Mobile No *"
+                                        label="Mobile No"
                                         variant="outlined"
                                         size="small"
+                                        disabled
                                         fullWidth
                                         name="mobileNumber"
                                         value={formData.mobileNumber}
@@ -957,9 +1024,10 @@ const SalesOrder = () => {
                                 {/* Email */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
-                                        label="Email *"
+                                        label="Email"
                                         variant="outlined"
                                         size="small"
+                                        disabled
                                         fullWidth
                                         name="email"
                                         value={formData.email}
@@ -967,19 +1035,6 @@ const SalesOrder = () => {
                                         error={!!fieldErrors.email}
                                         helperText={fieldErrors.email}
                                         onBlur={(e) => validateMainField('email', e.target.value)}
-                                    />
-                                </div>
-
-                                {/* GST No */}
-                                <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="GST No"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="gstNo"
-                                        value={formData.gstNo}
-                                        onChange={handleInputChange}
                                     />
                                 </div>
 
@@ -999,21 +1054,6 @@ const SalesOrder = () => {
                                             ))}
                                         </Select>
                                     </FormControl>
-                                </div>
-
-                                {/* Address */}
-                                <div className="col-md-3 mb-3">
-                                    <TextField
-                                        label="Address"
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                    // multiline
-                                    // rows={2}
-                                    />
                                 </div>
                             </div>
 
@@ -1038,7 +1078,7 @@ const SalesOrder = () => {
                                                             <thead>
                                                                 <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>S.No</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center">Product Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Category *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Sub Category</th>
@@ -1062,65 +1102,70 @@ const SalesOrder = () => {
                                                                                 />
                                                                             </td>
                                                                             <td className="text-center pt-3">{index + 1}</td>
-
+                                                                            <td>
+                                                                                <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                    <Autocomplete
+                                                                                        options={productList}
+                                                                                        getOptionLabel={(option) => option?.productName || ''}
+                                                                                        value={
+                                                                                            productList.find((item) => item.productName === detail.productName) || null
+                                                                                        }
+                                                                                        onChange={(event, newValue) => {
+                                                                                            const updatedOpportunities = [...salesOrderDetails];
+                                                                                            if (newValue) {
+                                                                                                updatedOpportunities[index] = {
+                                                                                                    ...updatedOpportunities[index],
+                                                                                                    productName: newValue.productName,
+                                                                                                    category: newValue.category,
+                                                                                                    subCategory: newValue.subCategory || '',
+                                                                                                };
+                                                                                            } else {
+                                                                                                updatedOpportunities[index] = {
+                                                                                                    ...updatedOpportunities[index],
+                                                                                                    productName: '',
+                                                                                                    subCategory: '',
+                                                                                                    category: '',
+                                                                                                };
+                                                                                            }
+                                                                                            setSalesOrderDetails(updatedOpportunities);
+                                                                                        }}
+                                                                                        renderInput={(params) => (
+                                                                                            <TextField
+                                                                                                {...params}
+                                                                                                size="small"
+                                                                                                fullWidth
+                                                                                            />
+                                                                                        )}
+                                                                                    />
+                                                                                </Box>
+                                                                            </td>
                                                                             <td>
                                                                                 <TextField
                                                                                     fullWidth
                                                                                     size="small"
-                                                                                    value={detail.produtName}
-                                                                                    onChange={(e) => handleDetailChange(index, 'produtName', e.target.value)}
-                                                                                    onBlur={(e) => validateDetailField(index, 'produtName', e.target.value)}
-                                                                                    error={!!detailErrors[index]?.produtName}
-                                                                                    helperText={detailErrors[index]?.produtName}
+                                                                                    value={detail.category}
+                                                                                    disabled
+                                                                                    onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                                    // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                    // error={!!quotationPriceErrors[index]?.category}
+                                                                                    // helperText={quotationPriceErrors[index]?.category}
                                                                                 />
                                                                             </td>
-
                                                                             <td>
-                                                                                <FormControl fullWidth size="small" error={!!detailErrors[index]?.category}>
-                                                                                    <InputLabel>Category *</InputLabel>
-                                                                                    <Select
-                                                                                        value={detail.category}
-                                                                                        label="Category *"
-                                                                                        onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                                                                                        onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
-                                                                                    >
-                                                                                        <MenuItem value=""><em>Select Category</em></MenuItem>
-                                                                                        {categoryList.map(cat => (
-                                                                                            <MenuItem key={cat.id} value={cat.categoryName}>
-                                                                                                {cat.categoryName}
-                                                                                            </MenuItem>
-                                                                                        ))}
-                                                                                    </Select>
-                                                                                    {detailErrors[index]?.category && (
-                                                                                        <FormHelperText>{detailErrors[index].category}</FormHelperText>
-                                                                                    )}
-                                                                                </FormControl>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    disabled
+                                                                                    value={detail.subCategory}
+                                                                                    onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
+                                                                                // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                />
                                                                             </td>
-
-                                                                            <td>
-                                                                                <FormControl fullWidth size="small">
-                                                                                    <InputLabel>Sub Category</InputLabel>
-                                                                                    <Select
-                                                                                        value={detail.subCategory}
-                                                                                        label="Sub Category"
-                                                                                        onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                                                                    >
-                                                                                        <MenuItem value=""><em>Select Sub Category</em></MenuItem>
-                                                                                        {subCategoryList.map(sub => (
-                                                                                            <MenuItem key={sub.id} value={sub.subCategoryName}>
-                                                                                                {sub.subCategoryName}
-                                                                                            </MenuItem>
-                                                                                        ))}
-                                                                                    </Select>
-                                                                                </FormControl>
-                                                                            </td>
-
                                                                             <td>
                                                                                 <TextField
                                                                                     fullWidth
                                                                                     size="small"
                                                                                     type="number"
-                                                                                    label="Price"
                                                                                     value={detail.sellingPrice}
                                                                                     onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                                                                     onBlur={(e) => validateDetailField(index, 'sellingPrice', e.target.value)}
@@ -1135,7 +1180,6 @@ const SalesOrder = () => {
                                                                                     fullWidth
                                                                                     size="small"
                                                                                     type="number"
-                                                                                    label="Quantity"
                                                                                     value={detail.qty}
                                                                                     onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
                                                                                     onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
@@ -1150,7 +1194,6 @@ const SalesOrder = () => {
                                                                                     fullWidth
                                                                                     size="small"
                                                                                     type="number"
-                                                                                    label="Discount"
                                                                                     value={detail.discount}
                                                                                     onChange={(e) => handleDetailChange(index, 'discount', e.target.value)}
                                                                                     onBlur={(e) => validateDetailField(index, 'discount', e.target.value)}

@@ -44,8 +44,6 @@ const Opportunity = () => {
     // Form data
     const [formData, setFormData] = useState({
         address: '',
-        branch: '',
-        branchCode: '',
         branchName: '',
         clientName: '',
         opportunityDate: dayjs(),
@@ -110,49 +108,11 @@ const Opportunity = () => {
     useEffect(() => {
         getAllOpportunities();
         getOpportunityDocId();
-        getAllBranches();
         getAllCategories();
         getAllSubCategories();
         getClientName();
         getProductName();
     }, []);
-
-    // API calls
-    const getAllBranches = async () => {
-        setIsBranchLoading(true);
-        try {
-            const response = await apiCalls('get', `/master/branch?orgid=${orgId}`);
-            console.log('Branch API Response:', response);
-
-            if (response.status) {
-                const branches = response.data?.branchVO ||
-                    response.paramObjectsMap?.branchVO ||
-                    [];
-
-                setBranchList(branches);
-
-                if (branches.length > 0) {
-                    const defaultBranch = branches.find(b => b.branchCode === branchCode) ||
-                        branches[0];
-
-                    setFormData(prev => ({
-                        ...prev,
-                        branch: defaultBranch.branchCode,
-                        branchName: defaultBranch.branchName,
-                        branchCode: defaultBranch.branchCode
-                    }));
-                }
-            } else {
-                showToast('error', response.message || 'Failed to load branches');
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            showToast('error', 'Failed to load branches');
-        } finally {
-            setIsBranchLoading(false);
-        }
-    };
-
     const getAllSubCategories = async () => {
         try {
             const response = await apiCalls('get', `/master/getSubCategoryByOrgId?orgId=${orgId}`);
@@ -454,7 +414,7 @@ const Opportunity = () => {
             isValid = false;
         }
 
-        if (!formData.branch) {
+        if (!formData.branchName) {
             newErrors.branch = 'Branch is required';
             isValid = false;
         }
@@ -511,18 +471,17 @@ const Opportunity = () => {
 
         const payload = {
             ...(editId && { id: editId }),
-            docId: docId,
             address: formData.address,
-            branch: formData.branch,
+            branch: branch,
             branchName: formData.branchName,
-            branchCode: formData.branchCode,
+            branchCode: branchCode,
             clientName: formData.clientName,
             closedDate: formData.closedDate,
             contactName: formData.contactName,
             description: formData.description,
             designation: formData.designation,
             email: formData.email,
-            finYear: formData.finYear,
+            finYear: finYear,
             gstNo: formData.gstNo,
             mobileNo: formData.mobileNo,
             status: formData.status,
@@ -785,20 +744,20 @@ const Opportunity = () => {
                                                 : ''
                                         }
                                         value={
-                                            branchList.find((item) => item.branch === formData.branch) || null
+                                            branchList.find((item) => item.branch === formData.branchName) || null
                                         }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    branch: newValue.branch,
+                                                    branchName: newValue.branch,
                                                     gstNo: newValue.gstNo,
                                                     address: newValue.address,
                                                 }));
                                                 setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
                                                 getContactName(newValue.branch, formData.clientName);
                                             } else {
-                                                setFormData((prev) => ({ ...prev, branch: '' }));
+                                                setFormData((prev) => ({ ...prev, branchName: '' }));
                                                 setFieldErrors((prev) => ({ ...prev, branch: 'Branch is required' }));
                                             }
                                         }}

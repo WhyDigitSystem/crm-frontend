@@ -1,7 +1,9 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { Checkbox, FormControlLabel, TextField, Autocomplete, Button } from '@mui/material';
+import {
+  Avatar, Typography, FormControlLabel, Checkbox, Button, Dialog, DialogContent, TextField, Autocomplete, CircularProgress, Box, FormControl, InputLabel, Tabs, Tab, MenuItem, Select,
+} from '@mui/material';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -15,12 +17,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Box, IconButton, Typography, LinearProgress, CircularProgress } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ImageIcon from '@mui/icons-material/Image';
+import { IconButton, LinearProgress, } from '@mui/material';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import CommonTable from 'views/basicMaster/CommonTable';
-import FormControl from '@mui/material/FormControl';
-// import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const EmployeeDetails = () => {
@@ -44,6 +43,7 @@ const EmployeeDetails = () => {
   const [isViewMode, setIsViewMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [logo, setLogo] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -215,7 +215,29 @@ const EmployeeDetails = () => {
       setAssignedUsers([]);
     }
   };
+  const handleFileUpload = async (generatedId) => {
+    if (!generatedId) return;
+    const formData = new FormData();
+    formData.append('file', logo);
+    try {
+      const response = await apiCalls(
+        'post',
+        `/master/uploadEmployeePhotoInBloob?id=${generatedId}`,
+        formData,
+        {},
+        { 'Content-Type': 'multipart/form-data' }
+      );
 
+      if (response.status === true) {
+        toast.success('success', response.message || 'Image Uploaded successfully!');
+      } else {
+        toast.error('error', 'Image upload failed');
+      }
+    } catch (error) {
+      console.error('Img Upload Error:', error);
+      toast.error('error', 'Failed to upload image');
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
     let errorMessage = '';
@@ -354,6 +376,10 @@ const EmployeeDetails = () => {
         const response = await apiCalls('put', endpoint, saveFormData);
         if (response?.status === true) {
           toast.success(editId ? 'Employee updated successfully' : 'Employee created successfully');
+          const generatedId = response.paramObjectsMap.employeeVO.id;
+          if (generatedId && typeof logo === 'object') {
+            handleFileUpload(generatedId);
+          }
           handleClear();
           getAllEmployees();
           setShowForm(false);
@@ -394,7 +420,7 @@ const EmployeeDetails = () => {
           department: employee.department || '',
           designation: employee.designation || '',
           doj: employee.joiningDate || '',
-          active: employee.active === 'Active' || employee.active === true,
+          active: employee.active === 'Active' ? true : false,
           company: employee.company || '',
           fatherName: employee.fatherName || '',
           motherName: employee.motherName || '',
@@ -421,7 +447,8 @@ const EmployeeDetails = () => {
       handleClear();
     }
   };
-
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
@@ -430,7 +457,7 @@ const EmployeeDetails = () => {
       toast.error('Please upload a valid image (PNG or JPEG).');
     }
   };
-
+  const handleRemoveImg = () => setLogo(null);
   const handleDownloadPDF = () => {
     if (listViewData.length === 0) {
       toast.warning('No data available to download');
@@ -1062,9 +1089,76 @@ const EmployeeDetails = () => {
                   )}
                 />
               </div>
-
-              {/* Image Upload Section */}
               <div className="col-md-3 mb-3">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    multiline
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  >
+                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : '') : 'Upload Img'}
+
+                    <input type="file" hidden accept="image/png, image/jpeg" onChange={handleImageChange} />
+                  </Button>
+
+                  {logo && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                  <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                      Attachment
+                    </Typography>
+                    {logo ? (
+                      <Box>
+                        <Avatar
+                          src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
+                          alt="Attachment"
+                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                        />
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleRemoveImg}
+                          >
+                            Delete
+                          </IconButton>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                          <Typography variant="caption">Upload Img</Typography>
+                        </Avatar>
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+              {/* Image Upload Section */}
+              {/* <div className="col-md-3 mb-3">
                 <input
                   accept="image/*"
                   id="image-upload"
@@ -1154,7 +1248,7 @@ const EmployeeDetails = () => {
                   )}
                   {isLoading && <LinearProgress sx={{ height: 2, mt: 1 }} />}
                 </Box>
-              </div>
+              </div> */}
 
               {/* Active */}
               <div className="col-md-3 mb-3">
