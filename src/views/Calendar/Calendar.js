@@ -215,7 +215,7 @@ const Calendar = () => {
         setCalendarEvents(transformed);
       }
     } catch (err) {
-      showToast('error', 'Error fetching calendar events');
+      // showToast('error', 'Error fetching calendar events');
     }
   };
 
@@ -238,7 +238,7 @@ const Calendar = () => {
         setHolidays(transformed);
       }
     } catch (err) {
-      showToast('error', 'Error fetching holidays');
+      // showToast('error', 'Error fetching holidays');
     }
   };
 
@@ -255,7 +255,7 @@ const Calendar = () => {
       setWeekOffs(transformedWeekOffs);
     } catch (error) {
       console.error('Error fetching week off:', error);
-      showToast('error', 'Failed to load week-off configuration');
+      // showToast('error', 'Failed to load week-off configuration');
     }
   };
 
@@ -343,7 +343,7 @@ const Calendar = () => {
       setBirthdayEvents(events);
     } catch (error) {
       console.error('Birthday data fetch failed:', error);
-      showToast('error', 'Failed to load birthday data');
+      // showToast('error', 'Failed to load birthday data');
     }
   };
 

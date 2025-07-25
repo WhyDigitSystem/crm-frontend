@@ -870,7 +870,7 @@ const Task = () => {
               </div>
 
               {/* Description */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   label="Description"
                   variant="outlined"
@@ -879,8 +879,8 @@ const Task = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  multiline
-                  rows={3}
+                  // multiline
+                  // rows={3}
                 />
               </div>
 
