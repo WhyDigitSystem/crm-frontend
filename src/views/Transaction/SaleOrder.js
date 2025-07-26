@@ -62,7 +62,8 @@ const SalesOrder = () => {
         contactName: '',
         mobileNumber: '',
         email: '',
-        branch: ''
+        branch: '',
+        quotationName: '',
     });
 
     // Sales Order details
@@ -194,7 +195,7 @@ const SalesOrder = () => {
     };
     const getBranch = async (clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setBranchList(response.paramObjectsMap.branchName || []);
             } else {
@@ -208,7 +209,7 @@ const SalesOrder = () => {
     };
     const getQuotationDetails = async (branchName, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getQuotationNameIdAndDetails?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getQuotationNameIdAndDetails?branchName=${branchName}&clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setQuotationList(response.paramObjectsMap.quotationDetails || []);
             } else {
@@ -492,23 +493,21 @@ const SalesOrder = () => {
             isValid = false;
         }
 
-        if (!formData.contactName.trim()) {
-            newErrors.contactName = 'Contact name is required';
+        if (!formData.branchName.trim()) {
+            newErrors.branch = 'Branch name is required';
             isValid = false;
         }
 
-        if (!formData.mobileNumber.trim()) {
-            newErrors.mobileNumber = 'Mobile number is required';
+        if (!formData.quotationName.trim()) {
+            newErrors.quotationName = 'Quotation Name is required';
             isValid = false;
-        } else if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNumber)) {
+        }
+        if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNumber)) {
             newErrors.mobileNumber = 'Invalid mobile number (10 digits required)';
             isValid = false;
         }
 
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Invalid email format';
             isValid = false;
         }
@@ -869,13 +868,13 @@ const SalesOrder = () => {
                                                 : ''
                                         }
                                         value={
-                                            branchList.find((item) => item.branch === formData.branch) || null
+                                            branchList.find((item) => item.branch === formData.branchName) || null
                                         }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    branch: newValue.branch,
+                                                    branchName: newValue.branch,
                                                     gstNo: newValue.gstNo,
                                                     address: newValue.address,
                                                 }));
@@ -970,6 +969,8 @@ const SalesOrder = () => {
                                                 }
                                                 size="small"
                                                 fullWidth
+                                                error={!!fieldErrors.quotationName}
+                                                helperText={fieldErrors.quotationName}
                                             />
                                         )}
                                     />
@@ -1016,7 +1017,7 @@ const SalesOrder = () => {
                                         name="mobileNumber"
                                         value={formData.mobileNumber}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.mobileNumber}
+                                        // error={!!fieldErrors.mobileNumber}
                                         helperText={fieldErrors.mobileNumber}
                                         onBlur={(e) => validateMainField('mobileNumber', e.target.value)}
                                     />
@@ -1033,7 +1034,7 @@ const SalesOrder = () => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.email}
+                                        // error={!!fieldErrors.email}
                                         helperText={fieldErrors.email}
                                         onBlur={(e) => validateMainField('email', e.target.value)}
                                     />
@@ -1113,6 +1114,7 @@ const SalesOrder = () => {
                                                                                         }
                                                                                         onChange={(event, newValue) => {
                                                                                             const updatedOpportunities = [...salesOrderDetails];
+                                                                                            const updatedOpportunitiesErrors = [...detailErrors];
                                                                                             if (newValue) {
                                                                                                 updatedOpportunities[index] = {
                                                                                                     ...updatedOpportunities[index],
@@ -1120,6 +1122,13 @@ const SalesOrder = () => {
                                                                                                     category: newValue.category,
                                                                                                     subCategory: newValue.subCategory || '',
                                                                                                     sellingPrice: newValue.price
+                                                                                                };
+                                                                                                updatedOpportunitiesErrors[index] = {
+                                                                                                    ...updatedOpportunitiesErrors[index],
+                                                                                                    productName: '',
+                                                                                                    category: '',
+                                                                                                    subCategory: '',
+                                                                                                    sellingPrice: '',
                                                                                                 };
                                                                                             } else {
                                                                                                 updatedOpportunities[index] = {
@@ -1130,12 +1139,15 @@ const SalesOrder = () => {
                                                                                                 };
                                                                                             }
                                                                                             setSalesOrderDetails(updatedOpportunities);
+                                                                                            setDetailErrors(updatedOpportunitiesErrors);
                                                                                         }}
                                                                                         renderInput={(params) => (
                                                                                             <TextField
                                                                                                 {...params}
                                                                                                 size="small"
                                                                                                 fullWidth
+                                                                                                error={!!detailErrors.produtName}
+                                                                                                helperText={detailErrors.produtName}
                                                                                             />
                                                                                         )}
                                                                                     />
@@ -1148,9 +1160,9 @@ const SalesOrder = () => {
                                                                                     value={detail.category}
                                                                                     disabled
                                                                                     onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                                                                                    // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                                    // error={!!quotationPriceErrors[index]?.category}
-                                                                                    // helperText={quotationPriceErrors[index]?.category}
+                                                                                // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                // error={!!quotationPriceErrors[index]?.category}
+                                                                                // helperText={quotationPriceErrors[index]?.category}
                                                                                 />
                                                                             </td>
                                                                             <td>
