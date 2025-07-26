@@ -3,7 +3,9 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import { DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
@@ -27,8 +29,6 @@ const UserCreation = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
   const [listViewData, setListViewData] = useState([]);
-  const branchCode = localStorage.getItem('branchcode') || '';
-  const finYear = localStorage.getItem('finYear') || '';
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [branchData, setBranchData] = useState([]);
@@ -43,6 +43,10 @@ const UserCreation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [empList, setEmpList] = useState([]);
+  // const [orgId] = useState(localStorage.getItem('orgId'));
+  const [finYear] = useState(localStorage.getItem('finYear'));
+  const [branchcode] = useState(localStorage.getItem('branchcode'));
+  const [branch] = useState(localStorage.getItem('branch'));
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -76,7 +80,7 @@ const UserCreation = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'employeeCode', header: 'EmployeeCode', size: 140 },
+    { accessorKey: 'employeeCode', header: 'Employee Code', size: 140 },
     { accessorKey: 'employeeName', header: 'Name', size: 140 },
     { accessorKey: 'userName', header: 'User Name', size: 140 },
     { accessorKey: 'email', header: 'Email', size: 140 },
@@ -178,6 +182,7 @@ const UserCreation = () => {
         }, 0);
       }
     }
+    setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
   // Handling Select's onChange
@@ -203,6 +208,13 @@ const UserCreation = () => {
         employeeName: selectedEmp.employeeName,
         email: selectedEmp.email
       }));
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        employeeCode: '',
+        employeeName: '',
+        email: '',
+        userName: ''
+      }));
     } else {
       console.log('No employee found with the given code:', value); // Log if no employee is found
     }
@@ -227,7 +239,7 @@ const UserCreation = () => {
 
   const getAllUsers = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchcode}&finYear=${finYear}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -246,7 +258,7 @@ const UserCreation = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.userVO);
+        setListViewData(response.paramObjectsMap.userVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -282,7 +294,7 @@ const UserCreation = () => {
           particularUser.roleAccessVO.map((role) => ({
             id: role.id,
             role: role.role,
-            // roleId: role.roleId,
+            roleId: role.roleId,
             startDate: role.startDate,
             endDate: role.endDate
           }))
@@ -439,8 +451,7 @@ const UserCreation = () => {
       dateOfBirth: false,
       joiningDate: false,
       password: false,
-      role: false,
-      email: false
+      role: false
     });
     setRoleTableData([{ id: 1, role: '', roleId: '', startDate: null, endDate: null }]);
     setRoleTableDataErrors('');
@@ -596,9 +607,8 @@ const UserCreation = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
 
@@ -625,7 +635,6 @@ const UserCreation = () => {
                     {fieldErrors.employeeCode && <FormHelperText>{fieldErrors.employeeCode}</FormHelperText>}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
@@ -637,7 +646,8 @@ const UserCreation = () => {
                     value={formData.employeeName}
                     onChange={handleInputChange}
                     disabled
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
+                    error={!!fieldErrors.employeeName}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'Employee Name is required' : ''}</span>}
                     inputProps={{ maxLength: 10 }}
                   />
                 </div>
@@ -653,26 +663,28 @@ const UserCreation = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'This field is required' : ''}</span>}
+                    error={!!fieldErrors.email}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'Email is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
-                {/* <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea"
-                    label="UserName"
+                    label="User Name"
                     variant="outlined"
                     size="small"
                     name="userName"
                     fullWidth
                     disabled
+                    error={!!fieldErrors.userName}
                     required
                     value={formData.userName}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'This field is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'User Name is required' : ''}</span>}
                     inputProps={{ maxLength: 15 }}
                   />
-                </div> */}
+                </div>
 
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
@@ -693,30 +705,6 @@ const UserCreation = () => {
                     {fieldErrors.userType && <FormHelperText>{fieldErrors.userType}</FormHelperText>}
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.reportingTO}>
-                    <InputLabel id="reportingTO-label">Reporting To</InputLabel>
-                    <Select
-                      labelId="reportingTO-label"
-                      label="reportingTO"
-                      value={formData.reportingTO}
-                      onChange={handleSelectChange}
-                      name="reportingTO"
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {empList.length > 0 &&
-                        empList.map((emp, index) => (
-                          <MenuItem key={index} value={emp.empCode}>
-                            {emp.empCode}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.reportingTO && <FormHelperText>{fieldErrors.reportingTO}</FormHelperText>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormGroup>
                     <FormControlLabel
@@ -783,10 +771,10 @@ const UserCreation = () => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                       Role
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '300px' }}>
                                       Start Date
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '300px' }}>
                                       End Date
                                     </th>
                                   </tr>
@@ -831,68 +819,94 @@ const UserCreation = () => {
                                           </div>
                                         )}
                                       </td>
-                                      <td>
-                                        <input
-                                          type="date"
-                                          value={row.startDate}
-                                          onChange={(e) => {
-                                            const date = e.target.value;
-
-                                            setRoleTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, startDate: date, endDate: date > r.endDate ? '' : r.endDate } : r
-                                              )
-                                            );
-
-                                            setRoleTableDataErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                startDate: !date ? 'Start Date is required' : '',
-                                                endDate: date && row.endDate && date > row.endDate ? '' : newErrors[index]?.endDate
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
-                                          onKeyDown={(e) => handleKeyDown(e, row, roleTableData)}
-                                        />
+                                      <td className="border px-2 py-2">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.startDate
+                                                ? dayjs(row.startDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.startDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true }
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setRoleTableData((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, startDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setRoleTableDataErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  startDate: !newValue ? 'Start Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
+                                              />
+                                            )}
+                                            minDate={dayjs()}
+                                          />
+                                        </LocalizationProvider>
                                         {roleTableDataErrors[index]?.startDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {roleTableDataErrors[index].startDate}
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
-                                        <input
-                                          type="date"
-                                          value={row.endDate}
-                                          className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
-                                          onChange={(e) => {
-                                            const date = e.target.value; // Capture the date string from input
-
-                                            // Update the endDate in the row
-                                            setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, endDate: date } : r)));
-
-                                            // Handle error validation for endDate
-                                            setRoleTableDataErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                endDate: !date ? 'End Date is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          min={row.startDate || new Date().toISOString().split('T')[0]} // Ensure the minDate is properly set
-                                          disabled={!row.startDate}
-                                        />
-                                        {roleTableDataErrors[index]?.endDate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {roleTableDataErrors[index].endDate}
-                                          </div>
-                                        )}
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.endDate
+                                                ? dayjs(row.endDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.endDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true }
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setRoleTableData((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, endDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setRoleTableDataErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  endDate: !newValue ? 'End Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                // size="small"
+                                                className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
+                                              />
+                                            )}
+                                            minDate={row.endDate ? dayjs(row.endDate) : dayjs()}
+                                          />
+                                          {roleTableDataErrors[index]?.endDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {roleTableDataErrors[index].endDate}
+                                            </div>
+                                          )}
+                                        </LocalizationProvider>
                                       </td>
                                     </tr>
                                   ))}

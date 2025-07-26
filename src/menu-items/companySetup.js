@@ -1,76 +1,63 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
 import { IconCopyright } from '@tabler/icons-react';
-import { IconSettingsPlus, IconSquareRoundedPlus } from '@tabler/icons-react';
+import { IconSquareRoundedPlus, IconSettingsPlus } from '@tabler/icons-react';
 
-// constant
+// screen access utility
+const hasScreenAccess = (screenId) => {
+  const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
+};
+
+// constants
 const icons = {
-  IconCopyright
-};
-
-const icons1 = {
-  IconSquareRoundedPlus
-};
-const icons2 = {
+  IconCopyright,
+  IconSquareRoundedPlus,
   IconSettingsPlus
 };
 
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
+// ==============================|| COMPANY SETUP MENU ITEMS ||============================== //
 
-// const companySetup = {
-//   id: 'basicMaster',
-//   title: 'Setup',
-//   //   caption: 'Pages Caption',
-//   type: 'group',
-//   children: [
-//     {
-//       id: 'company',
-//       title: 'Company',
-//       type: 'item',
-//       url: '/company',
-//       icon: icons.IconDashboard,
-//       breadcrumbs: false
-//     }
-//   ]
-// };
+const setupChildren = [
+  hasScreenAccess('CC') && {
+    id: 'createCompany',
+    title: 'Create Company',
+    type: 'item',
+    url: '/companysetup/createcompany',
+    icon: icons.IconSquareRoundedPlus
+  },
+  hasScreenAccess('CS') && {
+    id: 'company',
+    title: 'Company Setup',
+    type: 'item',
+    url: '/companysetup/companysetup',
+    icon: icons.IconSettingsPlus
+  }
+  // Uncomment below if needed
+  // hasScreenAccess('BRANCH_SETUP') && {
+  //   id: 'branch',
+  //   title: 'Branch',
+  //   type: 'item',
+  //   url: '/companysetup/branch',
+  //   icon: icons.IconSettingsPlus
+  // }
+].filter(Boolean);
 
-const companySetup = {
-  id: 'companySetup',
-  // title: 'Company Setup',
-  //   caption: 'Pages Caption',
-  type: 'group',
-  children: [
-    {
-      id: 'companySetup',
-      title: 'Setup',
-      type: 'collapse',
-      icon: icons.IconCopyright,
-
-      children: [
-        {
-          id: 'createCompany',
-          title: 'Create Company',
-          type: 'item',
-          url: '/companysetup/createcompany',
-          icon: icons1.IconSquareRoundedPlus
-        },
-        {
-          id: 'company',
-          title: 'Company Setup',
-          type: 'item',
-          url: '/companysetup/companysetup',
-          icon: icons2.IconSettingsPlus
-        },
-        // {
-        //   id: 'branch',
-        //   title: 'Branch',
-        //   type: 'item',
-        //   url: '/companysetup/branch',
-        //   icon: icons2.IconSettingsPlus
-        // }
-      ]
-    }
-  ]
-};
+const companySetup =
+  setupChildren.length > 0
+    ? {
+        id: 'companySetup',
+        type: 'group',
+        children: [
+          {
+            id: 'companySetup',
+            title: 'Setup',
+            type: 'collapse',
+            icon: icons.IconCopyright,
+            children: setupChildren
+          }
+        ]
+      }
+    : null;
 
 export default companySetup;

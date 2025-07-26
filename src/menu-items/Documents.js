@@ -1,74 +1,81 @@
 // assets
 import {
-    IconFiles,
-    IconFileText,
-    IconFileSymlink,
-    IconIdBadge2,
-    IconCalendarStats,
-    IconLayoutDashboard
+  IconFiles,
+  IconFileText,
+  IconFileSymlink,
+  IconIdBadge2,
+  IconCalendarStats,
+  IconLayoutDashboard
 } from '@tabler/icons-react';
 
-// constant
-const icons = {
-    IconFiles,
-    IconFileText,
-    IconFileSymlink,
-    IconIdBadge2,
-    IconCalendarStats,
-    IconLayoutDashboard
+// screen access utility
+const hasScreenAccess = (screenId) => {
+  const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
 };
 
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
+// document children menu
+const documentChildren = [
+  hasScreenAccess('DT') && {
+    id: 'documentType',
+    title: 'Document Type',
+    type: 'item',
+    url: '/Documents/documentType',
+    icon: IconFileText
+  },
+  hasScreenAccess('DTM') && {
+    id: 'documentTypeMapping',
+    title: 'Document Type Mapping',
+    type: 'item',
+    url: '/Documents/documentTypeMapping',
+    icon: IconFileSymlink
+  },
+  hasScreenAccess('MDIG') && {
+    id: 'multipleDocumentIdGeneration',
+    title: 'Multiple Document Id Generation',
+    type: 'item',
+    url: '/Documents/multipleDocumentIdGeneration',
+    icon: IconIdBadge2
+  },
+  hasScreenAccess('FIN_YEAR') && {
+    id: 'finYear',
+    title: 'FinYear',
+    type: 'item',
+    url: '/basicMaster/finYear',
+    icon: IconCalendarStats
+  },
+  hasScreenAccess('SN') && {
+    id: 'screenNames',
+    title: 'Screen Names',
+    type: 'item',
+    url: '/basicMaster/ScreenNames',
+    icon: IconLayoutDashboard
+  },
+  hasScreenAccess('SA') && {
+    id: 'ScreenAccess',
+    title: 'Screen Access',
+    type: 'item',
+    url: '/basicMaster/ScreenAccess',
+    icon: IconLayoutDashboard
+  }
+].filter(Boolean);
 
-const Documents = {
-    id: 'Documents',
-    type: 'group',
-    children: [
-        {
+const Documents =
+  documentChildren.length > 0
+    ? {
+        id: 'Documents',
+        type: 'group',
+        children: [
+          {
             id: 'Documents',
             title: 'Documents',
             type: 'collapse',
-            icon: icons.IconFiles, // changed from IconKey to IconFiles
-
-            children: [
-                {
-                    id: 'documentType',
-                    title: 'Document Type',
-                    type: 'item',
-                    url: '/Documents/documentType',
-                    icon: icons.IconFileText
-                },
-                {
-                    id: 'documentTypeMapping',
-                    title: 'Document Type Mapping',
-                    type: 'item',
-                    url: '/Documents/documentTypeMapping',
-                    icon: icons.IconFileSymlink
-                },
-                {
-                    id: 'multipleDocumentIdGeneration',
-                    title: 'Multiple Document Id Generation',
-                    type: 'item',
-                    url: '/Documents/multipleDocumentIdGeneration',
-                    icon: icons.IconIdBadge2
-                },
-                {
-                    id: 'finYear',
-                    title: 'FinYear',
-                    type: 'item',
-                    url: '/basicMaster/finYear',
-                    icon: icons.IconCalendarStats
-                },
-                {
-                    id: 'screenNames',
-                    title: 'Screen Names',
-                    type: 'item',
-                    url: '/basicMaster/ScreenNames',
-                    icon: icons.IconLayoutDashboard
-                }
-            ]
-        }
-    ]
-};
+            icon: IconFiles,
+            children: documentChildren
+          }
+        ]
+      }
+    : null;
 
 export default Documents;
