@@ -848,8 +848,8 @@ const Lead = () => {
                                                 setFieldErrors((prev) => ({
                                                     ...prev,
                                                     city: '',
-                                                    state:'',
-                                                    country:''
+                                                    state: '',
+                                                    country: ''
                                                 }));
                                             } else {
                                                 setFormData((prev) => ({
@@ -1128,12 +1128,12 @@ const Lead = () => {
                                                                 <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Branch *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Reg No *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">City *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">State *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Country *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Address *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Reg No *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>City *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>State *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Country *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Address *</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1286,15 +1286,15 @@ const Lead = () => {
                                                                 <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Preferred Contact</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Branch Name *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Name *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Mobile No *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Email *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Designation *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Date of Birth</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Anniversary</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Work Anniversary</th>
+                                                                    <th className="px-2 py-2 text-white text-center" >Preferred Contact</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch Name *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Name *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Mobile No *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Email *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Designation *</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Date of Birth</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Anniversary</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Work Anniversary</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1349,6 +1349,7 @@ const Lead = () => {
                                                                         </td>
                                                                         <td>
                                                                             <TextField
+                                                                                sx={{ minWidth: 150, flexGrow: 1 }}
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={contact.name}
@@ -1361,6 +1362,7 @@ const Lead = () => {
 
                                                                         <td>
                                                                             <TextField
+                                                                            sx={{ minWidth: 150, flexGrow: 1 }}
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={contact.mobileNo}
@@ -1373,6 +1375,7 @@ const Lead = () => {
 
                                                                         <td>
                                                                             <TextField
+                                                                            sx={{ minWidth: 150, flexGrow: 1 }}
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={contact.email}
@@ -1385,6 +1388,7 @@ const Lead = () => {
 
                                                                         <td>
                                                                             <TextField
+                                                                            sx={{ minWidth: 150, flexGrow: 1 }}
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 value={contact.designation}
@@ -1397,6 +1401,7 @@ const Lead = () => {
 
                                                                         <td>
                                                                             <TextField
+                                                                            sx={{ minWidth: 150, flexGrow: 1 }}
                                                                                 fullWidth
                                                                                 size="small"
                                                                                 type="date"

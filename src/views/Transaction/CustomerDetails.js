@@ -989,12 +989,12 @@ export const CustomerDetails = () => {
                               <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                <th className="px-2 py-2 text-white text-center">Referred Contact</th>
-                                <th className="px-2 py-2 text-white text-center">Name *</th>
-                                <th className="px-2 py-2 text-white text-center">Branch Name *</th>
-                                <th className="px-2 py-2 text-white text-center">Mobile No *</th>
-                                <th className="px-2 py-2 text-white text-center">Email *</th>
-                                <th className="px-2 py-2 text-white text-center">Designation *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Referred Contact</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Name *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch Name *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Mobile No *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Email *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Designation *</th>
                                 <th className="px-2 py-2 text-white text-center">Date of Birth</th>
                                 <th className="px-2 py-2 text-white text-center">Anniversary Date</th>
                                 <th className="px-2 py-2 text-white text-center">Work Anniversary Date</th>
@@ -1021,6 +1021,7 @@ export const CustomerDetails = () => {
                                   <td className="text-center pt-3">{index + 1}</td>
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.referedContact}
@@ -1030,6 +1031,7 @@ export const CustomerDetails = () => {
                                   </td>
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.name}
@@ -1041,6 +1043,7 @@ export const CustomerDetails = () => {
                                   </td>
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.branchName}
@@ -1051,6 +1054,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.mobileNo}
@@ -1063,6 +1067,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.email}
@@ -1075,6 +1080,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
+                                     sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.designation}
