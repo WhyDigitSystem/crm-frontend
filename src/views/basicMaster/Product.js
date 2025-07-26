@@ -3,10 +3,6 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Avatar,
-  ButtonBase,
-  FormHelperText,
-  Tooltip,
   TextField,
   Checkbox,
   FormControlLabel,
@@ -14,7 +10,9 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Autocomplete
 } from '@mui/material';
+import FormHelperText from '@mui/material/FormHelperText';
 import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
@@ -27,23 +25,27 @@ export const Product = () => {
   const [editId, setEditId] = useState('');
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [orgId] = useState(localStorage.getItem('orgId'));
-  // const [finYear] = useState(new Date().getFullYear().toString());
-  const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [finYear] = useState(() => new Date().getFullYear().toString());
-  const branch = localStorage.getItem('branch') || '';
-  const branchCode = localStorage.getItem('branchCode') || '';
-  const [formData, setFormData] = useState({
-    productCode: '',
-    productName: '',
-    type: '',
+  const branch = localStorage.getItem('branch') || 'BANGALORE';
+  const branchCode = localStorage.getItem('branchcode') || 'BLR';
+
+  const initialFormState = {
+    docId: '',
     brand: '',
+    productName: '',
+    productCode: '',
     subCategory: '',
     category: '',
     unit: '',
+    type: '',
     description: '',
     active: true,
-  });
+  };
 
+  const typeOptions = ['Product', 'Service'];
+
+
+  const [formData, setFormData] = useState(initialFormState);
   const [fieldErrors, setFieldErrors] = useState({});
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
@@ -57,7 +59,7 @@ export const Product = () => {
     try {
       const res = await apiCalls(
         'get',
-        `/master/getProductDocId?branch=BANGALORE&branchCode=BLR&finYear=${finYear}&orgId=${orgId}`
+        `/master/getProductDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       if (res.status) {
         setFormData(prev => ({
@@ -76,68 +78,74 @@ export const Product = () => {
     getAllUnits();
     getAllSubCategories();
     getAllProducts();
-    getProductDocId(); // Generate initial docId
+    getProductDocId();
   }, []);
-
-
 
   const getAllCategories = async () => {
     try {
       const res = await apiCalls('get', `ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
-      setCategoryList(res.paramObjectsMap.categoryVO || []);
+      setCategoryList(res.paramObjectsMap?.categoryVO || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
+      showToast('error', 'Failed to load categories');
     }
   };
 
   const getAllUnits = async () => {
     try {
       const res = await apiCalls('get', `ncontroller/getAllUnitMasterByOrgId?orgId=${orgId}`);
-      setUnitList(res.paramObjectsMap.unitMasterVO || []);
+      setUnitList(res.paramObjectsMap?.unitMasterVO || []);
     } catch (err) {
       console.error('Error fetching units:', err);
+      showToast('error', 'Failed to load units');
     }
   };
 
   const getAllSubCategories = async () => {
     try {
       const res = await apiCalls('get', `master/getSubCategoryByOrgId?orgId=${orgId}`);
-      setSubCategoryList(res.paramObjectsMap.subCategoryVO || []);
+      setSubCategoryList(res.paramObjectsMap?.subCategoryVO || []);
     } catch (err) {
       console.error('Error fetching subcategories:', err);
+      showToast('error', 'Failed to load subcategories');
     }
   };
 
   const getAllProducts = async () => {
     try {
       const res = await apiCalls('get', `master/getAllProductByOrgId?orgId=${orgId}`);
-      setListViewData(res.paramObjectsMap.productVO || []);
+      setListViewData(res.paramObjectsMap?.productVO || []);
     } catch (err) {
       console.error('Error fetching products:', err);
+      showToast('error', 'Failed to load products');
     }
   };
 
-  const getProductById = async (row) => {
-    setEditId(row.original.id);
+  const getProductById = async (id) => {
     try {
-      const res = await apiCalls('get', `master/getProductById?id=${row.original.id}`);
-      if (res.status) {
+      const res = await apiCalls('get', `master/getProductById?id=${id}`);
+      if (res.status && res.paramObjectsMap?.productVO) {
         const data = res.paramObjectsMap.productVO;
-        setFormData({
-          brand: data.brand,
-          productCode: data.productCode,
-          productName: data.productName,
-          subCategory: data.subCategory,
-          category: data.category,
-          unit: data.unit,
-          type: data.type,
-          description: data.description,
+        setFormData(prev => ({
+          ...prev,
+          brand: data.brand || '',
+          productCode: data.productCode || '',
+          productName: data.productName || '',
+          subCategory: data.subCategory || '',
+          category: data.category || '',
+          unit: data.unit || '',
+          type: data.type || '',
+          description: data.description || '',
           active: data.active === 'Active',
-        });
+        }));
+        setEditId(id);
         setListView(false);
+      } else {
+        showToast('error', 'Product not found');
       }
     } catch (err) {
       console.error('Error getting product by ID:', err);
+      showToast('error', 'Failed to load product details');
     }
   };
 
@@ -145,47 +153,53 @@ export const Product = () => {
     const errors = {};
     if (!formData.brand) errors.brand = 'Brand is required';
     if (!formData.productName) errors.productName = 'Product Name is required';
-    if (!formData.productCode) errors.productCode = 'Product Code is required';
     if (!formData.category) errors.category = 'Category is required';
     if (!formData.unit) errors.unit = 'Unit is required';
     if (!formData.subCategory) errors.subCategory = 'Sub Category is required';
 
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      const saveData = {
-        ...(editId && { id: editId }),
-        active: formData.active,
-        brand: formData.brand,
-        category: formData.category,
-        createdBy: loginUserName,
-        description: formData.description,
-        productCode: formData.productCode,
-        orgId: orgId,
-        productName: formData.productName,
-        subCategory: formData.subCategory,
-        type: formData.type,
-        unit: formData.unit,
-        branch: "BANGALORE",
-        branchCode: "BLR",
-        finYear: "2025"
-      };
-
-      try {
-        const res = await apiCalls('put', `master/createUpdateProduct`, saveData);
-        if (res.status) {
-          showToast('success', editId ? 'Product updated successfully' : 'Product created successfully');
-          handleClear();
-          getAllProducts();
-        } else {
-          showToast('error', res.paramObjectsMap.errorMessage || 'Save failed');
-        }
-      } catch (err) {
-        showToast('error', 'Save failed');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+    if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      showToast('error', 'Please fill all required fields');
+      return;
+    }
+
+    setIsLoading(true);
+
+    const productCode = editId ? formData.productCode : formData.docId;
+
+    const saveData = {
+      ...(editId && { id: editId }),
+      active: formData.active,
+      brand: formData.brand,
+      category: formData.category,
+      createdBy: loginUserName,
+      description: formData.description,
+      productCode: productCode,
+      orgId: parseInt(orgId),
+      productName: formData.productName,
+      subCategory: formData.subCategory,
+      type: formData.type,
+      unit: formData.unit,
+      branch: branch,
+      branchCode: branchCode,
+      finYear: finYear
+    };
+
+    try {
+      const res = await apiCalls('put', `/master/createUpdateProduct`, saveData);
+      if (res.status) {
+        showToast('success', editId ? 'Product updated successfully' : 'Product created successfully');
+        handleClear();
+        getAllProducts();
+      } else {
+        const errorMsg = res.paramObjectsMap?.errorMessage || 'Save failed';
+        showToast('error', errorMsg);
+      }
+    } catch (err) {
+      console.error('Save error:', err);
+      showToast('error', 'Save operation failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -193,26 +207,16 @@ export const Product = () => {
     const { name, value, checked, type } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'active' ? checked : value.toUpperCase(),
+      [name]: type === 'checkbox' ? checked : value,
     });
     setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
   const handleClear = () => {
-    setFormData({
-      brand: '',
-      productName: '',
-      productCode: '',
-      subCategory: '',
-      category: '',
-      unit: '',
-      type: '',
-      description: '',
-      active: true,
-    });
+    setFormData(initialFormState);
     setFieldErrors({});
     setEditId('');
-    getProductDocId(); // Regenerate new docId after clear
+    getProductDocId();
   };
 
   const handleView = () => setListView(!listView);
@@ -231,6 +235,19 @@ export const Product = () => {
       size: 140,
       Cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive'
     },
+    // {
+    //   accessorKey: 'actions',
+    //   header: 'Actions',
+    //   size: 100,
+    //   Cell: ({ row }) => (
+    //     <button
+    //       onClick={() => getProductById(row.original.id)}
+    //       className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+    //     >
+    //       Edit
+    //     </button>
+    //   )
+    // }
   ];
 
   return (
@@ -240,47 +257,39 @@ export const Product = () => {
           <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
+          <ActionButton
+            title={editId ? "Update" : "Save"}
+            icon={SaveIcon}
+            isLoading={isLoading}
+            onClick={handleSave}
+            margin="0 10px"
+          />
         </div>
 
         {listView ? (
-          <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getProductById} />
+          <CommonListViewTable
+            data={listViewData}
+            columns={listViewColumns}
+            blockEdit={false}
+          />
         ) : (
           <div className="row">
-
             {/* Product Code */}
-            {/* <div className="col-md-3 mb-3">
-              <TextField
-                label="Product Code"
-                variant="outlined"
-                size="small"
-                fullWidth
-                name="docId"
-                value={formData.docId}
-                onChange={handleInputChange}
-                error={!!fieldErrors.docId}
-                disabled
-              />
-            </div> */}
-
             <div className="col-md-3 mb-3">
               <TextField
                 label="Product Code"
                 variant="outlined"
                 size="small"
                 fullWidth
-                name="productCode"
-                value={formData.productCode}
-                onChange={handleInputChange}
-                error={!!fieldErrors.productCode}
-                helperText={fieldErrors.productCode}
+                value={editId ? formData.productCode : formData.docId}
+                disabled
               />
             </div>
 
             {/* Product Name */}
             <div className="col-md-3 mb-3">
               <TextField
-                label="Product Name"
+                label="Product Name *"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -295,7 +304,7 @@ export const Product = () => {
             {/* Brand */}
             <div className="col-md-3 mb-3">
               <TextField
-                label="Brand"
+                label="Brand *"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -310,8 +319,13 @@ export const Product = () => {
             {/* Category */}
             <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.category}>
-                <InputLabel>Category</InputLabel>
-                <Select name="category" value={formData.category} onChange={handleInputChange} label="Category">
+                <InputLabel>Category *</InputLabel>
+                <Select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  label="Category *"
+                >
                   {categoryList.map((row) => (
                     <MenuItem key={row.id} value={row.categoryName}>
                       {row.categoryName}
@@ -325,8 +339,13 @@ export const Product = () => {
             {/* Sub Category */}
             <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.subCategory}>
-                <InputLabel>Sub Category</InputLabel>
-                <Select name="subCategory" value={formData.subCategory} onChange={handleInputChange} label="Sub Category">
+                <InputLabel>Sub Category *</InputLabel>
+                <Select
+                  name="subCategory"
+                  value={formData.subCategory}
+                  onChange={handleInputChange}
+                  label="Sub Category *"
+                >
                   {subCategoryList.map((row) => (
                     <MenuItem key={row.id} value={row.subCategoryName}>
                       {row.subCategoryName}
@@ -340,8 +359,13 @@ export const Product = () => {
             {/* Unit */}
             <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.unit}>
-                <InputLabel>Unit</InputLabel>
-                <Select name="unit" value={formData.unit} onChange={handleInputChange} label="Unit">
+                <InputLabel>Unit *</InputLabel>
+                <Select
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleInputChange}
+                  label="Unit *"
+                >
                   {unitList.map((row) => (
                     <MenuItem key={row.id} value={row.unitDescription}>
                       {row.unitDescription}
@@ -354,19 +378,31 @@ export const Product = () => {
 
             {/* Type */}
             <div className="col-md-3 mb-3">
-              <TextField
-                label="Type"
-                variant="outlined"
+              <Autocomplete
                 size="small"
                 fullWidth
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
+                options={typeOptions}
+                value={formData.type || null}
+                onChange={(event, newValue) => {
+                  handleInputChange({
+                    target: {
+                      name: 'type',
+                      value: newValue || ''
+                    }
+                  });
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Type"
+                    variant="outlined"
+                  />
+                )}
               />
             </div>
 
             {/* Description */}
-            <div className="col-md-3 mb-3">
+            <div className="col-md-6 mb-3">
               <TextField
                 label="Description"
                 variant="outlined"
@@ -375,20 +411,28 @@ export const Product = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
+                multiline
+                rows={2}
               />
             </div>
 
             {/* Active Checkbox */}
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3 mb-3 d-flex align-items-center">
               <FormControlLabel
-                control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                control={
+                  <Checkbox
+                    checked={formData.active}
+                    onChange={handleInputChange}
+                    name="active"
+                  />
+                }
                 label="Active"
               />
             </div>
           </div>
         )}
       </div>
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 };
