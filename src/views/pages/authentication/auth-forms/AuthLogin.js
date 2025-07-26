@@ -166,7 +166,7 @@ const FirebaseLogin = ({ ...others }) => {
         navigate('/dashboard/default');
         setTimeout(() => {
           window.location.reload();
-        }, 50);
+        }, 500);
 
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));

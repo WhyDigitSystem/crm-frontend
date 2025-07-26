@@ -1,8 +1,9 @@
+// SearchSection.jsx
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Material-UI components
+// MUI
 import {
   Avatar,
   Box,
@@ -19,49 +20,75 @@ import {
   Popper
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-
-// Third-party components
 import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
+import menu from 'menu-items/index'; // adjust path if needed
 
-// Project imports
-import Transitions from 'ui-component/extended/Transitions';
-
-// Assets
+// Icons
 import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-react';
 
-// Screens list
+// Transitions
+import Transitions from 'ui-component/extended/Transitions';
 
-const screens = [
-  { name: 'Dashboard', path: '/' },
-  { name: 'Doc Type', path: '/finance/DocumentType/documentType' },
-  { name: 'Doc Mapping', path: '/finance/DocumentType/documentTypeMapping' },
-  { name: 'Multi Doc', path: '/finance/DocumentType/multipleDocumentIdGeneration' },
-  { name: 'User Creation', path: '/admin/user-creation/userCreation' },
-  { name: 'Company Setup', path: '/companysetup/companysetup' },
-  { name: 'Country', path: '/basicMaster/country' },
-  { name: 'State', path: '/basicMaster/state' },
-  { name: 'City', path: '/basicMaster/city' },
-  { name: 'Currency', path: '/basicMaster/currency' },
-  { name: 'Region', path: '/basicMaster/RegionMaster' },
-  { name: 'Department', path: '/basicMaster/Department' },
-  { name: 'Designation', path: '/basicMaster/Designation' },
-  { name: 'FinYear', path: '/basicMaster/finYear' },
-  { name: 'Roles And Responsibilities', path: '/basicMaster/roles' },
-  { name: 'Screens', path: '/basicMaster/ScreenNames' },
-  { name: 'Employee', path: '/basicMaster/employee' },
-  { name: 'Charges', path: '/finance/ChargeTypeRequest' },
-];
+// === Screen Code to Path Mapping ===
+// const screenCodePathMap = {
+//   UC: '/admin/user-creation/userCreation',
+//   RR: '/basicMaster/roles',
+//   SN: '/companysetup/ScreenNames',
+//   SCA: '/companysetup/ScreenAccess',
+//   LAD: '/companysetup/LeaveAssigned',
+//   CS: '/companysetup/companysetup',
+//   AP: '/attendanceProcess/AttendenceProcess',
+//   MA: '/attendanceProcess/MonthlyAttendance',
+//   CO: '/basicMaster/country',
+//   ST: '/basicMaster/state',
+//   CT: '/basicMaster/city',
+//   CU: '/basicMaster/currency',
+//   RG: '/basicMaster/RegionMaster',
+//   DP: '/basicMaster/Department',
+//   DS: '/basicMaster/Designation',
+//   SM: '/basicMaster/ShiftMaster',
+//   SA: '/basicMaster/ShiftAssign',
+//   CM: '/basicMaster/ContractMaster',
+//   OTM: '/basicMaster/OverTimeMaster',
+//   OT: '/basicMaster/OverTime',
+//   GR: '/basicMaster/groupMaster',
+//   CL: '/calendar',
+//   DB: '/dashboard/default',
+//   ED: '/employeeMaster/employeeDetails',
+//   LT: '/leaveMaster/LeaveType',
+//   HD: '/leaveMaster/Holidays',
+//   AD: '/salaryMaster/Advance',
+//   SH: '/salaryMaster/salaryHeads',
+//   SS: '/salaryMaster/SalaryStructure',
+//   GSS: '/salaryMaster/groupSalaryStructure',
+//   SP: '/salaryMaster/SalaryProcess',
+//   SR: '/salaryMaster/SalaryReport',
+//   PS: '/finance/payslip',
+//   ESIR: '/finance/ESIReport',
+//   PFR: '/finance/PFCalculationReport',
+//   HR: '/me/HolidayReport',
+//   LR: '/me/leaveRequest',
+//   PR: '/me/permissionRequest',
+//   CIO: '/me/SwipeInSwipeOut',
+//   LA: '/team/LeaveApproval',
+//   PA: '/team/PermissionApproval',
+//   AR: '/team/AttendanceReport',
+//   TA: '/team/TodayAttendance',
+//   CIOR: '/team/EmployeeAttanceReport',
+//   SAR: '/team/ShiftAssignReport',
+// };
 
-// Styled Components
+// === Styled Components ===
+
 const PopperStyle = styled(Popper)(({ theme }) => ({
-  zIndex: 1300, // Higher than default to ensure it overlays other components
+  zIndex: 1300,
   width: '100%',
   marginTop: theme.spacing(1),
+  position: 'absolute',
+  padding: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    width: '100%',
-    marginTop: theme.spacing(1)
-  },
-  position: 'absolute'
+    padding: theme.spacing(1)
+  }
 }));
 
 const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
@@ -80,8 +107,7 @@ const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   },
   [theme.breakpoints.down('md')]: {
     width: '100%',
-    marginLeft: 4,
-    background: '#fff'
+    marginLeft: 4
   }
 }));
 
@@ -103,23 +129,24 @@ const SearchResultsPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius
 }));
 
-// Mobile Search Component
-const MobileSearch = ({ value, setValue, popupState }) => {
+// === Mobile Search ===
+const MobileSearch = ({ value, setValue, popupState, screens }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const filteredScreens = screens.filter((screen) =>
+    screen.name.toLowerCase().includes(value.toLowerCase())
+  );
+
   const handleSearch = (screen) => {
     navigate(screen.path);
-    setValue(''); // Clear the search input value
-    popupState.close(); // Close the popup after selection
+    setValue('');
+    popupState.close();
   };
-
-  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
 
   return (
     <>
       <OutlineInputStyle
-        id="input-search-header"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search"
@@ -129,18 +156,11 @@ const MobileSearch = ({ value, setValue, popupState }) => {
           </InputAdornment>
         }
         endAdornment={
-          <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
-            <ButtonBase sx={{ borderRadius: '12px', mr: 1 }}>
-              <HeaderAvatarStyle variant="rounded">
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
-              </HeaderAvatarStyle>
-            </ButtonBase>
-            <ButtonBase sx={{ borderRadius: '12px' }}>
+          <InputAdornment position="end">
+            <ButtonBase onClick={() => popupState.close()}>
               <Avatar
                 variant="rounded"
                 sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
                   background: theme.palette.orange.light,
                   color: theme.palette.orange.dark,
                   '&:hover': {
@@ -148,35 +168,30 @@ const MobileSearch = ({ value, setValue, popupState }) => {
                     color: theme.palette.orange.light
                   }
                 }}
-                {...bindToggle(popupState)}
               >
                 <IconX stroke={1.5} size="1.3rem" />
               </Avatar>
             </ButtonBase>
           </InputAdornment>
         }
-        aria-describedby="search-helper-text"
-        inputProps={{ 'aria-label': 'search' }}
+        fullWidth
       />
-      {value && filteredScreens.length > 0 && (
-        <SearchResultsPaper>
+      {value && (
+        <SearchResultsPaper sx={{ mt: 1 }}>
           <List>
-            {filteredScreens.map((screen) => (
-              <ListItem key={screen.path} disablePadding>
-                <ListItemButton onClick={() => handleSearch(screen)}>
-                  <ListItemText primary={screen.name} />
-                </ListItemButton>
+            {filteredScreens.length > 0 ? (
+              filteredScreens.map((screen) => (
+                <ListItem key={screen.path} disablePadding>
+                  <ListItemButton onClick={() => handleSearch(screen)}>
+                    <ListItemText primary={screen.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))
+            ) : (
+              <ListItem>
+                <ListItemText primary="No results found" />
               </ListItem>
-            ))}
-          </List>
-        </SearchResultsPaper>
-      )}
-      {value && filteredScreens.length === 0 && (
-        <SearchResultsPaper>
-          <List>
-            <ListItem>
-              <ListItemText primary="No results found" />
-            </ListItem>
+            )}
           </List>
         </SearchResultsPaper>
       )}
@@ -187,58 +202,49 @@ const MobileSearch = ({ value, setValue, popupState }) => {
 MobileSearch.propTypes = {
   value: PropTypes.string.isRequired,
   setValue: PropTypes.func.isRequired,
-  popupState: PropTypes.object.isRequired
+  popupState: PropTypes.object.isRequired,
+  screens: PropTypes.array.isRequired
 };
 
-// Desktop Search Component
-const DesktopSearch = ({ value, setValue }) => {
+// === Desktop Search ===
+const DesktopSearch = ({ value, setValue, screens }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const filteredScreens = screens.filter((screen) =>
+    screen.name.toLowerCase().includes(value.toLowerCase())
+  );
+
   const handleSearch = (screen) => {
     navigate(screen.path);
-    setValue(''); // Clear the search input value
-    window.location.reload(); // Optional: Consider if you really need to reload the page
+    setValue('');
+    window.location.reload();
   };
-
-  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
 
   return (
     <Box sx={{ position: 'relative' }}>
       <OutlineInputStyle
-        id="input-search-header"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search"
-        sx={{ width: "250px", height: '35px' }} // Adjust width as needed
         startAdornment={
           <InputAdornment position="start">
             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
           </InputAdornment>
         }
         endAdornment={
-          <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
-            <ButtonBase sx={{ borderRadius: '12px', mr: 1 }}>
-              <HeaderAvatarStyle variant="rounded" sx={{ height: '25px', width: '25px' }}>
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.1rem" />
+          <InputAdornment position="end">
+            <ButtonBase>
+              <HeaderAvatarStyle variant="rounded">
+                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
               </HeaderAvatarStyle>
             </ButtonBase>
           </InputAdornment>
         }
-        aria-describedby="search-helper-text"
-        inputProps={{ 'aria-label': 'search' }}
       />
       {value && (
         <SearchResultsPaper
-          sx={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            mt: 1,
-            ml: 2,
-            zIndex: 1600
-          }}
+          sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, ml: 2, zIndex: 1600 }}
         >
           <List>
             {filteredScreens.length > 0 ? (
@@ -258,29 +264,55 @@ const DesktopSearch = ({ value, setValue }) => {
         </SearchResultsPaper>
       )}
     </Box>
-
   );
 };
 
 DesktopSearch.propTypes = {
   value: PropTypes.string.isRequired,
-  setValue: PropTypes.func.isRequired
+  setValue: PropTypes.func.isRequired,
+  screens: PropTypes.array.isRequired
 };
 
-// Main SearchSection Component
+// === Main Component ===
 const SearchSection = () => {
   const [value, setValue] = useState('');
+  const [screenList, setScreenList] = useState([]);
   const theme = useTheme();
+
+  useEffect(() => {
+    const extractSearchableItems = (menuItems) => {
+      const result = [];
+
+      const traverse = (items) => {
+        items.forEach((item) => {
+          if (!item) return;
+          if (item.type === 'item' && item.title && item.url) {
+            result.push({ name: item.title, path: item.url });
+          }
+          if (item.children) {
+            traverse(item.children);
+          }
+        });
+      };
+
+      traverse(menuItems);
+      return result;
+    };
+
+    const allMenuItems = menu.items || [];
+    const screens = extractSearchableItems(allMenuItems);
+    setScreenList(screens);
+  }, []);
 
   return (
     <>
-      {/* Mobile Search */}
+      {/* Mobile */}
       <Box sx={{ display: { xs: 'block', md: 'none' }, width: '100%' }}>
         <PopupState variant="popper" popupId="mobile-search-popper">
           {(popupState) => (
             <>
               <Box sx={{ ml: 2 }}>
-                <ButtonBase sx={{ borderRadius: '12px' }}>
+                <ButtonBase>
                   <HeaderAvatarStyle variant="rounded" {...bindToggle(popupState)}>
                     <IconSearch stroke={1.5} size="1.2rem" />
                   </HeaderAvatarStyle>
@@ -288,23 +320,15 @@ const SearchSection = () => {
               </Box>
               <PopperStyle {...bindPopper(popupState)} transition placement="bottom-start">
                 {({ TransitionProps }) => (
-                  <Transitions type="zoom" {...TransitionProps} sx={{ transformOrigin: 'center left' }}>
-                    <Card
-                      sx={{
-                        background: '#fff',
-                        [theme.breakpoints.down('sm')]: {
-                          border: 0,
-                          boxShadow: 'none'
-                        },
-                        width: '100%'
-                      }}
-                    >
-                      <Box sx={{ p: 2 }}>
-                        <Grid container alignItems="center" justifyContent="space-between">
-                          <Grid item xs>
-                            <MobileSearch value={value} setValue={setValue} popupState={popupState} />
-                          </Grid>
-                        </Grid>
+                  <Transitions type="zoom" {...TransitionProps}>
+                    <Card sx={{ width: '100%' }}>
+                      <Box sx={{ p: 1 }}>
+                        <MobileSearch
+                          value={value}
+                          setValue={setValue}
+                          popupState={popupState}
+                          screens={screenList}
+                        />
                       </Box>
                     </Card>
                   </Transitions>
@@ -315,12 +339,18 @@ const SearchSection = () => {
         </PopupState>
       </Box>
 
-      {/* Desktop Search */}
+      {/* Desktop */}
       <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'relative' }}>
-        <DesktopSearch value={value} setValue={setValue} />
+        <DesktopSearch value={value} setValue={setValue} screens={screenList} />
       </Box>
     </>
   );
 };
 
 export default SearchSection;
+
+
+
+
+
+
