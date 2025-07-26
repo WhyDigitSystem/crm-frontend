@@ -49,17 +49,8 @@ export const Quotation = () => {
     const [listViewData, setListViewData] = useState([]);
     const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-    const [clientTypeOptions] = useState(['Customer', 'Prospect', 'Vendor', 'Partner']);
-    const [industryOptions] = useState(['IT', 'Manufacturing', 'Healthcare', 'Finance', 'Education', 'Retail']);
-    const [sourceOptions] = useState(['Website', 'Referral', 'Social Media', 'Event', 'Cold Call', 'Email']);
-    const [countryOptions] = useState(['India', 'USA', 'UK', 'Canada', 'Australia']);
-    const [stateOptions] = useState(['Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi', 'Gujarat']);
     const [tabValue, setTabValue] = useState(0);
-    // const [partyStateData, setPartyStateData] = useState([]);
-    // const [partyAddressData, setPartyAddressData] = useState([]);
-    // const [partyStateDataErrors, setPartyStateDataErrors] = useState([]);
-    // const [partyAddressDataErrors, setPartyAddressDataErrors] = useState([]);
-    const [countryList, setCountryList] = useState([]);
+    // const [sellingPrice, setSellingPrice] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const [clientNameList, setClientNameList] = useState([]);
@@ -71,7 +62,7 @@ export const Quotation = () => {
         quoteId: '',
         quoteDate: dayjs(),
         clientName: '',
-        branch: '',
+        branchName: '',
         oppurtunityName: '',
         oppurtunityId: '',
         contactName: '',
@@ -100,18 +91,13 @@ export const Quotation = () => {
     }]);
     const [fieldErrors, setFieldErrors] = useState({
         clientName: '',
-        branch: '',
+        branchName: '',
         contactName: '',
         mobileNumber: '',
         status: '',
         address: '',
-        // quotationPrice: [{
-        //     productName: '',
-        //     category: '',
-        //     sellingPrice: '',
-        //     qty: '',
-        //     amount: ''
-        // }],
+        iterations: '',
+        oppurtunityName: ''
     });
     const [quotationPriceErrors, setQuotationPriceErrors] = useState([{
         productName: '',
@@ -122,7 +108,27 @@ export const Quotation = () => {
     }]);
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const numberToWordsIndian = (num) => {
+        const ones = [
+            '', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE',
+            'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN',
+            'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'
+        ];
+        const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
 
+        const convertToWords = (n) => {
+            if (n < 20) return ones[n];
+            if (n < 100) return `${tens[Math.floor(n / 10)]} ${ones[n % 10]}`.trim();
+            if (n < 1000) return `${ones[Math.floor(n / 100)]} HUNDRED ${n % 100 !== 0 ? 'AND ' + convertToWords(n % 100) : ''}`.trim();
+            if (n < 100000) return `${convertToWords(Math.floor(n / 1000))} THOUSAND ${convertToWords(n % 1000)}`.trim();
+            if (n < 10000000) return `${convertToWords(Math.floor(n / 100000))} LAKH ${convertToWords(n % 100000)}`.trim();
+            return `${convertToWords(Math.floor(n / 10000000))} CRORE ${convertToWords(n % 10000000)}`.trim();
+        };
+
+        if (isNaN(num)) return '';
+        if (num === 0) return 'ZERO';
+        return convertToWords(Math.floor(num));
+    };
     useEffect(() => {
         getQuotationDocId()
         getAllQuotation();
@@ -140,7 +146,7 @@ export const Quotation = () => {
             );
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.quotationVO);
+                setListViewData(response.paramObjectsMap.quotationVO.reverse());
             } else {
                 showToast('error', response.message || 'Failed to fetch leads');
             }
@@ -188,7 +194,7 @@ export const Quotation = () => {
                     quoteId: lead.docId,
                     quoteDate: lead.docDate,
                     clientName: lead.clientName,
-                    branch: lead.branchName,
+                    branchName: lead.branchName,
                     contactName: lead.contactName,
                     oppurtunityName: lead.oppurtunityName,
                     oppurtunityId: lead.oppurtunityId,
@@ -208,6 +214,7 @@ export const Quotation = () => {
                     branchCode: branchCode,
                     orgId: orgId,
                 });
+                getProductName(lead.oppurtunityId, lead.clientName);
                 setQuotationPrice(
                     lead.quotationDetailsVO.map((row) => ({
                         id: row.id,
@@ -237,17 +244,17 @@ export const Quotation = () => {
         if (!formData.clientName) {
             errors.clientName = 'Client Name is required';
         }
-        if (!formData.branch) {
-            errors.branch = 'Branch is required';
+        if (!formData.branchName) {
+            errors.branchName = 'Branch is required';
         }
-        if (!formData.mobileNumber) {
-            errors.mobileNumber = 'Mobile No is required';
+        if (!formData.iterations) {
+            errors.iterations = 'Iterations is required';
         }
         if (!formData.status) {
             errors.status = 'Status is required';
         }
-        if (!formData.address) {
-            errors.address = 'Address is required';
+        if (!formData.oppurtunityName) {
+            errors.oppurtunityName = 'Opportunity Name is required';
         }
         let detailTableDataValid = true;
         const newTableErrors = quotationPriceErrors.map((row) => {
@@ -257,7 +264,7 @@ export const Quotation = () => {
                 detailTableDataValid = false;
             }
             if (!row.category) {
-                rowErrors.category = 'Cat is required';
+                rowErrors.category = 'Category is required';
                 detailTableDataValid = false;
             }
             if (!row.qty) {
@@ -322,7 +329,7 @@ export const Quotation = () => {
             amountInWords: formData.amtInWords,
             branch: branch,
             branchCode: branchCode,
-            branchName: formData.branch,
+            branchName: formData.branchName,
             clientName: formData.clientName,
             contactName: formData.contactName,
             createdBy: loginUserName,
@@ -369,7 +376,8 @@ export const Quotation = () => {
     };
     const getBranch = async (clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getBranchNameFromLead?clientName=${clientName}&orgId=${orgId}`);
+            const encodedClientName = encodeURIComponent(clientName);
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setBranchList(response.paramObjectsMap.branchName || []);
             } else {
@@ -383,7 +391,7 @@ export const Quotation = () => {
     };
     const getOpportunityName = async (clientBranch, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getOpportunityNameIdAndDetails?branchName=${clientBranch}&clientName=${clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getOpportunityNameIdAndDetails?branchName=${clientBranch}&clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setOpportunityList(response.paramObjectsMap.opportunityDetails || []);
             } else {
@@ -397,7 +405,7 @@ export const Quotation = () => {
     };
     const getProductName = async (oppurtunityId, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${clientName}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
             if (response.status === true) {
                 setProductList(response.paramObjectsMap.productNameDetails || []);
             } else {
@@ -407,6 +415,31 @@ export const Quotation = () => {
         } catch (error) {
             console.error('Error fetching data:', error);
             return error;
+        }
+    };
+    const getSellingPrice = async (productName, index) => {
+        if (!productName || index === undefined) return;
+        try {
+            const response = await apiCalls('get', `/transaction/getSellingPriceFromPriceMaster?orgId=${orgId}&productName=${productName}`);
+            const priceArray = response?.paramObjectsMap?.priceDetails;
+
+            if (response.status === true && Array.isArray(priceArray) && priceArray.length > 0) {
+                const sellingPrice = priceArray[0]?.sellingPrice;
+
+                // 🔥 FIX: update only `sellingPrice`, keep rest of the row intact
+                setQuotationPrice((prevRows) => {
+                    const updatedRows = [...prevRows];
+                    updatedRows[index] = {
+                        ...updatedRows[index],
+                        sellingPrice: sellingPrice
+                    };
+                    return updatedRows;
+                });
+            } else {
+                console.error('API Error: No valid price data found');
+            }
+        } catch (error) {
+            console.error('Error fetching price:', error);
         }
     };
     const handleInputChange = (e) => {
@@ -432,7 +465,6 @@ export const Quotation = () => {
             [name]: type === 'checkbox' ? checked : value
         }));
     };
-
     const handleClear = () => {
         getQuotationDocId()
         setOpportunityList([]);
@@ -440,7 +472,7 @@ export const Quotation = () => {
         setFormData({
             quoteDate: dayjs(),
             clientName: '',
-            branch: '',
+            branchName: '',
             oppurtunityName: '',
             oppurtunityId: '',
             contactName: '',
@@ -575,7 +607,8 @@ export const Quotation = () => {
             grossAmt: gross.toFixed(2),
             discount: discountAmt.toFixed(2),
             netAmt: net.toFixed(2),
-            amtInWords: toWords(Math.floor(net)).toUpperCase() + " ONLY"
+            // amtInWords: toWords(Math.floor(net)).toUpperCase() + " ONLY"
+            amtInWords: numberToWordsIndian(net) + ' ONLY'
         }));
     };
     return (
@@ -685,21 +718,21 @@ export const Quotation = () => {
                                             : ''
                                     }
                                     value={
-                                        branchList.find((item) => item.branch === formData.branch) || null
+                                        branchList.find((item) => item.branch === formData.branchName) || null
                                     }
                                     onChange={(event, newValue) => {
                                         if (newValue) {
                                             setFormData((prev) => ({
                                                 ...prev,
-                                                branch: newValue.branch,
+                                                branchName: newValue.branch,
                                                 gstNo: newValue.gstNo,
                                                 address: newValue.address,
                                             }));
                                             getOpportunityName(newValue.branch, formData.clientName);
-                                            setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
+                                            setFieldErrors((prev) => ({ ...prev, branchName: '', address: '' }));
                                         } else {
-                                            setFormData((prev) => ({ ...prev, branch: '' }));
-                                            setFieldErrors((prev) => ({ ...prev, branch: 'Branch is required' }));
+                                            setFormData((prev) => ({ ...prev, branchName: '' }));
+                                            setFieldErrors((prev) => ({ ...prev, branchName: 'Branch is required' }));
                                         }
                                     }}
                                     renderInput={(params) => (
@@ -711,8 +744,8 @@ export const Quotation = () => {
                                                 </span>
                                             }
                                             size="small"
-                                            error={!!fieldErrors.branch}
-                                            helperText={fieldErrors.branch}
+                                            error={!!fieldErrors.branchName}
+                                            helperText={fieldErrors.branchName}
                                             fullWidth
                                         />
                                     )}
@@ -730,7 +763,7 @@ export const Quotation = () => {
                                     onChange={handleInputChange}
                                 />
                             </div>
-                            <div className="col-md-6 mb-3">
+                            <div className="col-md-3 mb-3">
                                 <TextField
                                     label={
                                         <span>
@@ -761,14 +794,21 @@ export const Quotation = () => {
                                         if (newValue) {
                                             setFormData((prev) => ({
                                                 ...prev,
-                                                oppurtunityName: newValue.productName,
-                                                oppurtunityId: newValue.docId,
+                                                oppurtunityName: newValue.productName || '',
+                                                oppurtunityId: newValue.docId || '',
                                                 contactName: newValue.contactName || '',
                                                 mobileNumber: newValue.mobileNo || '',
                                                 emailId: newValue.email || '',
-                                                iterations: `${newValue.docId} - ${'doubt'} ` || ''
                                             }));
-                                            getProductName(newValue.docId, formData.clientName)
+                                            setFieldErrors((prev) => ({
+                                                ...prev,
+                                                oppurtunityName: '',
+                                                oppurtunityId: '',
+                                                contactName: '',
+                                                mobileNumber: '',
+                                                emailId: '',
+                                            }));
+                                            getProductName(newValue.docId, formData.clientName);
                                         } else {
                                             setFormData((prev) => ({
                                                 ...prev,
@@ -790,6 +830,8 @@ export const Quotation = () => {
                                             }
                                             size="small"
                                             fullWidth
+                                            error={!!fieldErrors.oppurtunityName}
+                                            helperText={fieldErrors.oppurtunityName}
                                         />
                                     )}
                                 />
@@ -857,14 +899,15 @@ export const Quotation = () => {
                                 />
                             </div>
                             <div className="col-md-3 mb-3">
-                                <FormControl fullWidth size="small">
+                                <FormControl fullWidth size="small" error={!!fieldErrors.status}>
                                     <InputLabel id="demo-simple-select-label">
                                         Status <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                                     </InputLabel>
                                     <Select
                                         labelId="statusLabel"
+                                        name="status"
                                         value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        onChange={handleInputChange}
                                         label="Status"
                                         error={!!fieldErrors.status}
                                     >
@@ -873,6 +916,7 @@ export const Quotation = () => {
                                         <MenuItem value="APPROVED">APPROVED</MenuItem>
                                         <MenuItem value="REJECTED">REJECTED</MenuItem>
                                     </Select>
+                                    {fieldErrors.status && <FormHelperText style={{ color: 'red' }}>{fieldErrors.status}</FormHelperText>}
                                 </FormControl>
                             </div>
                             <div className="col-md-3 mb-3">
@@ -897,7 +941,7 @@ export const Quotation = () => {
                                 <Box sx={{ width: '100%' }}>
                                     <Tabs value={tabValue} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
                                         <Tab label="Quotation Price" />
-                                        <Tab label="Footer" />
+                                        <Tab label="Summary" />
                                     </Tabs>
                                 </Box>
                                 <Box sx={{ padding: 2 }}>
@@ -948,27 +992,30 @@ export const Quotation = () => {
                                                                                 <Autocomplete
                                                                                     options={productList}
                                                                                     getOptionLabel={(option) => option?.productName || ''}
-                                                                                    value={
-                                                                                        productList.find((item) => item.productName === row.productName) || null
+                                                                                    value={productList.find(item => item.productName === row.productName) || null}
+                                                                                    isOptionEqualToValue={(option, value) =>
+                                                                                        option.productName === value.productName
                                                                                     }
                                                                                     onChange={(event, newValue) => {
-                                                                                        const updatedOpportunities = [...quotationPrice];
+                                                                                        const updatedRows = [...quotationPrice];
                                                                                         if (newValue) {
-                                                                                            updatedOpportunities[index] = {
-                                                                                                ...updatedOpportunities[index],
-                                                                                                productName: newValue.productName,
-                                                                                                category: newValue.category,
+                                                                                            updatedRows[index] = {
+                                                                                                ...updatedRows[index],
+                                                                                                productName: newValue.productName || '',
+                                                                                                category: newValue.category || '',
                                                                                                 subCategory: newValue.subCategory || '',
                                                                                             };
+                                                                                            setQuotationPrice(updatedRows);
+                                                                                            getSellingPrice(newValue.productName, index);
                                                                                         } else {
-                                                                                            updatedOpportunities[index] = {
-                                                                                                ...updatedOpportunities[index],
+                                                                                            updatedRows[index] = {
+                                                                                                ...updatedRows[index],
                                                                                                 productName: '',
-                                                                                                subCategory: '',
                                                                                                 category: '',
+                                                                                                subCategory: '',
                                                                                             };
+                                                                                            setQuotationPrice(updatedRows);
                                                                                         }
-                                                                                        setQuotationPrice(updatedOpportunities);
                                                                                     }}
                                                                                     renderInput={(params) => (
                                                                                         <TextField
@@ -1008,6 +1055,7 @@ export const Quotation = () => {
                                                                                 size="small"
                                                                                 type="number"
                                                                                 value={row.sellingPrice}
+                                                                                disabled
                                                                                 onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                                                                 error={!!quotationPriceErrors[index]?.sellingPrice}
                                                                                 helperText={quotationPriceErrors[index]?.sellingPrice}

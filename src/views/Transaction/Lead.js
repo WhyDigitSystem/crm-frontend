@@ -939,7 +939,7 @@ const Lead = () => {
                                             labelId="customerLabel"
                                             value={formData.customer}
                                             onChange={handleInputChange}
-                                            label="Customer"
+                                            label="Existing Customer"
                                             name="customer"
                                         >
                                             <MenuItem value="Yes">Yes</MenuItem>

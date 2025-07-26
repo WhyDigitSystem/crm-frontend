@@ -75,7 +75,7 @@ const Opportunity = () => {
         productName: '',
         quantity: 1,
         remarks: '',
-        status: 'Active',
+        status: '',
         subCategory: '',
     }]);
 
@@ -142,7 +142,7 @@ const Opportunity = () => {
     };
     const getBranch = async (clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setBranchList(response.paramObjectsMap.branchName || []);
             } else {
@@ -170,7 +170,7 @@ const Opportunity = () => {
     };
     const getContactName = async (branchName, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getContactNameFromLeadContact?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getContactNameFromLeadContact?branchName=${branchName}&clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setContactNameList(response.paramObjectsMap.contactDetails || []);
             } else {
@@ -255,8 +255,8 @@ const Opportunity = () => {
                     showToast('error', 'Opportunity not found');
                     return;
                 }
-                getContactName(opportunity.branch, opportunity.clientName)
                 getBranch(opportunity.clientName);
+                getContactName(opportunity.branchName, opportunity.clientName)
                 setFormData({
                     address: opportunity.address || '',
                     opportunityDate: opportunity.docDate || '',
@@ -286,11 +286,11 @@ const Opportunity = () => {
                     productName: detail.productName || '',
                     quantity: detail.quantity || 1,
                     remarks: detail.remarks || '',
-                    status: detail.status || 'Active',
+                    status: detail.status || '',
                     subCategory: detail.subCategory || '',
                 })) || [{
                     category: '', description: '', opportunityAmount: 0, productName: '',
-                    quantity: 1, remarks: '', status: 'Active', subCategory: ''
+                    quantity: 1, remarks: '', status: '', subCategory: ''
                 }];
 
                 setOpportunityDetails(details);
@@ -328,8 +328,6 @@ const Opportunity = () => {
             case 'email':
                 if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                     newErrors[field] = 'Invalid email format';
-                } else if (!value) {
-                    newErrors[field] = 'Email is required';
                 } else {
                     newErrors[field] = '';
                 }
@@ -338,8 +336,6 @@ const Opportunity = () => {
             case 'mobileNo':
                 if (value && !/^(\+\d{1,3}[- ]?)?\d{10}$/.test(value)) {
                     newErrors[field] = 'Invalid mobile number (10 digits required)';
-                } else if (!value) {
-                    newErrors[field] = 'Mobile number is required';
                 } else {
                     newErrors[field] = '';
                 }
@@ -397,19 +393,11 @@ const Opportunity = () => {
             newErrors.contactName = 'Contact name is required';
             isValid = false;
         }
-
-        if (!formData.mobileNo.trim()) {
-            newErrors.mobileNo = 'Mobile number is required';
-            isValid = false;
-        } else if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNo)) {
+        if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNo)) {
             newErrors.mobileNo = 'Invalid mobile number (10 digits required)';
             isValid = false;
         }
-
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Invalid email format';
             isValid = false;
         }
@@ -552,7 +540,7 @@ const Opportunity = () => {
             productName: '',
             quantity: 1,
             remarks: '',
-            status: 'Active',
+            status: '',
             subCategory: '',
         }]);
 
@@ -600,7 +588,7 @@ const Opportunity = () => {
                 productName: '',
                 quantity: 1,
                 remarks: '',
-                status: 'Active',
+                status: '',
                 subCategory: '',
             }
         ]);
@@ -874,7 +862,7 @@ const Opportunity = () => {
                                         name="mobileNo"
                                         value={formData.mobileNo}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.mobileNo}
+                                        // error={!!fieldErrors.mobileNo}
                                         helperText={fieldErrors.mobileNo}
                                         onBlur={(e) => validateMainField('mobileNo', e.target.value)}
                                     />
@@ -891,7 +879,6 @@ const Opportunity = () => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.email}
                                         helperText={fieldErrors.email}
                                         onBlur={(e) => validateMainField('email', e.target.value)}
                                     />
@@ -955,7 +942,7 @@ const Opportunity = () => {
                                                                 <th className="px-2 py-2 text-white text-center">Product Name *</th>
                                                                 <th className="px-2 py-2 text-white text-center">Category *</th>
                                                                 <th className="px-2 py-2 text-white text-center">Sub Category</th>
-                                                                <th className="px-2 py-2 text-white text-center">Amount *</th>
+                                                                <th className="px-2 py-2 text-white text-center">Amt *</th>
                                                                 <th className="px-2 py-2 text-white text-center">Quantity</th>
                                                                 <th className="px-2 py-2 text-white text-center">Status</th>
                                                                 <th className="px-2 py-2 text-white text-center">Remarks</th>
@@ -984,12 +971,19 @@ const Opportunity = () => {
                                                                                 }
                                                                                 onChange={(event, newValue) => {
                                                                                     const updatedOpportunities = [...opportunityDetails];
+                                                                                    const updatedOpportunitiesErrors = [...detailErrors];
                                                                                     if (newValue) {
                                                                                         updatedOpportunities[index] = {
                                                                                             ...updatedOpportunities[index],
                                                                                             productName: newValue.productName,
                                                                                             category: newValue.category,
                                                                                             subCategory: newValue.subCategory || '',
+                                                                                        };
+                                                                                        updatedOpportunitiesErrors[index] = {
+                                                                                            ...updatedOpportunitiesErrors[index],
+                                                                                            productName: '',
+                                                                                            category: '',
+                                                                                            subCategory: '',
                                                                                         };
                                                                                     } else {
                                                                                         updatedOpportunities[index] = {
@@ -1000,12 +994,15 @@ const Opportunity = () => {
                                                                                         };
                                                                                     }
                                                                                     setOpportunityDetails(updatedOpportunities);
+                                                                                    setDetailErrors(updatedOpportunitiesErrors);
                                                                                 }}
                                                                                 renderInput={(params) => (
                                                                                     <TextField
                                                                                         {...params}
                                                                                         size="small"
                                                                                         fullWidth
+                                                                                        error={!!detailErrors[index]?.productName}
+                                                                                        helperText={detailErrors[index]?.productName}
                                                                                     />
                                                                                 )}
                                                                             />
