@@ -10,7 +10,7 @@ import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/ma
 import { useState, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import IconButton from '@mui/material/IconButton';
-import { Avatar, Typography, Autocomplete, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
+import { Avatar, Typography, Autocomplete, FormHelperText, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl } from '@mui/material';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
@@ -318,12 +318,15 @@ const Lead = () => {
 
     const validateFields = () => {
         const errors = {};
-        if (!formData.clientName.trim()) errors.clientName = 'Client name is required';
-        if (!formData.clientType) errors.clientType = 'Client type is required';
-        if (!String(formData.contactNo).trim()) errors.contactNo = 'Contact number is required';
-        if (!formData.mail.trim()) errors.mail = 'Email is required';
-        if (!formData.industry) errors.industry = 'Industry is required';
         if (!formData.source) errors.source = 'Source is required';
+        if (!formData.clientType) errors.clientType = 'Client type is required';
+        if (!formData.clientName.trim()) errors.clientName = 'Client name is required';
+        if (!formData.city) errors.city = 'City is required';
+        if (!formData.state) errors.state = 'State is required';
+        if (!formData.country) errors.country = 'Country is required';
+        if (!formData.pinCode) errors.pinCode = 'Pin Code is required';
+        if (!formData.customer) errors.customer = 'Customer is required';
+        if (!formData.address) errors.address = 'Address is required';
 
         if (formData.mail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) {
             errors.mail = 'Invalid email format';
@@ -341,11 +344,11 @@ const Lead = () => {
         const errors = leadBranches.map(branch => {
             const error = {};
             if (!branch.branch.trim()) error.branch = 'Branch name is required';
-            // if (!branch.branchCode.trim()) error.branchCode = 'Branch code is required';
-            if (!branch.address.trim()) error.address = 'Address is required';
+            if (!branch.gstNo.trim()) error.gstNo = 'Reg No name is required';
             if (!branch.city.trim()) error.city = 'City is required';
-            if (!branch.country.trim()) error.country = 'Country is required';
             if (!branch.state.trim()) error.state = 'State is required';
+            if (!branch.country.trim()) error.country = 'Country is required';
+            if (!branch.address.trim()) error.address = 'Address is required';
             return error;
         });
 
@@ -356,8 +359,9 @@ const Lead = () => {
     const validateContacts = () => {
         const errors = leadContacts.map(contact => {
             const error = {};
+            if (!contact.branchName.trim()) error.branchName = 'Branch Name is required';
             if (!contact.name.trim()) error.name = 'Name is required';
-            if (!contact.mobileNo.trim()) error.mobileNo = 'Mobile number is required';
+            if (!contact.mobileNo.trim()) error.mobileNo = 'Mob No is required';
             if (!contact.email.trim()) error.email = 'Email is required';
             if (!contact.designation.trim()) error.designation = 'Designation is required';
 
@@ -722,27 +726,26 @@ const Lead = () => {
                                         </LocalizationProvider>
                                     </FormControl>
                                 </div>
-                                {/* Source */}
                                 <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small">
+                                    <FormControl fullWidth size="small" error={!!fieldErrors.source}>
                                         <InputLabel>Source<span className="asterisk">*</span></InputLabel>
                                         <Select
                                             label="Source *"
                                             name="source"
                                             value={formData.source}
                                             onChange={handleInputChange}
-                                            error={!!fieldErrors.source}
+                                        // error={!!fieldErrors.source}
+                                        // helperText={fieldErrors.source}
                                         >
                                             {sources.map((source) => (
                                                 <MenuItem key={source} value={source}>{source}</MenuItem>
                                             ))}
                                         </Select>
+                                        {fieldErrors.source && <FormHelperText style={{ color: 'red' }}>{fieldErrors.source}</FormHelperText>}
                                     </FormControl>
                                 </div>
-
-                                {/* Client Type */}
                                 <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small">
+                                    <FormControl fullWidth size="small" error={!!fieldErrors.clientType}>
                                         <InputLabel>Client Type<span className="asterisk">*</span></InputLabel>
                                         <Select
                                             label="Client Type *"
@@ -750,15 +753,15 @@ const Lead = () => {
                                             value={formData.clientType}
                                             onChange={handleInputChange}
                                             error={!!fieldErrors.clientType}
+                                            helperText={fieldErrors.clientType}
                                         >
                                             {clientTypes.map((type) => (
                                                 <MenuItem key={type} value={type}>{type}</MenuItem>
                                             ))}
                                         </Select>
+                                        {fieldErrors.clientType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.clientType}</FormHelperText>}
                                     </FormControl>
                                 </div>
-
-                                {/* Client Name */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label={
@@ -786,13 +789,8 @@ const Lead = () => {
                                         name="mail"
                                         value={formData.mail}
                                         onChange={handleInputChange}
-                                        error={!!fieldErrors.mail}
-                                        helperText={fieldErrors.mail}
-                                        onBlur={(e) => validateMainField('mail', e.target.value)}
                                     />
                                 </div>
-
-                                {/* Contact No */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Contact No"
@@ -802,7 +800,6 @@ const Lead = () => {
                                         name="contactNo"
                                         value={formData.contactNo}
                                         onChange={handleInputChange}
-                                        onBlur={(e) => validateMainField('contactNo', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-md-3 mb-3">
@@ -848,6 +845,12 @@ const Lead = () => {
                                                     state: newValue.state,
                                                     country: newValue.country || '',
                                                 }));
+                                                setFieldErrors((prev) => ({
+                                                    ...prev,
+                                                    city: '',
+                                                    state:'',
+                                                    country:''
+                                                }));
                                             } else {
                                                 setFormData((prev) => ({
                                                     ...prev,
@@ -867,6 +870,8 @@ const Lead = () => {
                                                 }
                                                 size="small"
                                                 fullWidth
+                                                error={!!fieldErrors.city}
+                                                helperText={fieldErrors.city}
                                             />
                                         )}
                                     />
@@ -882,9 +887,11 @@ const Lead = () => {
                                         size="small"
                                         fullWidth
                                         name="state"
-                                        disabled
                                         value={formData.state}
                                         onChange={handleInputChange}
+                                        disabled
+                                        error={!!fieldErrors.state}
+                                        helperText={fieldErrors.state}
                                     />
                                 </div>
                                 <div className="col-md-3 mb-3">
@@ -895,16 +902,16 @@ const Lead = () => {
                                             </span>
                                         }
                                         variant="outlined"
-                                        disabled
                                         size="small"
                                         fullWidth
                                         name="country"
                                         value={formData.country}
                                         onChange={handleInputChange}
+                                        disabled
+                                        error={!!fieldErrors.country}
+                                        helperText={fieldErrors.country}
                                     />
                                 </div>
-
-                                {/* PIN Code */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label={
@@ -919,23 +926,26 @@ const Lead = () => {
                                         value={formData.pinCode}
                                         onChange={handleInputChange}
                                         type="number"
+                                        error={!!fieldErrors.pinCode}
+                                        helperText={fieldErrors.pinCode}
                                     />
                                 </div>
                                 <div className="col-md-3 mb-3">
-                                    <FormControl fullWidth size="small">
+                                    <FormControl fullWidth size="small" error={!!fieldErrors.customer}>
                                         <InputLabel id="demo-simple-select-label">
                                             Customer <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                                         </InputLabel>
                                         <Select
                                             labelId="customerLabel"
                                             value={formData.customer}
-                                            onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
+                                            onChange={handleInputChange}
                                             label="Customer"
-                                            error={!!fieldErrors.customer}
+                                            name="customer"
                                         >
                                             <MenuItem value="Yes">Yes</MenuItem>
                                             <MenuItem value="No">No</MenuItem>
                                         </Select>
+                                        {fieldErrors.customer && <FormHelperText style={{ color: 'red' }}>{fieldErrors.customer}</FormHelperText>}
                                     </FormControl>
                                 </div>
                                 <div className="col-md-3 mb-3">
@@ -952,6 +962,9 @@ const Lead = () => {
                                         multiline
                                         value={formData.address}
                                         onChange={handleInputChange}
+                                        error={!!fieldErrors.address}
+                                        helperText={fieldErrors.address}
+                                        onBlur={(e) => validateMainField('address', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-md-3 mb-3">
@@ -1164,12 +1177,19 @@ const Lead = () => {
                                                                                     }
                                                                                     onChange={(event, newValue) => {
                                                                                         const updatedBranches = [...leadBranches];
+                                                                                        const updatedBranchesErrors = [...branchErrors];
                                                                                         if (newValue) {
                                                                                             updatedBranches[index] = {
                                                                                                 ...updatedBranches[index],
                                                                                                 city: newValue.city,
                                                                                                 state: newValue.state,
                                                                                                 country: newValue.country || '',
+                                                                                            };
+                                                                                            updatedBranchesErrors[index] = {
+                                                                                                ...updatedBranchesErrors[index],
+                                                                                                city: '',
+                                                                                                state: '',
+                                                                                                country: '',
                                                                                             };
                                                                                         } else {
                                                                                             updatedBranches[index] = {
@@ -1179,6 +1199,7 @@ const Lead = () => {
                                                                                                 country: '',
                                                                                             };
                                                                                         }
+                                                                                        setBranchErrors(updatedBranchesErrors);
                                                                                         setLeadBranches(updatedBranches);
                                                                                     }}
                                                                                     renderInput={(params) => (
@@ -1217,7 +1238,6 @@ const Lead = () => {
                                                                                 helperText={branchErrors[index]?.state}
                                                                             />
                                                                         </td>
-
                                                                         <td>
                                                                             <TextField
                                                                                 fullWidth
