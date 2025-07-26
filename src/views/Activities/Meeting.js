@@ -27,7 +27,7 @@ export const Meeting = () => {
     const [branchList, setBranchList] = useState([]);
     const orgId = localStorage.getItem('orgId') || '';
     const branch = localStorage.getItem('branch') || '';
-    const branchCode = localStorage.getItem('branchcode');
+    const branchCode = localStorage.getItem('branchCode');
     const finYear = localStorage.getItem('finYear') || '';
     const loginUserName = localStorage.getItem('userName') || '';
     const [listView, setListView] = useState(false);
