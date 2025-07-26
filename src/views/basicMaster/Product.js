@@ -403,7 +403,7 @@ export const Product = () => {
             </div>
 
             {/* Description */}
-            <div className="col-md-6 mb-3">
+            <div className="col-md-3 mb-3">
               <TextField
                 label="Description"
                 variant="outlined"
@@ -412,8 +412,8 @@ export const Product = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                multiline
-                rows={2}
+                // multiline
+                // rows={2}
               />
             </div>
 

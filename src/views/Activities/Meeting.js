@@ -27,7 +27,7 @@ export const Meeting = () => {
     const [branchList, setBranchList] = useState([]);
     const orgId = localStorage.getItem('orgId') || '';
     const branch = localStorage.getItem('branch') || '';
-    const branchCode = localStorage.getItem('branchCode');
+    const branchCode = localStorage.getItem('branchcode');
     const finYear = localStorage.getItem('finYear') || '';
     const loginUserName = localStorage.getItem('userName') || '';
     const [listView, setListView] = useState(false);
@@ -280,16 +280,18 @@ export const Meeting = () => {
             let initialBranchCode = branchCode;
 
             if (branchData.length > 0) {
-                const storedBranch = branchData.find(b =>
-                    b.branch === branch &&
-                    (b.branchCode === branchCode || b.branchCode === localStorage.getItem('branchcode'))
+                // Fixed branch lookup logic
+                const storedBranch = branchData.find(b => 
+                    b.branchCode === branchCode || 
+                    b.branchCode === localStorage.getItem('branchCode') ||
+                    b.branch === branch
                 );
 
                 if (storedBranch) {
                     initialBranch = storedBranch.branch;
                     initialBranchCode = storedBranch.branchCode;
                 } else {
-                    // Fallback to first branch if localStorage values don't match
+                    // Fallback to first branch
                     initialBranch = branchData[0].branch;
                     initialBranchCode = branchData[0].branchCode;
                 }
@@ -371,6 +373,15 @@ export const Meeting = () => {
                 const startTime = meeting.startTime ? dayjs(`1970-01-01T${meeting.startTime.padStart(5, '0')}:00`) : null;
                 const endTime = meeting.endTime ? dayjs(`1970-01-01T${meeting.endTime.padStart(5, '0')}:00`) : null;
 
+                // Handle branchCode - if missing, look it up
+                let branchCodeForMeeting = meeting.branchCode;
+                if (!branchCodeForMeeting && meeting.branch) {
+                    const branchInList = branchList.find(b => b.branch === meeting.branch);
+                    if (branchInList) {
+                        branchCodeForMeeting = branchInList.branchCode;
+                    }
+                }
+
                 // First set basic form data
                 setFormData(prev => ({
                     ...prev,
@@ -382,7 +393,7 @@ export const Meeting = () => {
                     email: meeting.email || '',
                     parent: meeting.parent || '',
                     branch: meeting.branch || branch,
-                    branchCode: meeting.branchCode || branchCode,
+                    branchCode: branchCodeForMeeting || branchCode,
                     branchName: meeting.branch || branch,
                     startDate: startDate,
                     startTime: startTime,
@@ -401,19 +412,19 @@ export const Meeting = () => {
 
                 // Then load related data
                 if (meeting.clientName) {
-                    await getClientNames(); // Ensure client options are loaded
+                    await getClientNames(); 
                     await getBranchNames(meeting.clientName);
                     await getParentFromLead(meeting.clientName);
 
                     // Update branch-related fields after a short delay
                     setTimeout(() => {
-                        const branchOpt = branchOptions.find(b => b.value === meeting.branch);
+                        const branchOpt = branchList.find(b => b.branch === meeting.branch);
                         if (branchOpt) {
                             setFormData(prev => ({
                                 ...prev,
                                 address: branchOpt.address || meeting.address || '',
                                 branch: meeting.branch,
-                                branchCode: meeting.branchCode,
+                                branchCode: branchOpt.branchCode,
                                 branchName: meeting.branch
                             }));
                         }
@@ -591,7 +602,6 @@ export const Meeting = () => {
             description: formData.description,
             status: formData.status,
             followUpDate: formatDate(formData.followUpDate),
-            // active: formData.active ? "Active" : "Inactive",
             venue: formData.venue,
             address: formData.address,
             assignTo: formData.assignTo,
@@ -605,7 +615,6 @@ export const Meeting = () => {
         };
 
         try {
-
             const response = await apiCalls('put', '/activities/createUpdateMeeting', payload);
 
             if (response.status === true) {
@@ -1134,8 +1143,6 @@ export const Meeting = () => {
                                     />
                                 }
                                 label="Active"
-
-                                // style={{ marginTop: '16px' }}
                             />
                         </div>
                     </div>

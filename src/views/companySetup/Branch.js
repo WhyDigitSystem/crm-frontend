@@ -67,7 +67,6 @@ const Branch = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'branch', header: 'Branch', size: 140 },
     {
       accessorKey: 'branch',
       header: 'Branch',

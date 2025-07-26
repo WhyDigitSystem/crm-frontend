@@ -39,12 +39,14 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { setUser } from '../../../../redux/userSlice';
+import apiCalls from 'apicall';
 
 const FirebaseLogin = ({ ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
   const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const formikRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -71,6 +73,37 @@ const FirebaseLogin = ({ ...others }) => {
           password: ''
         }
       });
+    }
+  };
+
+  const getScreenAccess = async (orgId, roles) => {
+    try {
+      setLoading(true);
+      const response = await apiCalls('get', `auth/getRolesPermissionHeaderByRoleandOrgid?orgid=${orgId}&role=${roles}`);
+
+      const userList = response?.paramObjectsMap?.userVO;
+      console.log('User List:', userList);
+
+      if (Array.isArray(userList) && userList.length > 0) {
+        const rolePermissions = userList[0]?.rolesPermissionVO || [];
+
+        // Format and store in localStorage
+        const screenAccessMap = {};
+        rolePermissions.forEach(screen => {
+          screenAccessMap[screen.screenId] = {
+            screenName: screen.screenName,
+            canRead: screen.canRead,
+            canWrite: screen.canWrite,
+            canDelete: screen.canDelete
+          };
+        });
+
+        localStorage.setItem('screenAccess', JSON.stringify(screenAccessMap));
+      }
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,6 +144,12 @@ const FirebaseLogin = ({ ...others }) => {
 
         const userRole = response.data.paramObjectsMap.userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
+
+        const roles = userRole.map((row) => ({ role: row.role }));
+        localStorage.setItem('ROLES', JSON.stringify(roles));
+
+        getScreenAccess(response.data.paramObjectsMap.userVO.orgId, roles[0]?.role);
+
         const roleVO = response.data.paramObjectsMap.userVO.roleVO;
         let allScreensVO = [];
         roleVO.forEach((roleObj) => {
@@ -125,7 +164,9 @@ const FirebaseLogin = ({ ...others }) => {
         dispatch(setUserRole(userRole));
         resetForm();
         navigate('/dashboard/default');
-        window.location.reload();
+        setTimeout(() => {
+          window.location.reload();
+        }, 50);
 
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));

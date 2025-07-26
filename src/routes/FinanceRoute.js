@@ -31,6 +31,8 @@ const PriceMaster = Loadable(lazy(() => import('views/basicMaster/PriceMaster'))
 const UnitMaster = Loadable(lazy(() => import('views/basicMaster/UnitMaster')));
 const CategoryMaster = Loadable(lazy(() => import('views/basicMaster/CategoryMaster')));
 const SubCategory = Loadable(lazy(() => import('views/basicMaster/SubCategory')));
+const ScreenAccess = Loadable(lazy(() => import('views/basicMaster/ScreenAccess')));
+
 
 // documents
 const DocumentType = Loadable(lazy(() => import('views/Documents/documentType')));
@@ -159,6 +161,10 @@ const FinanceRoute = {
     {
       path: '/basicMaster/ScreenNames',
       element: <ScreenNames />
+    },
+     {
+      path: '/basicMaster/ScreenAccess',
+      element: <ScreenAccess />
     },
 
     // Document
