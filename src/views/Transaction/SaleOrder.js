@@ -914,7 +914,7 @@ const SalesOrder = () => {
                                         onChange={handleInputChange}
                                     />
                                 </div>
-                                <div className="col-md-6 mb-3">
+                                <div className="col-md-3 mb-3">
                                     <TextField
                                         label={
                                             <span>

@@ -725,7 +725,7 @@ export const CustomerDetails = () => {
                 inputProps={{ maxLength: 6 }}
               />
             </div>
-            <div className="col-md-6 mb-3">
+            <div className="col-md-3 mb-3">
               <TextField
                 label="Address"
                 variant="outlined"
