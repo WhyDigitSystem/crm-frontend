@@ -45,7 +45,7 @@ const transactionChildren = [
     url: '/Transaction/SaleOrder',
     icon: IconShoppingCart
   },
-  hasScreenAccess('CUSTOMER_DETAILS') && {
+  hasScreenAccess('CD') && {
     id: 'CustomerDetails',
     title: 'Customer Details',
     type: 'item',
