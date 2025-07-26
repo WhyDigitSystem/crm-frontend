@@ -121,9 +121,10 @@ export const Product = () => {
     }
   };
 
-  const getProductById = async (id) => {
+  const getProductById = async (row) => {
+    setEditId(row.original.id);
     try {
-      const res = await apiCalls('get', `master/getProductById?id=${id}`);
+      const res = await apiCalls('get', `master/getProductById?id=${row.original.id}`);
       if (res.status && res.paramObjectsMap?.productVO) {
         const data = res.paramObjectsMap.productVO;
         setFormData(prev => ({
@@ -138,7 +139,6 @@ export const Product = () => {
           description: data.description || '',
           active: data.active === 'Active',
         }));
-        setEditId(id);
         setListView(false);
       } else {
         showToast('error', 'Product not found');
@@ -271,6 +271,7 @@ export const Product = () => {
             data={listViewData}
             columns={listViewColumns}
             blockEdit={false}
+            toEdit={getProductById}
           />
         ) : (
           <div className="row">
