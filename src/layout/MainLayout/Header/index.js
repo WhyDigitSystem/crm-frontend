@@ -18,7 +18,6 @@ import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 
-
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
@@ -55,7 +54,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
       console.error('Error fetching data:', error);
     }
   };
-
 
   return (
     <>
@@ -99,62 +97,61 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <SearchSection />
       {/* <HAISection/> */}
       <Box sx={{ flexGrow: 1 }} />
-      {/* Remove or adjust this Box component to reduce space */}
-      {/* <Box sx={{ flexGrow: 1 }} /> */}
 
       {/* notification & profile */}
-      <div className="mt-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}>
-        {/* <span
-          style={{
-            height: '11px',
-            width: '11px',
-            backgroundColor: '#25BE2B',
-            borderRadius: '50%',
-            display: 'inline-block',
-            marginRight: '8px',
-            marginBottom: '8px'
-          }}
-        ></span> */}
+      <div
+        className="mt-2"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}
+      >
         <Avatar
           sx={{
-            fontSize: "16px",
-            width: "45px", // Adjust size as needed
-            height: "45px",
-            fontWeight: "bold",
-            border: "2px solid white",
-            // boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.15)",
-            marginRight: "5px",
-            marginTop: "-10px",
-            backgroundColor: "transparent" // Ensure no background color
+            fontSize: '16px',
+            width: '45px',
+            height: '45px',
+            fontWeight: 'bold',
+            border: '2px solid white',
+            marginRight: '5px',
+            marginTop: '-10px',
+            backgroundColor: 'transparent'
           }}
         >
           {logo && logo[0]?.companyLogo ? (
             <img
               src={`data:image/png;base64,${logo[0].companyLogo}`}
               alt="Company Logo"
-              style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                borderRadius: '50%'
+              }}
             />
           ) : (
-            "Upload Logo"
+            'Upload Logo'
           )}
           <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
         </Avatar>
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ marginTop: '1px', marginBottom: 0,fontWeight:700,fontSize:'12px'}}>
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'flex' }, // hide on mobile
+            flexDirection: 'column'
+          }}
+        >
+          <Box sx={{ marginTop: '1px', marginBottom: 0, fontWeight: 700, fontSize: '12px' }}>
             {localStorage.getItem('companyName')}
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          </Box>
+          <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <Chip
               label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`}
               size="small"
               color="primary"
               sx={{ fontSize: '11px', height: '20px' }}
             />
-          </div>
-
-        </div>
+          </Box>
+        </Box>
       </div>
+
       <NotificationSection />
       <GlobalSection />
       {/* <SiteMapSection /> */}
