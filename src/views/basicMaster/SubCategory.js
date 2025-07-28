@@ -6,7 +6,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
-  FormHelperText,
+  Autocomplete,
   InputLabel,
   MenuItem,
   Select,
@@ -56,7 +56,7 @@ export const SubCategory = () => {
   const getAllSubCategories = async () => {
     try {
       const result = await apiCalls('get', `master/getSubCategoryByOrgId?orgId=${orgId}`);
-      setListViewData(result.paramObjectsMap.subCategoryVO || []);
+      setListViewData(result.paramObjectsMap.subCategoryVO.reverse() || []);
     } catch (err) {
       console.error('Error fetching subcategories:', err);
     }
@@ -172,7 +172,7 @@ export const SubCategory = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4">
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
@@ -183,8 +183,7 @@ export const SubCategory = () => {
           <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getSubCategoryById} />
         ) : (
           <div className="row">
-            {/* Category Dropdown */}
-            <div className="col-md-3 mb-3">
+            {/* <div className="col-md-3 mb-3">
               <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.categoryName}>
                 <InputLabel id="category-label">Category Name</InputLabel>
                 <Select
@@ -202,8 +201,49 @@ export const SubCategory = () => {
                 </Select>
                 {fieldErrors.categoryName && <FormHelperText>{fieldErrors.categoryName}</FormHelperText>}
               </FormControl>
+            </div> */}
+            <div className="col-md-3 mb-3">
+              <Autocomplete
+                options={categoryList}
+                getOptionLabel={(option) =>
+                  option?.categoryName ? `${option.categoryName}` : ''
+                }
+                value={
+                  categoryList.find((item) => item.categoryName === formData.categoryName) || null
+                }
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      categoryName: newValue.categoryName || '',
+                    }));
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      categoryName: '',
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      categoryName: '',
+                    }));
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      <span>
+                        Category Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                    size="small"
+                    fullWidth
+                    error={!!fieldErrors.categoryName}
+                    helperText={fieldErrors.categoryName}
+                  />
+                )}
+              />
             </div>
-
             {/* Subcategory ID */}
             <div className="col-md-3 mb-3">
               <TextField

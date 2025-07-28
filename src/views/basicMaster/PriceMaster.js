@@ -10,7 +10,8 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Autocomplete
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
@@ -63,7 +64,7 @@ export const PriceMaster = () => {
     try {
       const response = await apiCalls('get', `master/getAllPriceByOrgId?orgId=${orgId}`);
       if (response.status) {
-        setListViewData(response.paramObjectsMap.priceVO);
+        setListViewData(response.paramObjectsMap.priceVO.reverse());
       }
     } catch (err) {
       console.error('Error fetching prices:', err);
@@ -126,10 +127,17 @@ export const PriceMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
-    setFormData({
+    const updatedValue = name === 'active' ? checked : value;
+    const updatedFormData = {
       ...formData,
-      [name]: name === 'active' ? checked : value
-    });
+      [name]: updatedValue,
+    };
+    const price = parseFloat(updatedFormData.price) || 0;
+    const discount = parseFloat(updatedFormData.discount) || 0;
+    if (price && discount >= 0) {
+      updatedFormData.sellingPrice = price - (discount / 100) * price;
+    }
+    setFormData(updatedFormData);
     setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
@@ -217,7 +225,7 @@ export const PriceMaster = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} /> */}
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
           <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
@@ -228,7 +236,7 @@ export const PriceMaster = () => {
         ) : (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <div className="row">
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" fullWidth error={!!fieldErrors.productName}>
                   <InputLabel>Product Name</InputLabel>
                   <Select
@@ -245,54 +253,91 @@ export const PriceMaster = () => {
                   </Select>
                   {fieldErrors.productName && <FormHelperText>{fieldErrors.productName}</FormHelperText>}
                 </FormControl>
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  options={productList}
+                  getOptionLabel={(option) =>
+                    option?.productName ? `${option.productName} - ${option.brand}` : ''
+                  }
+                  value={
+                    productList.find((item) => item.productName === formData.productName) || null
+                  }
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productName: newValue.productName || '',
+                        brand: newValue.brand || '',
+                        category: newValue.category || '',
+                        subCategory: newValue.subCategory || '',
+                      }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        productName: '',
+                        brand: '',
+                        category: '',
+                        subCategory: ''
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        productName: '',
+                        brand: '',
+                        category: '',
+                        subCategory: ''
+                      }));
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Product Name<span className="asterisk">*</span>
+                        </span>
+                      }
+                      size="small"
+                      fullWidth
+                      error={!!fieldErrors.productName}
+                      helperText={fieldErrors.productName}
+                    />
+                  )}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <DatePicker label="From Date" value={formData.fromDate} onChange={(value) => setFormData({ ...formData, fromDate: value })} format="DD/MM/YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
+                <DatePicker label="From Date" value={formData.fromDate} onChange={(value) => setFormData({ ...formData, fromDate: value })} format="DD-MM-YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
               </div>
               <div className="col-md-3 mb-3">
-                <DatePicker label="To Date" value={formData.toDate} onChange={(value) => setFormData({ ...formData, toDate: value })} format="DD/MM/YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
+                <DatePicker label="To Date" value={formData.toDate} onChange={(value) => setFormData({ ...formData, toDate: value })} format="DD-MM-YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Price" name="price" value={formData.price} onChange={handleInputChange} size="small" fullWidth />
+                <TextField label="Price" type='number' name="price" value={formData.price} onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Discount %" name="discount" value={formData.discount} onChange={handleInputChange} size="small" fullWidth />
+                <TextField label="Discount %" type='number' name="discount" value={formData.discount} onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Selling Price" name="sellingPrice" value={formData.sellingPrice} onChange={handleInputChange} size="small" fullWidth />
+                <TextField label="Selling Price" type='number' disabled name="sellingPrice" value={formData.sellingPrice} onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Brand" name="brand" value={formData.brand} onChange={handleInputChange} size="small" fullWidth error={!!fieldErrors.brand} helperText={fieldErrors.brand} />
+                <TextField label="Category" name="category" value={formData.category} disabled onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" fullWidth error={!!fieldErrors.category}>
-                  <InputLabel>Category</InputLabel>
-                  <Select name="category" value={formData.category} onChange={handleInputChange} label="Category">
-                    {categoryList.map((item) => (
-                      <MenuItem key={item.id} value={item.categoryName}>
-                        {item.categoryName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.category && <FormHelperText>{fieldErrors.category}</FormHelperText>}
-                </FormControl>
+                <TextField label="Sub Category" name="subCategory" value={formData.subCategory} disabled onChange={handleInputChange} size="small" fullWidth />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" fullWidth error={!!fieldErrors.subCategory}>
-                  <InputLabel>Sub Category</InputLabel>
-                  <Select name="subCategory" value={formData.subCategory} onChange={handleInputChange} label="Sub Category">
-                    {subCategoryList.map((item) => (
-                      <MenuItem key={item.id} value={item.subCategoryName}>
-                        {item.subCategoryName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.subCategory && <FormHelperText>{fieldErrors.subCategory}</FormHelperText>}
-                </FormControl>
-              </div>
+              {/* <div className="col-md-3 mb-3">
+                <TextField label={
+                  <span>
+                    Brand<span className="asterisk">*</span>
+                  </span>
+                } name="brand" value={formData.brand} onChange={handleInputChange} size="small" fullWidth error={!!fieldErrors.brand} helperText={fieldErrors.brand} />
+              </div> */}
+
               <div className="col-md-3 mb-3">
                 <FormControl size="small" fullWidth error={!!fieldErrors.gstApplicable}>
-                  <InputLabel>GST Applicable</InputLabel>
+                  {/* <InputLabel>GST Applicable</InputLabel> */}
+                  <InputLabel>GST Applicable<span className="asterisk">*</span></InputLabel>
                   <Select name="gstApplicable" value={formData.gstApplicable} onChange={handleInputChange} label="GST Applicable">
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>
@@ -301,7 +346,7 @@ export const PriceMaster = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="HSN" name="hsn" value={formData.hsn} onChange={handleInputChange} size="small" fullWidth />
+                <TextField label="HSN/SAC Code" name="hsn" value={formData.hsn} onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />} label="Active" />

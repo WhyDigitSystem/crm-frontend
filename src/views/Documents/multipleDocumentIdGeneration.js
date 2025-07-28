@@ -2,7 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
+import { Autocomplete, FormHelperText } from '@mui/material';
 import { Button, Typography, Box, TextField } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
@@ -102,8 +102,8 @@ const MultipleDocumentIdGeneration = () => {
   const handleFullGrid = () => {
     setModalOpen(true);
     if (branchNameGrid && finYearGrid && formData.docCode) {
-          getAllFillGrid();
-        }
+      getAllFillGrid();
+    }
   };
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -119,7 +119,7 @@ const MultipleDocumentIdGeneration = () => {
 
   const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
-  
+
     const newData = selectedData.filter((data) => {
       return !detailsTableData.some(
         (item) =>
@@ -128,20 +128,20 @@ const MultipleDocumentIdGeneration = () => {
           item.docCode === data.docCode
       );
     });
-  
+
     if (newData.length < selectedData.length) {
       showToast('warning', 'Some of the selected items are already added!');
     }
     if (newData.length === 0) {
-      return; 
+      return;
     }
     setDetailsTableData((prev) => [...prev, ...newData]);
     console.log('New Data added:', newData);
     setSelectedRows([]);
     setSelectAll(false);
-    handleCloseModal(); 
+    handleCloseModal();
   };
-  
+
   const getAllScreens = async () => {
     try {
       const response = await apiCalls('get', `/commonmaster/getAllScreenNames`);
@@ -201,7 +201,7 @@ const MultipleDocumentIdGeneration = () => {
       const response = await apiCalls(
         'get',
         `/multipleDocIdGeneration/getPendingMultipleDocIdGeneration?branch=${branchNameGrid}&branchCode=${branchCodeId}&docCode=${formData.docCode}&finYear=${finYearGrid}&finYearIdentifier=${finYrId}&orgId=${orgId}`
-        );
+      );
 
       console.log('API Response:', response);
 
@@ -269,16 +269,16 @@ const MultipleDocumentIdGeneration = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      if (name === 'screenCode') {
-        const selectedScreen = screenList.find((scr) => scr.screenCode === value);
-        if (selectedScreen) {
-          setFormData((prevData) => ({
-            ...prevData,
-            screenName: selectedScreen.screenName,
-            screenCode: selectedScreen.screenCode
-          }));
-        }
-      }
+      // if (name === 'screenCode') {
+      //   const selectedScreen = screenList.find((scr) => scr.screenCode === value);
+      //   if (selectedScreen) {
+      //     setFormData((prevData) => ({
+      //       ...prevData,
+      //       screenName: selectedScreen.screenName,
+      //       screenCode: selectedScreen.screenCode
+      //     }));
+      //   }
+      // }
       if (name === 'branchName') {
         const selectedBranch = branchList.find((branch) => branch.branch === value);
         if (selectedBranch) {
@@ -309,6 +309,22 @@ const MultipleDocumentIdGeneration = () => {
 
       setFormData((prevData) => ({ ...prevData, [name]: formattedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+    }
+  };
+  const handleScreenCodeChange = (event, newValue) => {
+    if (newValue) {
+      setFormData((prevData) => ({
+        ...prevData,
+        screenCode: newValue.screenCode,
+        screenName: newValue.screenName
+      }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, screenCode: '' }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        screenCode: '',
+        screenName: ''
+      }));
     }
   };
 
@@ -435,29 +451,34 @@ const MultipleDocumentIdGeneration = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getAllMultipleDocumentIdById}  />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getAllMultipleDocumentIdById} />
           </div>
         ) : (
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.screenCode}>
-                  <InputLabel id="screenCode-label">Screen Code</InputLabel>
-                  <Select
-                    labelId="screenCode-label"
-                    label="screenCode"
-                    value={formData.screenCode}
-                    onChange={handleInputChange}
-                    name="screenCode"
-                  >
-                    {screenList?.map((row) => (
-                      <MenuItem key={row.id} value={row.screenCode}>
-                        {row.screenCode}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.screenCode && <FormHelperText>{fieldErrors.screenCode}</FormHelperText>}
-                </FormControl>
+                <Autocomplete
+                  options={screenList}
+                  getOptionLabel={(option) => option?.screenCode || ''}
+                  value={
+                    screenList.find((item) => item.screenCode === formData.screenCode) || null
+                  }
+                  onChange={handleScreenCodeChange} // ✅ fixed
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Screen Code<span className="asterisk">*</span>
+                        </span>
+                      }
+                      size="small"
+                      fullWidth
+                      error={!!fieldErrors.screenCode}
+                      helperText={fieldErrors.screenCode}
+                    />
+                  )}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField

@@ -93,8 +93,6 @@ const SalesOrder = () => {
         { accessorKey: 'status', header: 'Status', size: 140 },
         { accessorKey: 'totalAmount', header: 'Total Amount', size: 140 },
     ], []);
-
-    // Calculate summary values
     const summaryValues = useMemo(() => {
         const grossAmount = salesOrderDetails.reduce(
             (sum, item) => sum + (parseFloat(item.sellingPrice) || 0) * (parseInt(item.qty) || 0),
@@ -223,7 +221,7 @@ const SalesOrder = () => {
     };
     const getProductName = async (oppurtunityId, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${clientName}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
             if (response.status === true) {
                 setProductList(response.paramObjectsMap.productNameDetails || []);
             } else {
@@ -772,7 +770,7 @@ const SalesOrder = () => {
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
                         <ActionButton
@@ -1118,10 +1116,10 @@ const SalesOrder = () => {
                                                                                             if (newValue) {
                                                                                                 updatedOpportunities[index] = {
                                                                                                     ...updatedOpportunities[index],
-                                                                                                    productName: newValue.productName,
-                                                                                                    category: newValue.category,
+                                                                                                    productName: newValue.productName || '',
+                                                                                                    category: newValue.category || '',
                                                                                                     subCategory: newValue.subCategory || '',
-                                                                                                    sellingPrice: newValue.price
+                                                                                                    sellingPrice: newValue.price || ''
                                                                                                 };
                                                                                                 updatedOpportunitiesErrors[index] = {
                                                                                                     ...updatedOpportunitiesErrors[index],
@@ -1222,10 +1220,6 @@ const SalesOrder = () => {
                                                                         </tr>
                                                                     );
                                                                 })}
-                                                                {/* <tr>
-                                                                    <td colSpan="8" className="text-right font-weight-bold">Total Amount:</td>
-                                                                    <td className="text-center font-weight-bold">{summaryValues.netAmount.toFixed(2)}</td>
-                                                                </tr> */}
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1236,99 +1230,71 @@ const SalesOrder = () => {
 
                                     {value === 1 && (
                                         <>
-                                            {/* <div className="mb-1">
-                                                <ActionButton title="Add Contact" icon={AddIcon} onClick={handleAddContact} />
-                                            </div> */}
-                                            <div className="row mt-2">
-                                                <div className="col-lg-12">
-                                                    <div className="table-responsive">
-                                                        <table className="table table-bordered">
-                                                            <thead>
-                                                                <tr style={{ background: '#5e35b1', color: '#ede7f6' }}>
-                                                                    <th colSpan="2" className="px-2 py-2 text-white text-center">Summary</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td className="font-weight-bold">Gross Amount</td>
-                                                                    <td className="text-right">
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={summaryValues.grossAmount.toFixed(2)}
-                                                                            disabled
-                                                                            InputProps={{
-                                                                                style: { textAlign: 'right' }
-                                                                            }}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="font-weight-bold">Discount %</td>
-                                                                    <td className="text-right">
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={summaryValues.discountPercentage.toFixed(2)}
-                                                                            disabled
-                                                                            InputProps={{
-                                                                                style: { textAlign: 'right' }
-                                                                            }}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="font-weight-bold">Net Amount</td>
-                                                                    <td className="text-right">
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={summaryValues.netAmount.toFixed(2)}
-                                                                            disabled
-                                                                            InputProps={{
-                                                                                style: { textAlign: 'right' }
-                                                                            }}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="font-weight-bold">Amount In Words</td>
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={summaryValues.amountInWords}
-                                                                            disabled
-                                                                            multiline
-                                                                            rows={2}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td className="font-weight-bold">Narration</td>
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={formData.narration}
-                                                                            onChange={(e) => setFormData(prev => ({
-                                                                                ...prev,
-                                                                                narration: e.target.value
-                                                                            }))}
-                                                                            multiline
-                                                                            rows={2}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                            <div className="row d-flex ml">
+                                                <div className="col-md-3 mb-3">
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        label='Gross Amount'
+                                                        value={summaryValues.grossAmount.toFixed(2)}
+                                                        disabled
+                                                        InputProps={{
+                                                            style: { textAlign: 'right' }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3 mb-3">
+                                                    <TextField
+                                                        fullWidth
+                                                        label='Discount %'
+                                                        size="small"
+                                                        value={summaryValues.discountPercentage.toFixed(2)}
+                                                        disabled
+                                                        InputProps={{
+                                                            style: { textAlign: 'right' }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3 mb-3">
+                                                    <TextField
+                                                        fullWidth
+                                                        label='Net Amount'
+                                                        size="small"
+                                                        value={summaryValues.netAmount.toFixed(2)}
+                                                        disabled
+                                                        InputProps={{
+                                                            style: { textAlign: 'right' }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3 mb-3">
+                                                    <TextField
+                                                        fullWidth
+                                                        label='Amount In Words'
+                                                        size="small"
+                                                        value={summaryValues.amountInWords}
+                                                        disabled
+                                                        multiline
+                                                    />
+                                                </div>
+                                                <div className="col-md-6 mb-3">
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        label='Narration'
+                                                        value={formData.narration}
+                                                        onChange={(e) => setFormData(prev => ({
+                                                            ...prev,
+                                                            narration: e.target.value
+                                                        }))}
+                                                        multiline
+                                                    />
                                                 </div>
                                             </div>
                                         </>
                                     )}
                                 </Box>
-                            </div>
+                            </div >
                         </>
                     ) : (
                         <CommonListViewTable
@@ -1338,8 +1304,8 @@ const SalesOrder = () => {
                             toEdit={getSalesOrderById}
                         />
                     )}
-                </div>
-            </div>
+                </div >
+            </div >
         </>
     );
 };

@@ -469,6 +469,7 @@ export const Quotation = () => {
         getQuotationDocId()
         setOpportunityList([]);
         setBranchList([]);
+        setProductList([]);
         setFormData({
             quoteDate: dayjs(),
             clientName: '',
@@ -544,24 +545,28 @@ export const Quotation = () => {
         const updatedData = [...quotationPrice];
         updatedData[index][field] = value;
 
-        const { sellingPrice, qty, discountPer } = updatedData[index];
-
+        // Calculate price, discount, and amount
         const numericSellingPrice = parseFloat(updatedData[index].sellingPrice || 0);
         const numericQty = parseFloat(updatedData[index].qty || 0);
         const numericDiscountPer = parseFloat(updatedData[index].discountPer || 0);
 
-        // Calculate price
         const price = numericSellingPrice * numericQty;
         updatedData[index].price = price.toFixed(2);
 
-        // Calculate discount amount
         const discountAmt = (price * numericDiscountPer) / 100;
-
-        // Final amount
         const amount = price - discountAmt;
         updatedData[index].amount = amount.toFixed(2);
 
         setQuotationPrice(updatedData);
+        setQuotationPriceErrors(prevErrors => {
+            const newErrors = [...prevErrors];
+            if (!newErrors[index]) newErrors[index] = {};
+            newErrors[index] = {
+                ...newErrors[index],
+                [field]: ''  // Clear this field's error
+            };
+            return newErrors;
+        });
     };
     const handleDeleteRow = (id, data, setData, errors, setErrors) => {
         if (data.length <= 1) return;
@@ -998,6 +1003,7 @@ export const Quotation = () => {
                                                                                     }
                                                                                     onChange={(event, newValue) => {
                                                                                         const updatedRows = [...quotationPrice];
+                                                                                        const updatedRowsError = [...quotationPriceErrors];
                                                                                         if (newValue) {
                                                                                             updatedRows[index] = {
                                                                                                 ...updatedRows[index],
@@ -1005,7 +1011,14 @@ export const Quotation = () => {
                                                                                                 category: newValue.category || '',
                                                                                                 subCategory: newValue.subCategory || '',
                                                                                             };
+                                                                                            updatedRowsError[index] = {
+                                                                                                ...updatedRowsError[index],
+                                                                                                productName: '',
+                                                                                                category: '',
+                                                                                                subCategory: '',
+                                                                                            };
                                                                                             setQuotationPrice(updatedRows);
+                                                                                            setQuotationPriceErrors(updatedRowsError);
                                                                                             getSellingPrice(newValue.productName, index);
                                                                                         } else {
                                                                                             updatedRows[index] = {

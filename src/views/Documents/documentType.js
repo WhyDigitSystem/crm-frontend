@@ -1,14 +1,8 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
+import { Autocomplete, FormHelperText } from '@mui/material';
 import TextField from '@mui/material/TextField';
-
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -141,7 +135,7 @@ export const DocumentType = () => {
         // if (!alphaNumericRegex.test(value)) {
         //   errorMessage = 'Only Alphanumerics allowed';
         // } else
-         if (value.length > 10) {
+        if (value.length > 10) {
           errorMessage = 'Exceeded Max Length';
         }
         break;
@@ -157,18 +151,17 @@ export const DocumentType = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      if (name === 'screenCode') {
-        const selectedScreen = screenList.find((scr) => scr.screenCode === value);
-        if (selectedScreen) {
-          setFormData((prevData) => ({
-            ...prevData,
-            screenName: selectedScreen.screenName,
-            screenCode: selectedScreen.screenCode
-          }));
-        }
-      }
-
-      const updatedValue = value.toUpperCase();
+      // if (name === 'screenCode') {
+      //   const selectedScreen = screenList.find((scr) => scr.screenCode === value);
+      //   if (selectedScreen) {
+      //     setFormData((prevData) => ({
+      //       ...prevData,
+      //       screenName: selectedScreen.screenName,
+      //       screenCode: selectedScreen.screenCode
+      //     }));
+      //   }
+      // }
+      const updatedValue = value;
       setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
 
@@ -180,7 +173,22 @@ export const DocumentType = () => {
       }
     }
   };
-
+  const handleScreenCodeChange = (event, newValue) => {
+    if (newValue) {
+      setFormData((prevData) => ({
+        ...prevData,
+        screenCode: newValue.screenCode,
+        screenName: newValue.screenName
+      }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, screenCode: '' }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        screenCode: '',
+        screenName: ''
+      }));
+    }
+  };
   // const getAvailableClients = (currentRowId) => {
   //   const selectedClients = clientTableData.filter((row) => row.id !== currentRowId).map((row) => row.client);
   //   return clientList.filter((client) => !selectedClients.includes(client.client));
@@ -295,7 +303,7 @@ export const DocumentType = () => {
         ) : (
           <>
             <div className="row">
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.screenCode}>
                   <InputLabel id="screenCode-label">Screen Code</InputLabel>
                   <Select
@@ -313,6 +321,30 @@ export const DocumentType = () => {
                   </Select>
                   {fieldErrors.screenCode && <FormHelperText>{fieldErrors.screenCode}</FormHelperText>}
                 </FormControl>
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  options={screenList}
+                  getOptionLabel={(option) => option?.screenCode || ''}
+                  value={
+                    screenList.find((item) => item.screenCode === formData.screenCode) || null
+                  }
+                  onChange={handleScreenCodeChange} // ✅ fixed
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <span>
+                          Screen Code<span className="asterisk">*</span>
+                        </span>
+                      }
+                      size="small"
+                      fullWidth
+                      error={!!fieldErrors.screenCode}
+                      helperText={fieldErrors.screenCode}
+                    />
+                  )}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField

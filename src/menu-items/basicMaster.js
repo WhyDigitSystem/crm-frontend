@@ -76,20 +76,6 @@ const basicMasterChildren = [
     url: '/basicMaster/employee',
     icon: IconUser
   },
-  hasScreenAccess('PRD') && {
-    id: 'Product',
-    title: 'Product',
-    type: 'item',
-    url: '/basicMaster/Product',
-    icon: IconBox
-  },
-  hasScreenAccess('PRI') && {
-    id: 'PriceMaster',
-    title: 'Price',
-    type: 'item',
-    url: '/basicMaster/PriceMaster',
-    icon: IconCurrencyRupee
-  },
   hasScreenAccess('UN') && {
     id: 'UnitMaster',
     title: 'Unit',
@@ -111,6 +97,20 @@ const basicMasterChildren = [
     url: '/basicMaster/SubCategory',
     icon: IconTag
   },
+  hasScreenAccess('PRD') && {
+    id: 'Product',
+    title: 'Product',
+    type: 'item',
+    url: '/basicMaster/Product',
+    icon: IconBox
+  },
+  hasScreenAccess('PRI') && {
+    id: 'PriceMaster',
+    title: 'Price',
+    type: 'item',
+    url: '/basicMaster/PriceMaster',
+    icon: IconCurrencyRupee
+  },
   hasScreenAccess('CU') && {
     id: 'currency',
     title: 'Currency',
@@ -130,18 +130,18 @@ const basicMasterChildren = [
 const basicMaster =
   basicMasterChildren.length > 0
     ? {
-        id: 'basicMasters',
-        type: 'group',
-        children: [
-          {
-            id: 'basicMastersCollapse',
-            title: 'Basic Master',
-            type: 'collapse',
-            icon: IconKey,
-            children: basicMasterChildren
-          }
-        ]
-      }
+      id: 'basicMasters',
+      type: 'group',
+      children: [
+        {
+          id: 'basicMastersCollapse',
+          title: 'Basic Master',
+          type: 'collapse',
+          icon: IconKey,
+          children: basicMasterChildren
+        }
+      ]
+    }
     : null;
 
 export default basicMaster;

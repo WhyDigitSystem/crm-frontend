@@ -26,8 +26,8 @@ export const Product = () => {
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [finYear] = useState(() => new Date().getFullYear().toString());
-  const branch = localStorage.getItem('branch') || 'BANGALORE';
-  const branchCode = localStorage.getItem('branchcode') || 'BLR';
+  const branch = localStorage.getItem('branch');
+  const branchCode = localStorage.getItem('branchcode');
 
   const initialFormState = {
     docId: '',
@@ -114,7 +114,7 @@ export const Product = () => {
   const getAllProducts = async () => {
     try {
       const res = await apiCalls('get', `master/getAllProductByOrgId?orgId=${orgId}`);
-      setListViewData(res.paramObjectsMap?.productVO || []);
+      setListViewData(res.paramObjectsMap?.productVO.reverse() || []);
     } catch (err) {
       console.error('Error fetching products:', err);
       showToast('error', 'Failed to load products');
@@ -159,6 +159,7 @@ export const Product = () => {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      console.log("Errors", errors);
       showToast('error', 'Please fill all required fields');
       return;
     }
@@ -254,7 +255,7 @@ export const Product = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} /> */}
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
           <ActionButton
@@ -290,7 +291,7 @@ export const Product = () => {
             {/* Product Name */}
             <div className="col-md-3 mb-3">
               <TextField
-                label="Product Name *"
+                label="Product Name"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -305,7 +306,7 @@ export const Product = () => {
             {/* Brand */}
             <div className="col-md-3 mb-3">
               <TextField
-                label="Brand *"
+                label="Brand"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -316,9 +317,91 @@ export const Product = () => {
                 helperText={fieldErrors.brand}
               />
             </div>
-
-            {/* Category */}
             <div className="col-md-3 mb-3">
+              <Autocomplete
+                options={categoryList}
+                getOptionLabel={(option) =>
+                  option?.categoryName ? `${option.categoryName}` : ''
+                }
+                value={
+                  categoryList.find((item) => item.categoryName === formData.category) || null
+                }
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: newValue.categoryName || '',
+                    }));
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      category: '',
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      categoryName: '',
+                    }));
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      <span>
+                        Category<span className="asterisk">*</span>
+                      </span>
+                    }
+                    size="small"
+                    fullWidth
+                    error={!!fieldErrors.category}
+                    helperText={fieldErrors.category}
+                  />
+                )}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <Autocomplete
+                options={subCategoryList}
+                getOptionLabel={(option) =>
+                  option?.subCategoryName ? `${option.subCategoryName}` : ''
+                }
+                value={
+                  subCategoryList.find((item) => item.subCategoryName === formData.subCategory) || null
+                }
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      subCategory: newValue.subCategoryName || '',
+                    }));
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      subCategory: '',
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      subCategory: '',
+                    }));
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      <span>
+                        Sub Category<span className="asterisk">*</span>
+                      </span>
+                    }
+                    size="small"
+                    fullWidth
+                    error={!!fieldErrors.subCategory}
+                    helperText={fieldErrors.subCategory}
+                  />
+                )}
+              />
+            </div>
+            {/* <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.category}>
                 <InputLabel>Category *</InputLabel>
                 <Select
@@ -335,9 +418,7 @@ export const Product = () => {
                 </Select>
                 {fieldErrors.category && <FormHelperText>{fieldErrors.category}</FormHelperText>}
               </FormControl>
-            </div>
-
-            {/* Sub Category */}
+            </div>     
             <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.subCategory}>
                 <InputLabel>Sub Category *</InputLabel>
@@ -355,9 +436,7 @@ export const Product = () => {
                 </Select>
                 {fieldErrors.subCategory && <FormHelperText>{fieldErrors.subCategory}</FormHelperText>}
               </FormControl>
-            </div>
-
-            {/* Unit */}
+            </div> 
             <div className="col-md-3 mb-3">
               <FormControl size="small" fullWidth error={!!fieldErrors.unit}>
                 <InputLabel>Unit *</InputLabel>
@@ -375,9 +454,49 @@ export const Product = () => {
                 </Select>
                 {fieldErrors.unit && <FormHelperText>{fieldErrors.unit}</FormHelperText>}
               </FormControl>
+            </div>*/}
+            <div className="col-md-3 mb-3">
+              <Autocomplete
+                options={unitList}
+                getOptionLabel={(option) =>
+                  option?.unitDescription ? `${option.unitDescription}` : ''
+                }
+                value={
+                  unitList.find((item) => item.unitDescription === formData.unit) || null
+                }
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      unit: newValue.unitDescription || '',
+                    }));
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      unit: '',
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      unit: '',
+                    }));
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      <span>
+                        Unit<span className="asterisk">*</span>
+                      </span>
+                    }
+                    size="small"
+                    fullWidth
+                    error={!!fieldErrors.unit}
+                    helperText={fieldErrors.unit}
+                  />
+                )}
+              />
             </div>
-
-            {/* Type */}
             <div className="col-md-3 mb-3">
               <Autocomplete
                 size="small"
@@ -412,8 +531,8 @@ export const Product = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                // multiline
-                // rows={2}
+              // multiline
+              // rows={2}
               />
             </div>
 

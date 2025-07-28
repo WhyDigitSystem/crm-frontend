@@ -41,7 +41,7 @@ export const CategoryMaster = () => {
   const getAllCategories = async () => {
     try {
       const result = await apiCalls('get', `ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
-      setListViewData(result.paramObjectsMap.categoryVO || []);
+      setListViewData(result.paramObjectsMap.categoryVO.reverse() || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
@@ -161,7 +161,7 @@ export const CategoryMaster = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4">
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
