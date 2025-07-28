@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-
-// material-ui
 import {
   Avatar,
   Box,
-  Chip,
   ClickAwayListener,
-  Grid,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -19,19 +16,17 @@ import {
   Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-
-// third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import { motion } from 'framer-motion';
 
-// project imports
 import User1 from 'assets/images/users/user-round.svg';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 
-// assets
-import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons-react';
-
-// ==============================|| PROFILE MENU ||============================== //
+import {
+  IconLogout,
+  IconUser
+} from '@tabler/icons-react';
 
 const ProfileSection = () => {
   const theme = useTheme();
@@ -42,8 +37,7 @@ const ProfileSection = () => {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const handleLogout = async () => {
-    console.log('Logout');
+  const handleLogout = () => {
     localStorage.clear();
     navigate('/pages/login/login3');
   };
@@ -58,9 +52,7 @@ const ProfileSection = () => {
   const handleListItemClick = (event, index, route = '') => {
     setSelectedIndex(index);
     handleClose(event);
-    if (route && route !== '') {
-      navigate(route);
-    }
+    if (route) navigate(route);
   };
 
   const handleToggle = () => {
@@ -69,7 +61,7 @@ const ProfileSection = () => {
 
   const prevOpen = useRef(open);
   useEffect(() => {
-    if (prevOpen.current === true && open === false) {
+    if (prevOpen.current && !open) {
       anchorRef.current.focus();
     }
     prevOpen.current = open;
@@ -82,50 +74,27 @@ const ProfileSection = () => {
     return 'Good Evening';
   };
 
+  const employeeName = localStorage.getItem('employeeName') || 'User';
+  const employeeCode = localStorage.getItem('employeeCode') || 'N/A';
+
   return (
     <>
-      <Chip
+      <Avatar
+        src={User1}
         sx={{
-          height: '48px',
-          alignItems: 'center',
-          borderRadius: '27px',
-          transition: 'all .2s ease-in-out',
-          borderColor: theme.palette.primary.light,
-          backgroundColor: theme.palette.primary.light,
-          '&[aria-controls="menu-list-grow"], &:hover': {
-            borderColor: theme.palette.primary.main,
-            background: `${theme.palette.primary.main}!important`,
-            color: theme.palette.primary.light,
-            '& svg': {
-              stroke: theme.palette.primary.light
-            }
-          },
-          '& .MuiChip-label': {
-            lineHeight: 0
+          ...theme.typography.mediumAvatar,
+          cursor: 'pointer',
+          transition: 'transform 0.3s ease',
+          '&:hover': {
+            transform: 'scale(1.1)'
           }
         }}
-        icon={
-          <Avatar
-            src={User1}
-            sx={{
-              ...theme.typography.mediumAvatar,
-              margin: '8px 0 8px 8px !important',
-              cursor: 'pointer'
-            }}
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            color="inherit"
-          />
-        }
-        label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
-        variant="outlined"
         ref={anchorRef}
         aria-controls={open ? 'menu-list-grow' : undefined}
         aria-haspopup="true"
         onClick={handleToggle}
-        color="primary"
       />
+
       <Popper
         placement="bottom-end"
         open={open}
@@ -133,124 +102,133 @@ const ProfileSection = () => {
         role={undefined}
         transition
         disablePortal
-        popperOptions={{
-          modifiers: [
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 14]
-              }
-            }
-          ]
-        }}
+        modifiers={[{ name: 'offset', options: { offset: [0, 14] } }]}
       >
         {({ TransitionProps }) => (
           <Transitions in={open} {...TransitionProps}>
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                  <Box sx={{ p: 2 }}>
-                    <Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Typography variant="h4">{getGreeting()},</Typography>
-                        <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                          {localStorage.getItem('employeeName')}
-                        </Typography>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              style={{ transformOrigin: 'top right' }}
+            >
+              <Paper
+                elevation={16}
+                sx={{
+                  backdropFilter: 'blur(6px)',
+                  borderRadius: '12px',
+                  minWidth: 300,
+                  maxWidth: 350,
+                  borderTop: `4px solid ${theme.palette.primary.main}`
+                }}
+              >
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MainCard border={false} elevation={0} content={false}>
+                    <Box sx={{ p: 2 }}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          src={User1}
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            border: `2px solid ${theme.palette.primary.main}`
+                          }}
+                        />
+                        <Stack spacing={0.5}>
+                          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                            {employeeName}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Employee Code: {employeeCode}
+                          </Typography>
+                          <Typography variant="caption" color="primary">
+                            Project Admin
+                          </Typography>
+                        </Stack>
                       </Stack>
-                      <Typography variant="subtitle2">Project Admin</Typography>
-                    </Stack>
-                  </Box>
-                  <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
-                    <Box sx={{ p: 1 }}>
-                      <List
-                        component="nav"
-                        sx={{
-                          width: '100%',
-                          maxWidth: 350,
-                          minWidth: 300,
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '10px',
-                          [theme.breakpoints.down('md')]: {
-                            minWidth: '100%'
-                          },
-                          '& .MuiListItemButton-root': {
-                            mt: 0.5
-                          }
-                        }}
-                      >
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 0}
-                          onClick={(event) => handleListItemClick(event, 0, '/profile')}
-                        >
-                          <ListItemIcon>
-                            <IconUser stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Profile</Typography>} />
-                        </ListItemButton>
-
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 1}
-                          onClick={(event) => handleListItemClick(event, 1, '#')}
-                        >
-                          <ListItemIcon>
-                            <IconSettings stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Account Settings</Typography>} />
-                        </ListItemButton>
-
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 2}
-                          onClick={(event) => handleListItemClick(event, 2, '#')}
-                        >
-                          <ListItemIcon>
-                            <IconUser stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Grid container spacing={1} justifyContent="space-between">
-                                <Grid item>
-                                  <Typography variant="body2">Social Profile</Typography>
-                                </Grid>
-                                <Grid item>
-                                  <Chip
-                                    label="02"
-                                    size="small"
-                                    sx={{
-                                      bgcolor: theme.palette.warning.dark,
-                                      color: theme.palette.background.default
-                                    }}
-                                  />
-                                </Grid>
-                              </Grid>
-                            }
-                          />
-                        </ListItemButton>
-
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 3}
-                          onClick={handleLogout}
-                        >
-                          <ListItemIcon>
-                            <IconLogout stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Typography variant="body2" component="span">
-                                Logout
-                              </Typography>
-                            }
-                          />
-                        </ListItemButton>
-                      </List>
                     </Box>
-                  </PerfectScrollbar>
-                </MainCard>
-              </ClickAwayListener>
-            </Paper>
+
+                    <PerfectScrollbar
+                      style={{
+                        maxHeight: 'calc(100vh - 250px)',
+                        overflowX: 'hidden'
+                      }}
+                    >
+                      <Box sx={{ p: 1 }}>
+                        <List
+                          component="nav"
+                          sx={{
+                            '& .MuiListItemButton-root': {
+                              mt: 0,
+                              borderRadius: `${customization.borderRadius}px`,
+                              transition: 'all 0.3s ease-in-out',
+                              '&:hover': {
+                                bgcolor: theme.palette.primary.lighter
+                              }
+                            }
+                          }}
+                        >
+                          <ListItemButton
+                            selected={selectedIndex === 0}
+                            onClick={(e) => handleListItemClick(e, 0, '/profile')}
+                          >
+                            <ListItemIcon>
+                              <IconUser stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={<Typography variant="body2">Profile</Typography>}
+                            />
+                          </ListItemButton>
+
+                          <ListItemButton
+                            selected={selectedIndex === 1}
+                            onClick={(e) => handleListItemClick(e, 1, '/document')}
+                          >
+                            <ListItemIcon>
+                              <IconUser stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={<Typography variant="body2">Document</Typography>}
+                            />
+                          </ListItemButton>
+
+                          <ListItemButton
+                            selected={selectedIndex === 2}
+                            onClick={(e) => handleListItemClick(e, 2, '/change-password')}
+                          >
+                            <ListItemIcon>
+                              <IconUser stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={<Typography variant="body2">Change Password</Typography>}
+                            />
+                          </ListItemButton>
+
+                          <Divider sx={{ my: 1 }} />
+
+                          <ListItemButton
+                            selected={selectedIndex === 3}
+                            onClick={handleLogout}
+                          >
+                            <ListItemIcon>
+                              <IconLogout stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Typography variant="body2" color="error">
+                                  Logout
+                                </Typography>
+                              }
+                            />
+                          </ListItemButton>
+                        </List>
+                      </Box>
+                    </PerfectScrollbar>
+                  </MainCard>
+                </ClickAwayListener>
+              </Paper>
+            </motion.div>
           </Transitions>
         )}
       </Popper>
