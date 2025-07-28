@@ -239,26 +239,20 @@ export const Quotation = () => {
     };
     const handleSave = async () => {
         setLoading(true);
-        // Validation
+
+        // Main form validation
         const errors = {};
-        if (!formData.clientName) {
-            errors.clientName = 'Client Name is required';
-        }
-        if (!formData.branchName) {
-            errors.branchName = 'Branch is required';
-        }
-        if (!formData.iterations) {
-            errors.iterations = 'Iterations is required';
-        }
-        if (!formData.status) {
-            errors.status = 'Status is required';
-        }
-        if (!formData.oppurtunityName) {
-            errors.oppurtunityName = 'Opportunity Name is required';
-        }
+        if (!formData.clientName) errors.clientName = 'Client Name is required';
+        if (!formData.branchName) errors.branchName = 'Branch is required';
+        if (!formData.iterations) errors.iterations = 'Iterations is required';
+        if (!formData.status) errors.status = 'Status is required';
+        if (!formData.oppurtunityName) errors.oppurtunityName = 'Opportunity Name is required';
+
+        // Sub-table validation
         let detailTableDataValid = true;
-        const newTableErrors = quotationPriceErrors.map((row) => {
+        const newTableErrors = quotationPrice.map((row) => {
             const rowErrors = {};
+
             if (!row.productName) {
                 rowErrors.productName = 'Prod Name is required';
                 detailTableDataValid = false;
@@ -267,61 +261,38 @@ export const Quotation = () => {
                 rowErrors.category = 'Category is required';
                 detailTableDataValid = false;
             }
-            if (!row.qty) {
+            if (!row.qty || parseFloat(row.qty) <= 0) {
                 rowErrors.qty = 'Qty is required';
                 detailTableDataValid = false;
             }
-            if (!row.sellingPrice) {
+            if (!row.sellingPrice || parseFloat(row.sellingPrice) <= 0) {
                 rowErrors.sellingPrice = 'SP is required';
                 detailTableDataValid = false;
             }
-            if (!row.qty) {
-                rowErrors.qty = 'Qty is required';
-                detailTableDataValid = false;
-            }
-            if (!row.amount) {
+            if (!row.amount || parseFloat(row.amount) <= 0) {
                 rowErrors.amount = 'Amt is required';
                 detailTableDataValid = false;
             }
+
             return rowErrors;
         });
 
-        setQuotationPriceErrors(newTableErrors);
-
+        // If there are any validation issues
         if (Object.keys(errors).length > 0 || !detailTableDataValid) {
             setFieldErrors(errors);
+            setQuotationPriceErrors(newTableErrors);
+            setLoading(false);
             return;
-        }
-        const entryDate = dayjs(formData.quoteDate);
-        if (entryDate.isValid()) {
-            const today = dayjs();
-            const currentYear = today.year();
-            const currentMonth = today.month();
-
-            const finYearStart = currentMonth >= 3 ? dayjs(`${finYear}-04-01`) : dayjs(`${finYear - 1}-04-01`);
-
-            const finYearEnd = finYearStart.add(1, 'year').subtract(1, 'day');
-
-            if (entryDate.isBefore(finYearStart) || entryDate.isAfter(finYearEnd)) {
-                const confirmProceed = showToast(
-                    'error',
-                    `You are entering data for a different financial year (${entryDate.format('DD-MM-YYYY')}).Which is not Allowed!!`
-                );
-                if (!confirmProceed) {
-                    return;
-                }
-            }
         }
         const subTableData = quotationPrice.map((row) => ({
             ...(editId && { id: row.id }),
             category: row.category,
-            discount: parseFloat(row.discountPer),
+            discount: parseFloat(row.discountPer) || 0,
             produtName: row.productName,
-            qty: parseFloat(row.qty),
-            sellingPrice: parseFloat(row.sellingPrice),
-            subCategory: row.subCategory
+            qty: parseFloat(row.qty) || 0,
+            sellingPrice: parseFloat(row.sellingPrice) || 0,
+            subCategory: row.subCategory,
         }));
-
         const saveFormData = {
             ...(editId && { id: editId }),
             active: true,
@@ -358,6 +329,8 @@ export const Quotation = () => {
         } catch (error) {
             console.error('Error:', error);
             showToast('error', 'Quotation creation failed');
+        } finally {
+            setLoading(false);
         }
     };
     const getClientName = async () => {

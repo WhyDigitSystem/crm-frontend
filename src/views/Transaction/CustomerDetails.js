@@ -110,7 +110,7 @@ export const CustomerDetails = () => {
         `/transaction/getAllCustomerDetailsByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.customerDetailsVO);
+        setListViewData(response.paramObjectsMap.customerDetailsVO.reverse());
       } else {
         showToast('error', response.message || 'Failed to fetch leads');
       }
@@ -190,8 +190,8 @@ export const CustomerDetails = () => {
             mobileNo: row.mobileNumber,
             designation: row.designation,
             branchName: row.branchName,
-            workAnniversary: row.workAnniversary,
-            workAnniversaryDate: row.anniversaryDate,
+            workAnniversaryDate: row.workAnniversary,
+            anniversaryDate: row.anniversaryDate,
             dob: row.dateOfBirth,
           }))
         );
@@ -916,11 +916,6 @@ export const CustomerDetails = () => {
                                         renderInput={(params) => (
                                           <TextField
                                             {...params}
-                                            label={
-                                              <span>
-                                                City <span className="asterisk">*</span>
-                                              </span>
-                                            }
                                             size="small"
                                             fullWidth
                                           />

@@ -70,14 +70,14 @@ const SalesOrder = () => {
     const [salesOrderDetails, setSalesOrderDetails] = useState([{
         category: '',
         discount: 0,
-        produtName: '',
+        productName: '',
         qty: 1,
         sellingPrice: 0,
         subCategory: '',
     }]);
 
     const [detailErrors, setDetailErrors] = useState([{
-        produtName: '',
+        productName: '',
         category: '',
         sellingPrice: '',
         qty: ''
@@ -327,17 +327,17 @@ const SalesOrder = () => {
                     id: detail.id,
                     category: detail.category || '',
                     discount: detail.discount || 0,
-                    produtName: detail.produtName || detail.productName || '', // Handle both spellings
+                    productName: detail.productName || detail.productName || '', // Handle both spellings
                     qty: detail.qty || 1,
                     sellingPrice: detail.sellingPrice || 0,
                     subCategory: detail.subCategory || '',
                 })) || [{
-                    category: '', discount: 0, produtName: '', qty: 1, sellingPrice: 0, subCategory: ''
+                    category: '', discount: 0, productName: '', qty: 1, sellingPrice: 0, subCategory: ''
                 }];
 
                 setSalesOrderDetails(details);
                 setDetailErrors(details.map(() => ({
-                    produtName: '',
+                    productName: '',
                     category: '',
                     sellingPrice: '',
                     qty: ''
@@ -472,7 +472,7 @@ const SalesOrder = () => {
             } else {
                 newErrors[index][field] = '';
             }
-        } else if (!value && ['produtName', 'category'].includes(field)) {
+        } else if (!value && ['productName', 'category'].includes(field)) {
             newErrors[index][field] = 'This field is required';
         } else {
             newErrors[index][field] = '';
@@ -526,8 +526,8 @@ const SalesOrder = () => {
         salesOrderDetails.forEach((detail, index) => {
             const error = {};
 
-            if (!detail.produtName?.trim()) {
-                error.produtName = 'Product name is required';
+            if (!detail.productName?.trim()) {
+                error.productName = 'Product name is required';
                 isValid = false;
             }
 
@@ -556,11 +556,9 @@ const SalesOrder = () => {
 
             newErrors[index] = error;
         });
-
         setDetailErrors(newErrors);
         return isValid;
     };
-
     const handleSave = async () => {
         const isFormValid = validateFields();
         const isDetailsValid = validateDetails();
@@ -596,7 +594,7 @@ const SalesOrder = () => {
             active: true,
             salesOrderDetailsDTO: salesOrderDetails.map(detail => ({
                 ...(detail.id && { id: detail.id }),
-                productName: detail.produtName,
+                productName: detail.productName,
                 category: detail.category,
                 subCategory: detail.subCategory,
                 sellingPrice: parseFloat(detail.sellingPrice) || 0,
@@ -652,14 +650,14 @@ const SalesOrder = () => {
         setSalesOrderDetails([{
             category: '',
             discount: 0,
-            produtName: '',
+            productName: '',
             qty: 1,
             sellingPrice: 0,
             subCategory: '',
         }]);
 
         setDetailErrors([{
-            produtName: '',
+            productName: '',
             category: '',
             sellingPrice: '',
             qty: ''
@@ -673,7 +671,7 @@ const SalesOrder = () => {
         const lastDetail = salesOrderDetails[salesOrderDetails.length - 1];
         const lastError = detailErrors[detailErrors.length - 1] || {};
 
-        const productNameValid = lastDetail.produtName?.trim();
+        const productNameValid = lastDetail.productName?.trim();
         const categoryValid = lastDetail.category;
         const price = parseFloat(lastDetail.sellingPrice);
         const priceValid = !isNaN(price) && price >= 0;
@@ -683,7 +681,7 @@ const SalesOrder = () => {
         if (!productNameValid || !categoryValid || !priceValid || !qtyValid) {
             const newErrors = [...detailErrors];
             newErrors[newErrors.length - 1] = {
-                produtName: !productNameValid ? 'Product name is required' : '',
+                productName: !productNameValid ? 'Product name is required' : '',
                 category: !categoryValid ? 'Category is required' : '',
                 sellingPrice: isNaN(price)
                     ? 'Must be a number'
@@ -706,7 +704,7 @@ const SalesOrder = () => {
             {
                 category: '',
                 discount: 0,
-                produtName: '',
+                productName: '',
                 qty: 1,
                 sellingPrice: 0,
                 subCategory: '',
@@ -716,7 +714,7 @@ const SalesOrder = () => {
         setDetailErrors(prev => [
             ...prev,
             {
-                produtName: '',
+                productName: '',
                 category: '',
                 sellingPrice: '',
                 qty: ''
@@ -1085,7 +1083,7 @@ const SalesOrder = () => {
                                                                     <th className="px-2 py-2 text-white text-center">Price *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Quantity *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Discount</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Todal Amount</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Amount</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -1144,8 +1142,8 @@ const SalesOrder = () => {
                                                                                                 {...params}
                                                                                                 size="small"
                                                                                                 fullWidth
-                                                                                                error={!!detailErrors.produtName}
-                                                                                                helperText={detailErrors.produtName}
+                                                                                                error={!!detailErrors.productName}
+                                                                                                helperText={detailErrors.productName}
                                                                                             />
                                                                                         )}
                                                                                     />
@@ -1178,7 +1176,7 @@ const SalesOrder = () => {
                                                                                     fullWidth
                                                                                     size="small"
                                                                                     type="number"
-                                                                                    disabled
+                                                                                    // disabled
                                                                                     value={detail.sellingPrice}
                                                                                     onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                                                                     onBlur={(e) => validateDetailField(index, 'sellingPrice', e.target.value)}
