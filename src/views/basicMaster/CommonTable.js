@@ -183,7 +183,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
             muiTableHeadCellProps: {
               align: "center",
               sx: {
-                backgroundColor: "#2d3e98",
+                backgroundColor: "#0b0f22",
                 color: "white",
                 fontWeight: "bold",
                 // height: "40px",
@@ -198,8 +198,8 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
           ...col,
           muiTableHeadCellProps: {
             sx: {
-              backgroundColor: "#2d3e98",
-              color: "white",
+              backgroundColor: "#0b0f22",
+              color: "ffff",
               fontWeight: "bold",
               fontSize: "13px",
               textAlign: "left",
@@ -209,7 +209,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
           muiTableBodyCellProps: {
             sx: {
               fontSize: "14px",
-              color: "#374151",
+              color: "#ffff",
               textAlign: "left",
               borderBottom: "1px solid #E5E7EB",
             },

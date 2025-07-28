@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
 
 // material-ui
-import { Avatar, Box, ButtonBase, Chip, Typography } from '@mui/material';
+import { Avatar, Box, ButtonBase, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -15,8 +14,12 @@ import SearchSection from './SearchSection';
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
 import GlobalSection from './GlobalSection';
+import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
+
+
+// ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = ({ handleLeftDrawerToggle }) => {
   const [logo, setLogo] = useState(null);
@@ -52,6 +55,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       console.error('Error fetching data:', error);
     }
   };
+
 
   return (
     <>
@@ -93,30 +97,35 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       {/* header search */}
       <SearchSection />
-      {/* <HAISection /> */}
+      {/* <HAISection/> */}
       <Box sx={{ flexGrow: 1 }} />
+      {/* Remove or adjust this Box component to reduce space */}
+      {/* <Box sx={{ flexGrow: 1 }} /> */}
 
-      {/* Right section with company info */}
-      <Box
-        className="mt-2"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          width: { xs: 'auto', md: 400 },
-          gap: 1
-        }}
-      >
+      {/* notification & profile */}
+      <div className="mt-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}>
+        {/* <span
+          style={{
+            height: '11px',
+            width: '11px',
+            backgroundColor: '#25BE2B',
+            borderRadius: '50%',
+            display: 'inline-block',
+            marginRight: '8px',
+            marginBottom: '8px'
+          }}
+        ></span> */}
         <Avatar
           sx={{
             fontSize: "16px",
-            width: "45px",
+            width: "45px", // Adjust size as needed
             height: "45px",
             fontWeight: "bold",
             border: "2px solid white",
+            // boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.15)",
             marginRight: "5px",
             marginTop: "-10px",
-            backgroundColor: "transparent"
+            backgroundColor: "transparent" // Ensure no background color
           }}
         >
           {logo && logo[0]?.companyLogo ? (
@@ -131,28 +140,21 @@ const Header = ({ handleLeftDrawerToggle }) => {
           <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
         </Avatar>
 
-        {/* Info text hidden on small screens */}
-        <Box
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-            flexDirection: 'column',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Typography sx={{ mt: '1px', mb: 0, fontWeight: 700, fontSize: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginTop: '1px', marginBottom: 0,fontWeight:700,fontSize:'12px'}}>
             {localStorage.getItem('companyName')}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <Chip
               label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`}
               size="small"
               color="primary"
               sx={{ fontSize: '11px', height: '20px' }}
             />
-          </Box>
-        </Box>
-      </Box>
+          </div>
 
+        </div>
+      </div>
       <NotificationSection />
       <GlobalSection />
       {/* <SiteMapSection /> */}

@@ -933,7 +933,7 @@ export const Quotation = () => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                                                <tr style={{ backgroundColor: '#12162e' , color:'#ffff' }}>
                                                                     <th className="table-header">Action</th>
                                                                     <th className="table-header">#</th>
                                                                     <th className="table-header">Product Name</th>

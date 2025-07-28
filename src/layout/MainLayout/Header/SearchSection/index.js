@@ -43,7 +43,8 @@ const PopperStyle = styled(Popper)(({ theme }) => ({
 }));
 
 const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
-  width: 434,
+  width: 300,
+  height:40,
   marginLeft: 16,
   paddingLeft: 16,
   paddingRight: 16,
@@ -274,7 +275,7 @@ const SearchSection = () => {
                 {({ TransitionProps }) => (
                   <Transitions type="zoom" {...TransitionProps}>
                     <Card sx={{ width: '100%' }}>
-                      <Box sx={{ p: 1 }}>
+                      <Box sx={{ p: 1 }}> 
                         <MobileSearch
                           value={value}
                           setValue={setValue}

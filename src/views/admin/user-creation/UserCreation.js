@@ -713,7 +713,7 @@ const UserCreation = () => {
                           checked={formData.allIndiaAccess}
                           onChange={handleInputChange}
                           name="allIndiaAccess"
-                          sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                          sx={{ '& .MuiSvgIcon-root': { color: '#0b0f22' } }}
                         />
                       }
                       label="All India Access"
@@ -728,7 +728,7 @@ const UserCreation = () => {
                           checked={formData.active}
                           onChange={handleInputChange}
                           name="active"
-                          sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                          sx={{ '& .MuiSvgIcon-root': { color: '#0b0f22' } }}
                         />
                       }
                       label="Active"
@@ -761,7 +761,7 @@ const UserCreation = () => {
                             <div className="table-responsive">
                               <table className="table table-bordered ">
                                 <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <tr style={{ backgroundColor: '#0b0f22' }}>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                       Action
                                     </th>
@@ -929,7 +929,7 @@ const UserCreation = () => {
                             <div className="table-responsive">
                               <table className="table table-bordered table-responsive">
                                 <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <tr style={{ backgroundColor: '#0b0f22' }}>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                       Action
                                     </th>

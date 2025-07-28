@@ -170,106 +170,125 @@
   margin-left: 14px;
 }
 
-.table-header {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0.5rem;
-  /* Equivalent to 'px-2 py-2' */
-  border: 1px solid #dee2e6;
-  /* Adjust this as needed */
-  text-align: center;
-  /* For centering text */
-  background-color: #673AB7;
-  /* For background color */
-  color: white;
-  /* For text color */
+/* Card Background */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #12162e !important;
+  background-clip: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
+  color: #f6f3f361 !important;
 }
 
-.error-text {
-  color: red;
-  font-size: 0.8rem;
-  margin-left: 3px;
-  margin-top: 3px;
+/* Input Root and General Field Styling */
+.MuiOutlinedInput-root {
+  border-radius: 12px !important;
+  background: #12162e !important;
+  color: #f6f3f361 !important;
 }
 
-// sidebar 
-@media (min-width: 900px) {
-  .css-u1tokn-MuiDrawer-docked .MuiDrawer-paper {
-    top: 96px;
-  }
+/* Input Field Inside the Outlined Input */
+.MuiOutlinedInput-input {
+  color: #f6f3f361 !important;
+  background: #12162e !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
-// login
-@media (min-width: 1536px) {
-  .css-1arlb8v {
-    padding: 0px;
-  }
+/* Select Field Styling */
+.MuiSelect-select {
+  color: #f6f3f361 !important;
+  background: #12162e !important;
 }
 
-.css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
-  padding-left: 0px !important;
+/* Outline Border Styling */
+.MuiOutlinedInput-notchedOutline {
+  border-color: white !important;
 }
 
-.css-1bnhfwg-MuiGrid-root>.MuiGrid-item {
-  padding-top: 0px !important;
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: white !important;
 }
 
-.css-j4gh3l-MuiPaper-root-MuiCard-root {
-  border-radius: 35px !important;
-  max-width: 404px !important;
+.MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline {
+  border-color: red !important;
 }
 
-.css-15qvpff {
-  color: #fff !important;
+/* Disabled Label and Input Styling */
+.MuiFormLabel-root.Mui-disabled {
+  color: #f6f3f361 !important;
 }
 
-.css-40exn0-MuiInputBase-root-MuiOutlinedInput-root {
-  border-radius: 12px;
-  width: 350px !important;
-  height: 40px !important;
+.MuiInputBase-input.Mui-disabled {
+  opacity: 1 !important;
+  -webkit-text-fill-color: #f6f3f361 !important;
 }
 
-.css-173tha8 {
-  border-radius: 35px !important;
+/* Icon Button Styling */
+.MuiIconButton-root {
+  color: #ec407a !important;
 }
 
-.css-1r435k1-MuiAvatar-root {
-  border-radius: 0% !important;
-}
- 
-// search
-.css-1pxvvms-MuiButtonBase-root-MuiListItemButton-root {
-  padding-top: 0px !important;
-  padding-bottom: 0px !important;
+/* Avatar Hover and Menu Styling */
+.MuiAvatar-root:hover,
+.MuiAvatar-root[aria-controls="menu-list-grow"]:hover {
+  background: #ec407a !important;
+  color: #ffffff !important;
 }
 
-.css-ftvhhb-MuiPaper-root-MuiCard-root {
-  background-color: #fff;
-  color: #000000;
-  -webkit-transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  border-radius: 4px;
-  box-shadow: none;
-  background-image: none;
-  border-radius: 55px;
-  overflow: hidden;
-  border: 1px solid;
-  border-color: #90caf925;
-  z-index: 1;
-  width: 100%;
-  max-width: 380px;
-  padding-left: 24px;
-  padding-right: 24px;
-  padding-top: 32px;
-  padding-bottom: 32px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  -webkit-transition: all 0.3s ease;
-  transition: all 0.3s ease;
-  -webkit-transform: scale(1);
-  -moz-transform: scale(1);
-  -ms-transform: scale(1);
-  transform: scale(1);
+/* Override Specific Generated MUI Classes (if needed for special edge cases) */
+.css-1kyh1vg-MuiInputBase-root-MuiOutlinedInput-root,
+.css-cjeaxr-MuiInputBase-root-MuiOutlinedInput-root,
+.css-lpa3hk-MuiInputBase-root-MuiOutlinedInput-root {
+  background: #12162e !important;
+  color: #f6f3f361 !important;
+}
+
+.css-4a5t8g-MuiInputBase-input-MuiOutlinedInput-input,
+.css-3vbiw9-MuiInputBase-input-MuiOutlinedInput-input,
+.css-1o8mwpb-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
+  color: #f6f3f361 !important;
+  background: #12162e !important;
+}
+
+.css-1yai43k-MuiFormLabel-root-MuiInputLabel-root.Mui-disabled {
+  color: #f6f3f361 !important;
+}
+
+.css-1imiru6-MuiInputBase-input-MuiOutlinedInput-input.Mui-disabled {
+  opacity: 1;
+  -webkit-text-fill-color: #f6f3f361 !important;
+}
+
+.css-78trlr-MuiButtonBase-root-MuiIconButton-root {
+  color: #ec407a !important;
+}
+
+.css-8d9zgr-MuiAvatar-root[aria-controls="menu-list-grow"],
+.css-8d9zgr-MuiAvatar-root:hover,
+.css-beqlbn-MuiAvatar-root:hover,
+.css-nu2dnc-MuiAvatar-root:hover {
+  background: #ec407a !important;
+  color: #ffffff !important;
+}
+
+.css-1je4gh-MuiTableRow-root:nth-of-type(even) {
+  background-color: #12162e !important;
+}
+
+.css-1je4gh-MuiTableRow-root {
+  background-color: #12162e !important;
+}
+
+.MuiIconButton-root {
+  color: #ffffff !important;
+}
+
+.form-control {
+  color: #ffffff !important;
+  background-color: #12162e !important;
 }

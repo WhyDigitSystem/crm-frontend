@@ -142,7 +142,7 @@ const EmployeeDetails = () => {
       if (response.status && response.paramObjectsMap?.employeeDocId) {
         setDocId(response.paramObjectsMap.employeeDocId);
       } else {
-        
+
       }
     } catch (err) {
       console.error('Error fetching sales order docId:', err);
@@ -552,6 +552,24 @@ const EmployeeDetails = () => {
       )
     },
     { accessorKey: 'joiningDate', header: 'Date of Join', size: 140 },
+    {
+      accessorKey: 'passportphoto',
+      header: 'Photo',
+      size: 140,
+      // MODIFIED: Show actual photo instead of text
+      Cell: ({ row }) => {
+        const photo = row.original.passportphoto;
+        return photo ? (
+          <Avatar
+            src={`data:image/jpeg;base64,${photo}`}
+            alt="Employee"
+            sx={{ width: 40, height: 40 }}
+          />
+        ) : (
+          <Avatar sx={{ width: 40, height: 40 }} />
+        );
+      }
+    },
     { accessorKey: 'department', header: 'Department', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },
     {
@@ -583,7 +601,7 @@ const EmployeeDetails = () => {
               margin="0 10px 0 10px"
             />
           )}
-        </div>  
+        </div>
         {showForm ? (
           <>
             <div className="row">
@@ -1173,98 +1191,6 @@ const EmployeeDetails = () => {
                   </DialogContent>
                 </Dialog>
               </div>
-              {/* Image Upload Section */}
-              {/* <div className="col-md-3 mb-3">
-                <input
-                  accept="image/*"
-                  id="image-upload"
-                  type="file"
-                  style={{ display: 'none' }}
-                  onChange={handleImageChange}
-                  disabled={isLoading}
-                />
-                <Box
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    p: 1,
-                    backgroundColor: 'background.paper'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      mb: logo ? 1 : 0
-                    }}
-                  >
-                    <label htmlFor="image-upload" style={{ flex: 1 }}>
-                      <Button
-                        variant="contained"
-                        component="span"
-                        size="small"
-                        startIcon={<CloudUploadIcon fontSize="small" />}
-                        disabled={isLoading}
-                        fullWidth
-                        sx={{
-                          py: 0.5,
-                          fontSize: '0.75rem',
-                          textTransform: 'none',
-                          boxShadow: 'none',
-                          '&:hover': { boxShadow: 'none' }
-                        }}
-                      >
-                        {isLoading ? 'Uploading...' : 'Choose File'}
-                      </Button>
-                    </label>
-                    {logo && (
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => setLogo(null)}
-                        sx={{
-                          border: '1px solid',
-                          borderColor: 'error.main',
-                          borderRadius: 1,
-                          p: 0.5
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
-                  {logo && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        p: 0.75,
-                        backgroundColor: 'action.hover',
-                        borderRadius: 0.5,
-                        cursor: 'pointer',
-                        '&:hover': { backgroundColor: 'action.selected' }
-                      }}
-                    >
-                      <ImageIcon color="primary" fontSize="small" />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          flex: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}
-                      >
-                        {typeof logo === 'string' ? 'Profile Image' : logo.name}
-                      </Typography>
-                    </Box>
-                  )}
-                  {isLoading && <LinearProgress sx={{ height: 2, mt: 1 }} />}
-                </Box>
-              </div> */}
 
               {/* Active */}
               <div className="col-md-3 mb-3">

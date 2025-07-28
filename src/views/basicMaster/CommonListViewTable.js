@@ -96,7 +96,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
             muiTableHeadCellProps: {
               align: "center",
               sx: {
-                backgroundColor: "#2d3e98",
+                backgroundColor: "#0b0f22",
                 color: "white",
                 fontWeight: "bold",
                 // height: "40px",
@@ -111,7 +111,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
           ...col,
           muiTableHeadCellProps: {
             sx: {
-              backgroundColor: "#2d3e98",
+              backgroundColor: "#0b0f22",
               color: "white",
               fontWeight: "bold",
               fontSize: "13px",
@@ -122,7 +122,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
           muiTableBodyCellProps: {
             sx: {
               fontSize: "14px",
-              color: "#374151",
+              color: "#ffffff",
               textAlign: "left",
               borderBottom: "1px solid #E5E7EB",
             },
@@ -138,7 +138,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         localization={customLocalization}
         muiTableContainerProps={{
           sx: {
-            background: "#FFFFFF",
+            background: "#111522",
             borderRadius: "10px",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
             border: "1px solid #E5E7EB",
@@ -146,7 +146,7 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         }}
         muiTableProps={{
           sx: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "#111522",
             borderRadius: "10px",
             overflow: "hidden",
             border: "1px solid #E5E7EB",
@@ -155,9 +155,9 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         muiTableBodyRowProps={{
           sx: {
             height: "42px",
-            "&:nth-of-type(even)": { backgroundColor: "#F9FAFB" },
+            "&:nth-of-type(even)": { backgroundColor: "#111522" },
             "&:hover": {
-              backgroundColor: "#E5E7EB",
+              backgroundColor: "#111522",
               boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
               transition: "0.2s ease-in-out",
             },
