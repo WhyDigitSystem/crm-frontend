@@ -29,66 +29,17 @@ import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-reac
 // Transitions
 import Transitions from 'ui-component/extended/Transitions';
 
-// === Screen Code to Path Mapping ===
-// const screenCodePathMap = {
-//   UC: '/admin/user-creation/userCreation',
-//   RR: '/basicMaster/roles',
-//   SN: '/companysetup/ScreenNames',
-//   SCA: '/companysetup/ScreenAccess',
-//   LAD: '/companysetup/LeaveAssigned',
-//   CS: '/companysetup/companysetup',
-//   AP: '/attendanceProcess/AttendenceProcess',
-//   MA: '/attendanceProcess/MonthlyAttendance',
-//   CO: '/basicMaster/country',
-//   ST: '/basicMaster/state',
-//   CT: '/basicMaster/city',
-//   CU: '/basicMaster/currency',
-//   RG: '/basicMaster/RegionMaster',
-//   DP: '/basicMaster/Department',
-//   DS: '/basicMaster/Designation',
-//   SM: '/basicMaster/ShiftMaster',
-//   SA: '/basicMaster/ShiftAssign',
-//   CM: '/basicMaster/ContractMaster',
-//   OTM: '/basicMaster/OverTimeMaster',
-//   OT: '/basicMaster/OverTime',
-//   GR: '/basicMaster/groupMaster',
-//   CL: '/calendar',
-//   DB: '/dashboard/default',
-//   ED: '/employeeMaster/employeeDetails',
-//   LT: '/leaveMaster/LeaveType',
-//   HD: '/leaveMaster/Holidays',
-//   AD: '/salaryMaster/Advance',
-//   SH: '/salaryMaster/salaryHeads',
-//   SS: '/salaryMaster/SalaryStructure',
-//   GSS: '/salaryMaster/groupSalaryStructure',
-//   SP: '/salaryMaster/SalaryProcess',
-//   SR: '/salaryMaster/SalaryReport',
-//   PS: '/finance/payslip',
-//   ESIR: '/finance/ESIReport',
-//   PFR: '/finance/PFCalculationReport',
-//   HR: '/me/HolidayReport',
-//   LR: '/me/leaveRequest',
-//   PR: '/me/permissionRequest',
-//   CIO: '/me/SwipeInSwipeOut',
-//   LA: '/team/LeaveApproval',
-//   PA: '/team/PermissionApproval',
-//   AR: '/team/AttendanceReport',
-//   TA: '/team/TodayAttendance',
-//   CIOR: '/team/EmployeeAttanceReport',
-//   SAR: '/team/ShiftAssignReport',
-// };
-
 // === Styled Components ===
 
 const PopperStyle = styled(Popper)(({ theme }) => ({
-  zIndex: 1300,
+  zIndex: 1300, // Higher than default to ensure it overlays other components
   width: '100%',
   marginTop: theme.spacing(1),
-  position: 'absolute',
-  padding: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1)
-  }
+    width: '100%',
+    marginTop: theme.spacing(1)
+  },
+  position: 'absolute'
 }));
 
 const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
@@ -107,7 +58,8 @@ const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   },
   [theme.breakpoints.down('md')]: {
     width: '100%',
-    marginLeft: 4
+    marginLeft: 4,
+    background: '#fff'
   }
 }));
 
@@ -156,7 +108,7 @@ const MobileSearch = ({ value, setValue, popupState, screens }) => {
           </InputAdornment>
         }
         endAdornment={
-          <InputAdornment position="end">
+          <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
             <ButtonBase onClick={() => popupState.close()}>
               <Avatar
                 variant="rounded"

@@ -107,17 +107,17 @@ const GlobalSection = () => {
   //     console.log('error', err);
   //   }
   // };
-const getFinYear = async () => {
-  try {
-    const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
-    let finYears = result.paramObjectsMap.financialYearVOs || [];
-    finYears.sort((a, b) => parseInt(b.finYear, 10) - parseInt(a.finYear, 10));
-    setFinVO(finYears);
-    console.log('Sorted Fin Years:', finYears);
-  } catch (err) {
-    console.log('error', err);
-  }
-};
+  const getFinYear = async () => {
+    try {
+      const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      let finYears = result.paramObjectsMap.financialYearVOs || [];
+      finYears.sort((a, b) => parseInt(b.finYear, 10) - parseInt(a.finYear, 10));
+      setFinVO(finYears);
+      console.log('Sorted Fin Years:', finYears);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
 
   const getGlobalParameter = async () => {
@@ -243,7 +243,9 @@ const getFinYear = async () => {
           <Transitions position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
             <Paper sx={{ width: 300 }}>
               <ClickAwayListener onClickAway={handleClose}>
-                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
+                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]} sx={{
+                  borderTop: `4px solid ${theme.palette.primary.main}`
+                }}>
                   <Grid container direction="column" spacing={2}>
                     <Grid item xs={12}>
                       <Grid container alignItems="center" justifyContent="space-between" sx={{ pt: 2, px: 2 }}>
@@ -309,7 +311,7 @@ const getFinYear = async () => {
                             </TextField>
                           </Box>
                         </Grid>
-                        
+
                         <Grid item xs={12} p={0}>
                           <Divider sx={{ my: 0 }} />
                         </Grid>
