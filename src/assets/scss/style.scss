@@ -19,8 +19,6 @@
 /* src/styles.css */
 .gradient-text {
   background: linear-gradient(to right, #0061ff, #60efff);
-  /* Gemini AI colors */
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -302,5 +300,28 @@
 }
 
 .css-ittuaa-MuiInputAdornment-root {
+  color: #ffffff !important;
+}
+
+.css-1s2lckk-MuiTableRow-root:nth-of-type(even) {
+  background-color: #12162e !important;
+}
+
+.css-1s2lckk-MuiTableRow-root {
+  color: inherit;
+  background-color: #12162e !important;
+}
+
+.css-eohnf1-MuiPickersDay-root.Mui-disabled:not(.Mui-selected) {
+  color: #ffffff !important;
+}
+
+.css-1ki0xq9-MuiTableFooter-root {
+  background-color: transparent !important;
+  padding: 0 !important;
+  color: inherit !important;
+}
+
+.css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon {
   color: #ffffff !important;
 }

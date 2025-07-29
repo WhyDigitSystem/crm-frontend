@@ -105,7 +105,7 @@ const Schedule = () => {
 
   useEffect(() => {
     if (formData.branch && formData.branchCode && !editId) {
-      getTaskDocId();
+      getscheduleDocId();
     }
   }, [formData.branch, formData.branchCode, editId]);
 
@@ -212,11 +212,11 @@ const Schedule = () => {
   const getAllTasks = async () => {
     try {
       const response = await apiCalls(
-        'get', `/activities/getAllTaskByOrgId?orgId=${orgId}`
+        'get', `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.taskVO.map(task => ({
+        setListViewData(response.paramObjectsMap.ScheduleVO.map(task => ({
           ...task,
           active: task.active === "Active" || task.active === true
         })));
@@ -229,19 +229,19 @@ const Schedule = () => {
     }
   };
 
-  const getTaskDocId = async () => {
+  const getscheduleDocId = async () => {
     if (!formData.branch || !formData.branchCode) return;
     setIsDocIdLoading(true);
     try {
       const response = await apiCalls(
         'get',
-        `/activities/getTaskDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+        `/activities/getScheduleDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
 
-      if (response.status === true && response.paramObjectsMap.taskDocId) {
+      if (response.status === true && response.paramObjectsMap.scheduleDocId) {
         setFormData(prev => ({
           ...prev,
-          taskId: response.paramObjectsMap.taskDocId
+          taskId: response.paramObjectsMap.scheduleDocId
         }));
       }
     } catch (error) {
@@ -254,10 +254,10 @@ const Schedule = () => {
 
   const getTaskById = async (id) => {
     try {
-      const response = await apiCalls('get', `/activities/getTaskById?id=${id}`);
+      const response = await apiCalls('get', `/activities/getScheduleById?id=${id}`);
 
       if (response.status === true) {
-        const task = response.paramObjectsMap.taskVO;
+        const task = response.paramObjectsMap.ScheduleVO;
         setEditId(id);
         setListView(false);
         setImg(task.attachments);
@@ -384,7 +384,7 @@ const Schedule = () => {
     });
     setEditId('');
     setFieldErrors({});
-    getTaskDocId();
+    getscheduleDocId();
     setImg(null);
   };
 
@@ -444,11 +444,11 @@ const Schedule = () => {
     };
 
     try {
-      const response = await apiCalls('put', '/activities/createUpdateTask', payload);
+      const response = await apiCalls('put', '/activities/createUpdateSchedule', payload);
 
       if (response.status === true) {
         showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
-        const generatedId = response.paramObjectsMap?.taskVO?.id || editId;
+        const generatedId = response.paramObjectsMap?.ScheduleVO?.id || editId;
         if (generatedId && supportingImg && typeof supportingImg === 'object') {
           await handleFileUpload(generatedId);
         }
@@ -879,8 +879,8 @@ const Schedule = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  // multiline
-                  // rows={3}
+                // multiline
+                // rows={3}
                 />
               </div>
 
