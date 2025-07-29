@@ -1103,7 +1103,8 @@ const Calendar = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  padding: 20
+                  padding: 20,
+                  
                 }}
               >
                 <div>Loading event details...</div>
@@ -1117,7 +1118,7 @@ const Calendar = () => {
                 style={{ marginTop: 8 }}
               >
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Title</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13,color:'black' }}>Title</label>
                   <input
                     name="eventTitle"
                     value={newEvent.eventTitle}
@@ -1128,12 +1129,12 @@ const Calendar = () => {
                 </div>
 
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Date</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13,color:'black' }}>Date</label>
                   {newEvent.isHoliday || newEvent.isBirthday ? (
                     <div
                       style={{
                         padding: 8,
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#12162e',
                         borderRadius: 6,
                         fontSize: 13
                       }}
@@ -1152,7 +1153,7 @@ const Calendar = () => {
 
                 <div style={{ display: isMobile ? 'block' : 'flex', gap: 8 }}>
                   <div style={{ marginBottom: 8, flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Start Time</label>
+                    <label style={{ display: 'block', marginBottom: 4, fontSize: 13,color:'black' }}>Start Time</label>
                     <input
                       type="time"
                       name="startTime"
@@ -1164,7 +1165,7 @@ const Calendar = () => {
                   </div>
 
                   <div style={{ marginBottom: 8, flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>End Time</label>
+                    <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color:'black' }}>End Time</label>
                     <input
                       type="time"
                       name="endTime"
@@ -1177,7 +1178,7 @@ const Calendar = () => {
                 </div>
 
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Type</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13,color:'black' }}>Type</label>
                   <select
                     name="eventType"
                     value={newEvent.eventType}
@@ -1194,7 +1195,7 @@ const Calendar = () => {
                 </div>
 
                 <div style={{ marginBottom: 12 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Description</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13,color:'black' }}>Description</label>
                   <textarea
                     name="description"
                     value={newEvent.description}
