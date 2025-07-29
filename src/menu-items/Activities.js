@@ -15,25 +15,18 @@ const hasScreenAccess = (screenId) => {
 
 // activity children menu
 const activityChildren = [
-  hasScreenAccess('CAL') && {
-    id: 'Calls',
-    title: 'Calls',
+  hasScreenAccess('AC') && {
+    id: 'Active',
+    title: 'Active',
     type: 'item',
-    url: '/Activities/Calls',
+    url: '/Activities/Active',
     icon: IconPhoneCall
   },
-  hasScreenAccess('MET') && {
-    id: 'Meeting',
-    title: 'Meeting',
+  hasScreenAccess('SD') && {
+    id: 'Schedule',
+    title: 'Schedule',
     type: 'item',
-    url: '/Activities/Meeting',
-    icon: IconCalendarEvent
-  },
-  hasScreenAccess('TASK') && {
-    id: 'Task',
-    title: 'Task',
-    type: 'item',
-    url: '/Activities/Task',
+    url: '/Activities/Schedule',
     icon: IconMap
   }
 ].filter(Boolean);
@@ -41,18 +34,18 @@ const activityChildren = [
 const Activities =
   activityChildren.length > 0
     ? {
-        id: 'Activities',
-        type: 'group',
-        children: [
-          {
-            id: 'Activities',
-            title: 'Activities',
-            type: 'collapse',
-            icon: IconUsers,
-            children: activityChildren
-          }
-        ]
-      }
+      id: 'Activities',
+      type: 'group',
+      children: [
+        {
+          id: 'Activities',
+          title: 'Activities',
+          type: 'collapse',
+          icon: IconUsers,
+          children: activityChildren
+        }
+      ]
+    }
     : null;
 
 export default Activities;

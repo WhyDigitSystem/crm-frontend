@@ -236,7 +236,7 @@ const ScreenAccess = () => {
     permissionsList.filter((item) => item.module.toLowerCase().includes(searchValue.toLowerCase()));
 
   return (
-    <Box p={2} sx={{ backgroundColor: '#f9fbfd', minHeight: '100vh' }}>
+    <Box p={2} sx={{ backgroundColor: '#12162e', minHeight: '100vh' }}>
       <Card elevation={2}>
         <CardContent>
           <Grid container spacing={2} alignItems="center" mb={1}>
@@ -288,11 +288,11 @@ const ScreenAccess = () => {
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ py: 0.5, backgroundColor: '#e3f2fd' }}>
+                    <TableCell sx={{ py: 0.5, backgroundColor: '#12162e' }}>
                       <strong>Screen Name</strong>
                     </TableCell>
                     {['canRead', 'canWrite', 'canDelete'].map((type) => (
-                      <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#e3f2fd' }}>
+                      <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#12162e' }}>
                         <Checkbox
                           size="small"
                           checked={filteredPermissions.length > 0 && filteredPermissions.every((p) => p[type])}

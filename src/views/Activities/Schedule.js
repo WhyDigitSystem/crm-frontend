@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 // import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoToneIcon';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
-const Task = () => {
+const Schedule = () => {
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [branch] = useState(localStorage.getItem('branch'));
@@ -1031,4 +1031,4 @@ const Task = () => {
   );
 };
 
-export default Task;
+export default Schedule;

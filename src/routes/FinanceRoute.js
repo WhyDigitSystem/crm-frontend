@@ -47,9 +47,8 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 // const CreateCompany = Loadable(lazy(() => import('views/company/CreateCompany')));
 
 // Activities
-const Calls = Loadable(lazy(() => import('views/Activities/Calls')));
-const Meeting = Loadable(lazy(() => import('views/Activities/Meeting')));
-const Task = Loadable(lazy(() => import('views/Activities/Task')));
+const Active = Loadable(lazy(() => import('views/Activities/Active')));
+const Schedule = Loadable(lazy(() => import('views/Activities/Schedule')));
 
 
 
@@ -162,7 +161,7 @@ const FinanceRoute = {
       path: '/basicMaster/ScreenNames',
       element: <ScreenNames />
     },
-     {
+    {
       path: '/basicMaster/ScreenAccess',
       element: <ScreenAccess />
     },
@@ -183,16 +182,12 @@ const FinanceRoute = {
 
     // Activities
     {
-      path: '/Activities/Calls',
-      element: <Calls />
+      path: '/Activities/Active',
+      element: <Active />
     },
     {
-      path: '/Activities/Meeting',
-      element: <Meeting />
-    },
-    {
-      path: '/Activities/Task',
-      element: <Task />
+      path: '/Activities/Schedule',
+      element: <Schedule />
     },
 
     // Transaction

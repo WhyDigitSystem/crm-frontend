@@ -21,7 +21,7 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 
-export const Meeting = () => {
+export const Active = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [editId, setEditId] = useState('');
     const [branchList, setBranchList] = useState([]);
@@ -39,11 +39,13 @@ export const Meeting = () => {
     const [branchOptions, setBranchOptions] = useState([]);
     const [contactOptions, setContactOptions] = useState([]);
     const [assignToOptions, setAssignToOptions] = useState([]);
+    const [typeOptions] = useState(['Call', 'Meeting', 'Visit']);
+    const [directionOptions] = useState(['Call Received', 'Call Made']);
 
     // Form state
     const [formData, setFormData] = useState({
-        meetingDocId: '',
-        meetingDate: null,
+        activeDocId: '',
+        docDate: null,
         clientName: '',
         contactName: '',
         branchName: branch,
@@ -64,7 +66,8 @@ export const Meeting = () => {
         venue: '',
         address: '',
         assignTo: '',
-        cancelRemarks: '',
+        type: '',
+        direction: '',
     });
 
     const [fieldErrors, setFieldErrors] = useState({
@@ -76,12 +79,12 @@ export const Meeting = () => {
         startDate: '',
         startTime: '',
         status: '',
-        venue: '',
+        type: '',
         assignTo: ''
     });
 
     // Status options
-    const statusOptions = ['Planned', 'Held', 'Not Held', 'Re-Schedule'];
+    const statusOptions = ['Planned', 'Completed', 'Cancelled', 'Postponed'];
 
     // Calculate duration between start and end times
     const calculateDuration = (startTime, endTime) => {
@@ -109,13 +112,13 @@ export const Meeting = () => {
 
     useEffect(() => {
         if (formData.branch && formData.branchCode && !editId) {
-            getMeetingDocId();
+            getActiveDocId();
         }
     }, [formData.branch, formData.branchCode, editId]);
 
     useEffect(() => {
         if (formData.branchCode) {
-            getAllMeetings();
+            getAllActives();
         }
     }, [formData.branchCode]);
 
@@ -225,12 +228,15 @@ export const Meeting = () => {
                 }));
                 setContactOptions(contacts);
 
-                setFormData(prev => ({
-                    ...prev,
-                    contactName: '',
-                    mobileNo: '',
-                    email: ''
-                }));
+                // Don't clear the fields automatically - let user choose
+                if (!formData.contactName) {
+                    setFormData(prev => ({
+                        ...prev,
+                        contactName: '',
+                        mobileNo: '',
+                        email: ''
+                    }));
+                }
             }
         } catch (error) {
             console.error('Error fetching contacts:', error);
@@ -280,9 +286,8 @@ export const Meeting = () => {
             let initialBranchCode = branchCode;
 
             if (branchData.length > 0) {
-                // Fixed branch lookup logic
-                const storedBranch = branchData.find(b => 
-                    b.branchCode === branchCode || 
+                const storedBranch = branchData.find(b =>
+                    b.branchCode === branchCode ||
                     b.branchCode === localStorage.getItem('branchCode') ||
                     b.branch === branch
                 );
@@ -313,39 +318,39 @@ export const Meeting = () => {
         }
     };
 
-    const getAllMeetings = async () => {
+    const getAllActives = async () => {
         try {
             const response = await apiCalls(
                 'get',
-                `/activities/getMeetingByOrgId?orgId=${orgId}&branchCode=${formData.branchCode}`
+                `/activities/getAllActiveByOrgId?orgId=${orgId}&branchCode=${formData.branchCode}&finYear=${finYear}`
             );
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.meetingVO);
+                setListViewData(response.paramObjectsMap.activeVO || []);
             } else {
-                showToast('error', response.message || 'Failed to fetch meetings');
+                showToast('error', response.message || 'Failed to fetch activities');
             }
         } catch (error) {
-            console.error('Error fetching meetings:', error);
-            showToast('error', 'Failed to fetch meetings');
+            console.error('Error fetching activities:', error);
+            showToast('error', 'Failed to fetch activities');
         }
     };
 
-    const getMeetingDocId = async () => {
+    const getActiveDocId = async () => {
         if (!formData.branch || !formData.branchCode) return;
 
         setIsDocIdLoading(true);
         try {
             const response = await apiCalls(
                 'get',
-                `/activities/getMetingDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+                `/activities/getActiveDocId?branch=${formData.branch}&branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
 
-            if (response.status === true && response.paramObjectsMap.meetingDocId) {
+            if (response.status === true && response.paramObjectsMap.activeDocId) {
                 setFormData(prev => ({
                     ...prev,
-                    meetingDocId: response.paramObjectsMap.meetingDocId,
-                    meetingDate: dayjs()
+                    activeDocId: response.paramObjectsMap.activeDocId,
+                    docDate: dayjs()
                 }));
             }
         } catch (error) {
@@ -356,106 +361,97 @@ export const Meeting = () => {
         }
     };
 
-    const getMeetingById = async (id) => {
+    const getActiveById = async (id) => {
         try {
-            const response = await apiCalls('get', `/activities/getMeetingById?id=${id}`);
+            const response = await apiCalls('get', `/activities/getActiveById?id=${id}`);
 
-            if (response.status === true) {
-                const meeting = response.paramObjectsMap.meetingVO;
+            if (response.status === true && response.paramObjectsMap.activeVO) {
+                const active = response.paramObjectsMap.activeVO;
                 setEditId(id);
                 setListView(false);
 
                 // Convert dates/times to Dayjs
-                const meetingDate = meeting.docDate ? dayjs(meeting.docDate, 'YYYY-MM-DD') : null;
-                const startDate = meeting.startDate ? dayjs(meeting.startDate, 'YYYY-MM-DD') : null;
-                const endDate = meeting.endDate ? dayjs(meeting.endDate, 'YYYY-MM-DD') : null;
-                const followUpDate = meeting.followUpDate ? dayjs(meeting.followUpDate, 'YYYY-MM-DD') : null;
-                const startTime = meeting.startTime ? dayjs(`1970-01-01T${meeting.startTime.padStart(5, '0')}:00`) : null;
-                const endTime = meeting.endTime ? dayjs(`1970-01-01T${meeting.endTime.padStart(5, '0')}:00`) : null;
+                const docDate = active.docDate ? dayjs(active.docDate, 'YYYY-MM-DD') : null;
+                const startDate = active.startDate ? dayjs(active.startDate, 'YYYY-MM-DD') : null;
+                const endDate = active.endDate ? dayjs(active.endDate, 'YYYY-MM-DD') : null;
+                const followUpDate = active.followUpDate ? dayjs(active.followUpDate, 'YYYY-MM-DD') : null;
+                const startTime = active.startTime ? dayjs(`1970-01-01T${active.startTime.padStart(5, '0')}:00`) : null;
+                const endTime = active.endTime ? dayjs(`1970-01-01T${active.endTime.padStart(5, '0')}:00`) : null;
 
                 // Handle branchCode - if missing, look it up
-                let branchCodeForMeeting = meeting.branchCode;
-                if (!branchCodeForMeeting && meeting.branch) {
-                    const branchInList = branchList.find(b => b.branch === meeting.branch);
+                let branchCodeForActive = active.branchCode;
+                if (!branchCodeForActive && active.branch) {
+                    const branchInList = branchList.find(b => b.branch === active.branch);
                     if (branchInList) {
-                        branchCodeForMeeting = branchInList.branchCode;
+                        branchCodeForActive = branchInList.branchCode;
                     }
                 }
 
                 // First set basic form data
                 setFormData(prev => ({
                     ...prev,
-                    meetingDocId: meeting.docId || '',
-                    meetingDate: meetingDate,
-                    clientName: meeting.clientName || '',
-                    contactName: meeting.contactName || '',
-                    mobileNo: meeting.mobileNo ? meeting.mobileNo.toString() : '',
-                    email: meeting.email || '',
-                    parent: meeting.parent || '',
-                    branch: meeting.branch || branch,
-                    branchCode: branchCodeForMeeting || branchCode,
-                    branchName: meeting.branch || branch,
+                    activeDocId: active.docId || '',
+                    docDate: docDate,
+                    clientName: active.clientName || '',
+                    contactName: active.contactName || '',
+                    mobileNo: active.mobileNo ? active.mobileNo.toString() : '',
+                    email: active.email || '',
+                    parent: active.parent || '',
+                    branch: active.branch || branch,
+                    branchCode: branchCodeForActive || branchCode,
+                    branchName: active.branch || branch,
                     startDate: startDate,
                     startTime: startTime,
                     endDate: endDate,
                     endTime: endTime,
-                    duration: meeting.duration || '',
-                    description: meeting.description || '',
-                    status: meeting.status || '',
+                    duration: active.duration || '',
+                    description: active.description || '',
+                    status: active.status || '',
                     followUpDate: followUpDate,
-                    active: meeting.active === "Active",
-                    venue: meeting.venue || '',
-                    address: meeting.address || '',
-                    assignTo: meeting.assignTo || '',
-                    cancelRemarks: meeting.cancelRemarks || ''
+                    active: active.active === "Active",
+                    venue: active.venue || '',
+                    address: active.address || '',
+                    assignTo: active.assignTo || '',
+                    type: active.type || '',
+                    direction: active.direction || ''
                 }));
 
                 // Then load related data
-                if (meeting.clientName) {
-                    await getClientNames(); 
-                    await getBranchNames(meeting.clientName);
-                    await getParentFromLead(meeting.clientName);
+                if (active.clientName) {
+                    await getClientNames();
+                    await getBranchNames(active.clientName);
+                    await getParentFromLead(active.clientName);
 
                     // Update branch-related fields after a short delay
                     setTimeout(() => {
-                        const branchOpt = branchList.find(b => b.branch === meeting.branch);
+                        const branchOpt = branchList.find(b => b.branch === active.branch);
                         if (branchOpt) {
                             setFormData(prev => ({
                                 ...prev,
-                                address: branchOpt.address || meeting.address || '',
-                                branch: meeting.branch,
+                                address: branchOpt.address || active.address || '',
+                                branch: active.branch,
                                 branchCode: branchOpt.branchCode,
-                                branchName: meeting.branch
+                                branchName: active.branch
                             }));
                         }
                     }, 300);
 
                     // Update contact-related fields
-                    if (meeting.contactName) {
+                    if (active.contactName) {
                         setTimeout(async () => {
-                            await getContactDetails(meeting.clientName, meeting.branch);
-                            setTimeout(() => {
-                                const contactOpt = contactOptions.find(c => c.value === meeting.contactName);
-                                if (contactOpt) {
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        mobileNo: contactOpt.mobileNo || meeting.mobileNo || '',
-                                        email: contactOpt.email || meeting.email || ''
-                                    }));
-                                }
-                            }, 300);
+                            await getContactDetails(active.clientName, active.branch);
                         }, 300);
                     }
-                    if (meeting.branch) {
-                        await getContactDetails(meeting.clientName, meeting.branch);
+                    if (active.branch) {
+                        await getContactDetails(active.clientName, active.branch);
                     }
                 }
             } else {
-                showToast('error', response.paramObjectsMap.message || 'Failed to fetch meeting details');
+                showToast('error', response.paramObjectsMap.message || 'Failed to fetch activity details');
             }
         } catch (error) {
-            console.error('Error fetching meeting details:', error);
-            showToast('error', 'Failed to fetch meeting details');
+            console.error('Error fetching activity details:', error);
+            showToast('error', 'Failed to fetch activity details');
         }
     };
 
@@ -527,8 +523,8 @@ export const Meeting = () => {
         }
 
         setFormData({
-            meetingDocId: '',
-            meetingDate: null,
+            activeDocId: '',
+            docDate: null,
             clientName: '',
             contactName: '',
             mobileNo: '',
@@ -549,7 +545,8 @@ export const Meeting = () => {
             venue: '',
             address: '',
             assignTo: '',
-            cancelRemarks: ''
+            type: '',
+            direction: ''
         });
         setEditId('');
         setFieldErrors({});
@@ -563,7 +560,7 @@ export const Meeting = () => {
         if (!formData.startDate) errors.startDate = 'Start date is required';
         if (!formData.startTime) errors.startTime = 'Start time is required';
         if (!formData.status) errors.status = 'Status is required';
-        if (!formData.venue) errors.venue = 'Venue is required';
+        if (!formData.type) errors.type = 'Type is required';
         if (!formData.assignTo) errors.assignTo = 'Assign To is required';
         if (formData.email && fieldErrors.email) errors.email = fieldErrors.email;
 
@@ -584,8 +581,8 @@ export const Meeting = () => {
 
         const payload = {
             id: editId || undefined,
-            docId: formData.meetingDocId,
-            docDate: formatDate(formData.meetingDate),
+            docId: formData.activeDocId,
+            docDate: formatDate(formData.docDate),
             clientName: formData.clientName,
             contactName: formData.contactName,
             mobileNo: formData.mobileNo,
@@ -605,28 +602,29 @@ export const Meeting = () => {
             venue: formData.venue,
             address: formData.address,
             assignTo: formData.assignTo,
-            cancelRemarks: formData.cancelRemarks,
             finYear: finYear,
             createdBy: loginUserName,
             orgId: parseInt(orgId),
-            cancel: formData.status === 'Cancelled',
-            screenCode: "MEE",
-            screenName: "MEETING"
+            active: formData.active,
+            type: formData.type,
+            direction: formData.direction,
+            screenCode: "ACT",
+            screenName: "ACTIVITY"
         };
 
         try {
-            const response = await apiCalls('put', '/activities/createUpdateMeeting', payload);
+            const response = await apiCalls('put', '/activities/updateCreateActive', payload);
 
             if (response.status === true) {
-                showToast('success', editId ? 'Meeting updated successfully' : 'Meeting created successfully');
+                showToast('success', editId ? 'Activity updated successfully' : 'Activity created successfully');
                 handleClear();
-                getAllMeetings();
+                getAllActives();
             } else {
                 showToast('error', response.paramObjectsMap?.message || 'Operation failed');
             }
         } catch (error) {
-            console.error('Error saving meeting:', error);
-            showToast('error', 'Failed to save meeting');
+            console.error('Error saving activity:', error);
+            showToast('error', 'Failed to save activity');
         } finally {
             setIsLoading(false);
         }
@@ -638,7 +636,7 @@ export const Meeting = () => {
 
     const listViewColumns = [
         { accessorKey: 'docId', header: 'Doc ID', size: 120 },
-        { accessorKey: 'docDate', header: 'Meeting Date', size: 120 },
+        { accessorKey: 'docDate', header: 'Date', size: 120 },
         { accessorKey: 'clientName', header: 'Client', size: 180 },
         { accessorKey: 'contactName', header: 'Contact', size: 150 },
         { accessorKey: 'mobileNo', header: 'Mobile', size: 130 },
@@ -646,7 +644,7 @@ export const Meeting = () => {
         { accessorKey: 'parent', header: 'Parent', size: 130 },
         { accessorKey: 'startDate', header: 'Start Date', size: 120 },
         { accessorKey: 'startTime', header: 'Time', size: 100 },
-        { accessorKey: 'venue', header: 'Venue', size: 150 },
+        { accessorKey: 'type', header: 'Type', size: 120 },
         { accessorKey: 'status', header: 'Status', size: 120 },
         { accessorKey: 'duration', header: 'Duration', size: 100 },
         { accessorKey: 'active', header: 'Active', size: 100 },
@@ -675,40 +673,40 @@ export const Meeting = () => {
                             data={listViewData}
                             columns={listViewColumns}
                             blockEdit={true}
-                            toEdit={(row) => getMeetingById(row.original.id)}
+                            toEdit={(row) => getActiveById(row.original.id)}
                         />
                     </div>
                 ) : (
                     <div className="row">
-                        {/* Meeting ID */}
+                        {/* Activity ID */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label="Meeting ID"
+                                label="Activity ID"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
                                 disabled
-                                name="meetingDocId"
-                                value={isDocIdLoading ? "Generating..." : formData.meetingDocId}
+                                name="activeDocId"
+                                value={isDocIdLoading ? "Generating..." : formData.activeDocId}
                                 InputProps={{
                                     style: { backgroundColor: '#f5f5f5' }
                                 }}
                             />
                         </div>
 
-                        {/* Meeting Date */}
+                        {/* Activity Date */}
                         <div className="col-md-3 mb-3">
                             <FormControl fullWidth variant="filled" size="small">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
-                                        label="Meeting Date"
-                                        value={formData.meetingDate}
-                                        onChange={(date) => handleDateChange('meetingDate', date)}
+                                        label="Activity Date"
+                                        value={formData.docDate}
+                                        onChange={(date) => handleDateChange('docDate', date)}
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                error: !!fieldErrors.meetingDate,
-                                                helperText: fieldErrors.meetingDate
+                                                error: !!fieldErrors.docDate,
+                                                helperText: fieldErrors.docDate
                                             }
                                         }}
                                         format="DD-MM-YYYY"
@@ -716,6 +714,62 @@ export const Meeting = () => {
                                     />
                                 </LocalizationProvider>
                             </FormControl>
+                        </div>
+
+                        {/* Type */}
+                        <div className="col-md-3 mb-3">
+                            <Autocomplete
+                                size="small"
+                                fullWidth
+                                options={typeOptions}
+                                value={formData.type || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'type',
+                                            value: newValue || ''
+                                        }
+                                    });
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label={
+                                            <span>
+                                                Type <span className="asterisk">*</span>
+                                            </span>
+                                        }
+                                        variant="outlined"
+                                        error={!!fieldErrors.type}
+                                        helperText={fieldErrors.type}
+                                    />
+                                )}
+                            />
+                        </div>
+
+                        {/* Direction */}
+                        <div className="col-md-3 mb-3">
+                            <Autocomplete
+                                size="small"
+                                fullWidth
+                                options={directionOptions}
+                                value={formData.direction || null}
+                                onChange={(event, newValue) => {
+                                    handleInputChange({
+                                        target: {
+                                            name: 'direction',
+                                            value: newValue || ''
+                                        }
+                                    });
+                                }}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Direction"
+                                        variant="outlined"
+                                    />
+                                )}
+                            />
                         </div>
 
                         {/* Client Name */}
@@ -813,20 +867,16 @@ export const Meeting = () => {
                                     contactOptions.find((opt) => opt.value === formData.contactName) || null
                                 }
                                 onChange={(event, newValue) => {
-                                    handleInputChange({
-                                        target: {
-                                            name: 'contactName',
-                                            value: newValue ? newValue.value : ''
-                                        }
-                                    });
+                                    const newContactName = newValue ? newValue.value : '';
+                                    const newMobileNo = newValue ? newValue.mobileNo || formData.mobileNo : formData.mobileNo;
+                                    const newEmail = newValue ? newValue.email || formData.email : formData.email;
 
-                                    if (newValue) {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            mobileNo: newValue.mobileNo || '',
-                                            email: newValue.email || ''
-                                        }));
-                                    }
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        contactName: newContactName,
+                                        mobileNo: newMobileNo,
+                                        email: newEmail
+                                    }));
                                 }}
                                 renderInput={(params) => (
                                     <TextField
@@ -857,7 +907,6 @@ export const Meeting = () => {
                                 error={!!fieldErrors.mobileNo}
                                 helperText={fieldErrors.mobileNo}
                                 inputProps={{ maxLength: 10 }}
-                                disabled
                             />
                         </div>
 
@@ -873,7 +922,6 @@ export const Meeting = () => {
                                 onChange={handleInputChange}
                                 error={!!fieldErrors.email}
                                 helperText={fieldErrors.email}
-                                disabled
                             />
                         </div>
 
@@ -894,22 +942,20 @@ export const Meeting = () => {
                             />
                         </div>
 
-                        {/* Venue */}
+                        {/* Address */}
                         <div className="col-md-3 mb-3">
                             <TextField
-                                label={
-                                    <span>
-                                        Venue <span className="asterisk">*</span>
-                                    </span>
-                                }
+                                label="Address"
                                 variant="outlined"
                                 size="small"
                                 fullWidth
-                                name="venue"
-                                value={formData.venue}
+                                name="address"
+                                value={formData.address}
                                 onChange={handleInputChange}
-                                error={!!fieldErrors.venue}
-                                helperText={fieldErrors.venue}
+                                disabled
+                                InputProps={{
+                                    style: { backgroundColor: '#f5f5f5' }
+                                }}
                             />
                         </div>
 
@@ -1053,6 +1099,19 @@ export const Meeting = () => {
                             />
                         </div>
 
+                        {/* Venue */}
+                        <div className="col-md-3 mb-3">
+                            <TextField
+                                label="Venue"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="venue"
+                                value={formData.venue}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
                         {/* Follow-up Date */}
                         <div className="col-md-3 mb-3">
                             <FormControl fullWidth variant="filled" size="small">
@@ -1067,37 +1126,6 @@ export const Meeting = () => {
                                 </LocalizationProvider>
                             </FormControl>
                         </div>
-
-                        {/* Address */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Address"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                                disabled
-                                InputProps={{
-                                    style: { backgroundColor: '#f5f5f5' }
-                                }}
-                            />
-                        </div>
-
-                        {/* Description */}
-                        <div className="col-md-3 mb-3">
-                            <TextField
-                                label="Description"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
                         {/* Assign To */}
                         <div className="col-md-3 mb-3">
                             <Autocomplete
@@ -1132,6 +1160,21 @@ export const Meeting = () => {
                             />
                         </div>
 
+                        {/* Description */}
+                        <div className="col-md-6 mb-3">
+                            <TextField
+                                label="Description"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                name="description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                multiline
+                                rows={3}
+                            />
+                        </div>
+
                         {/* Active */}
                         <div className="col-md-3 .mb-3 d-flex align-items-center">
                             <FormControlLabel
@@ -1153,4 +1196,4 @@ export const Meeting = () => {
     );
 };
 
-export default Meeting;
+export default Active;
