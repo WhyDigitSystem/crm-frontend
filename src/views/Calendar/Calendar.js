@@ -496,7 +496,7 @@ const Calendar = () => {
       style={{
         marginTop: 8,
         padding: 8,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#12162e',
         borderRadius: 6,
         fontSize: isMobile ? 11 : 12
       }}
@@ -526,7 +526,7 @@ const Calendar = () => {
                 left: 0,
                 right: 0,
                 height: 1,
-                backgroundColor: '#f00',
+                backgroundColor: '#12162e',
                 transform: 'rotate(-45deg)'
               }}
             />
@@ -547,7 +547,7 @@ const Calendar = () => {
         style={{
           marginTop: 12,
           padding: isMobile ? 4 : 10,
-          backgroundColor: '#fff',
+          backgroundColor: '#12162e',
           borderRadius: 6,
           boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           border: '1px solid #e0e0e0',
@@ -577,8 +577,8 @@ const Calendar = () => {
                   textAlign: 'center',
                   fontWeight: 600,
                   fontSize: isMobile ? 10 : 11,
-                  color: '#333',
-                  backgroundColor: 'rgb(214, 220, 226)',
+                  color: '#fff',
+                  backgroundColor: '#12162e',
                   borderRadius: 4,
                   border: '1px solid #d1d5db',
                   minWidth: cellSize
@@ -626,7 +626,7 @@ const Calendar = () => {
                       minWidth: cellSize,
                       padding: 4,
                       borderRadius: 5,
-                      backgroundColor: cell?.isWeekOff ? '#ffeaea' : cell ? '#fdfdfd' : 'transparent',
+                      backgroundColor: cell?.isWeekOff ? '#12162e' : cell ? '#12162e' : 'transparent',
                       border: `1px solid ${cell?.isWeekOff ? '#ff6666' : '#dcdcdc'}`,
                       cursor: cell ? 'pointer' : 'default',
                       position: 'relative',
