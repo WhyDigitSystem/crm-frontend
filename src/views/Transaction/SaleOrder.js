@@ -13,17 +13,18 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
+import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
+import FullScreenLoader from 'utils/FullScreenLoader';
 
 const SalesOrder = () => {
     // State management
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [listView, setListView] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [listView, setListView] = useState(true);
     const [editId, setEditId] = useState('');
     const [docId, setDocId] = useState('');
     const [productList, setProductList] = useState([]);
-    // User session data
     const orgId = parseInt(localStorage.getItem('orgId'));
     const finYear = parseInt(localStorage.getItem('finYear'));
     const branch = localStorage.getItem('branch') || '';
@@ -34,7 +35,12 @@ const SalesOrder = () => {
     const [quotationList, setQuotationList] = useState([]);
     const [value, setValue] = useState(0);
 
-    // Static options
+    const [summaryCounts, setSummaryCounts] = useState({
+        New: 0,
+        Qualified: 0,
+        Unqualified: 0,
+        InProgress: 0,
+    });
     const statusOptions = ['Open', 'In-Progress', 'Completed'];
 
     // Form data
@@ -257,25 +263,63 @@ const SalesOrder = () => {
     };
 
     const getAllSalesOrders = async () => {
+        setIsLoading(true);
+
         try {
             const response = await apiCalls(
                 'get',
                 `/transaction/getAllSalesOrderByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
 
-            if (response.status) {
-                const salesOrders = response.paramObjectsMap?.salesOrderVO || [];
-                setListViewData(salesOrders.map(so => ({
-                    ...so,
-                    totalAmount: so.salesOrderDetailsDTO?.reduce(
-                        (sum, item) => sum + (item.sellingPrice || 0) * (item.qty || 0) - (item.discount || 0),
-                        0
-                    ) || 0
-                })));
-            } else {
+            // if (response.status) {
+            //     const salesOrders = response.paramObjectsMap?.salesOrderVO || [];
+            //     setListViewData(salesOrders.map(so => ({
+            //         ...so,
+            //         totalAmount: so.salesOrderDetailsDTO?.reduce(
+            //             (sum, item) => sum + (item.sellingPrice || 0) * (item.qty || 0) - (item.discount || 0),
+            //             0
+            //         ) || 0
+            //     })));
+            // }
+            if (response.status === true && response.paramObjectsMap?.salesOrderVO?.length > 0) {
+                setListViewData([...response.paramObjectsMap.salesOrderVO].reverse());
+
+                const counts = {
+                    New: 0,
+                    Qualified: 0,
+                    Unqualified: 0,
+                    InProgress: 0,
+                };
+                response.paramObjectsMap.salesOrderVO.forEach((lead) => {
+                    switch (lead.status) {
+                        case 'Open':
+                        case 'In-Progress':
+                            counts.InProgress += 1;
+                            break;
+                        case 'Completed':
+                            counts.Qualified += 1;
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                // First set the calculated counts
+                setSummaryCounts(counts);
+
+                // Then update the 'New' count properly
+                setSummaryCounts(prev => ({
+                    ...prev,
+                    New: response.paramObjectsMap.salesOrderVO.length
+                }));
+                setIsLoading(false);
+            }
+            else {
+                setIsLoading(false);
                 showToast('error', response.message || 'Failed to fetch sales orders');
             }
         } catch (error) {
+            setIsLoading(false);
             console.error('Error fetching sales orders:', error);
             showToast('error', 'Failed to fetch sales orders');
         }
@@ -302,12 +346,14 @@ const SalesOrder = () => {
                     b.branch === salesOrder.branch
                 );
 
-                // Set form data
+                getBranch(salesOrder.clientName);
+                getQuotationDetails(salesOrder.branchName, salesOrder.clientName);
+                getProductName(salesOrder.quotationId, salesOrder.clientName);
                 setFormData({
                     address: salesOrder.address || '',
                     branch: salesOrder.branch || branch,
                     branchCode: salesOrder.branchCode || branchCode,
-                    branchName: selectedBranch?.branchName || salesOrder.branchName || '',
+                    branchName: salesOrder.branchName || '',
                     clientName: salesOrder.clientName || '',
                     contactName: salesOrder.contactName || '',
                     email: salesOrder.email || '',
@@ -318,6 +364,7 @@ const SalesOrder = () => {
                     quotationId: salesOrder.quotationId || '',
                     quotationName: salesOrder.quotationName || '',
                     status: salesOrder.status || '',
+                    salesDate: salesOrder.docDate || '',
                 });
 
                 setDocId(salesOrder.docId || '');
@@ -327,7 +374,7 @@ const SalesOrder = () => {
                     id: detail.id,
                     category: detail.category || '',
                     discount: detail.discount || 0,
-                    productName: detail.productName || detail.productName || '', // Handle both spellings
+                    productName: detail.produtName || '',
                     qty: detail.qty || 1,
                     sellingPrice: detail.sellingPrice || 0,
                     subCategory: detail.subCategory || '',
@@ -342,11 +389,6 @@ const SalesOrder = () => {
                     sellingPrice: '',
                     qty: ''
                 })));
-
-                // Fetch quotations for this client
-                if (salesOrder.clientName) {
-                    await getQuotationDetails(salesOrder.clientName);
-                }
             } else {
                 showToast('error', response.message || 'Failed to fetch sales order details');
             }
@@ -594,7 +636,7 @@ const SalesOrder = () => {
             active: true,
             salesOrderDetailsDTO: salesOrderDetails.map(detail => ({
                 ...(detail.id && { id: detail.id }),
-                productName: detail.productName,
+                produtName: detail.productName,
                 category: detail.category,
                 subCategory: detail.subCategory,
                 sellingPrice: parseFloat(detail.sellingPrice) || 0,
@@ -762,9 +804,12 @@ const SalesOrder = () => {
     };
     return (
         <>
-            <div>
-                <ToastComponent />
-            </div>
+            {isLoading && (
+                <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+                    <FullScreenLoader />
+                </div>
+            )}
+            <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -780,7 +825,15 @@ const SalesOrder = () => {
                         />
                     </div>
 
-                    {!listView ? (
+                    {listView && !isLoading ? (
+                        <CommonTableWithStatus
+                            data={listViewData}
+                            columns={listViewColumns}
+                            enableEditing={true}
+                            toEdit={getSalesOrderById}
+                            summaryCounts={summaryCounts}
+                        />
+                    ) : (
                         <>
                             <div className="row d-flex ml">
                                 {/* Sales Order ID */}
@@ -1294,13 +1347,6 @@ const SalesOrder = () => {
                                 </Box>
                             </div >
                         </>
-                    ) : (
-                        <CommonListViewTable
-                            data={listViewData}
-                            columns={listViewColumns}
-                            enableEditing={true}
-                            toEdit={getSalesOrderById}
-                        />
                     )}
                 </div >
             </div >

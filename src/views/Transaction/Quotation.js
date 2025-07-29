@@ -36,16 +36,19 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
+import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
+import FullScreenLoader from 'utils/FullScreenLoader';
+import { tr } from 'date-fns/locale';
 // import FullScreenLoader from 'utils/FullScreenLoader';
 
 export const Quotation = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [editId, setEditId] = useState('');
     const [orgId] = useState(localStorage.getItem('orgId'));
     const [branchCode] = useState(localStorage.getItem('branchcode'));
     const [branch] = useState(localStorage.getItem('branch'));
     const [loginUserName] = useState(localStorage.getItem('userName'));
-    const [listView, setListView] = useState(false);
+    const [listView, setListView] = useState(true);
     const [listViewData, setListViewData] = useState([]);
     const [finYear] = useState(new Date().getFullYear().toString());
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
@@ -57,7 +60,12 @@ export const Quotation = () => {
     const [branchList, setBranchList] = useState([]);
     const [opportunityList, setOpportunityList] = useState([]);
     const [productList, setProductList] = useState([]);
-    // Form structure for Lead
+    const [summaryCounts, setSummaryCounts] = useState({
+        New: 0,
+        Qualified: 0,
+        Unqualified: 0,
+        InProgress: 0,
+    });
     const [formData, setFormData] = useState({
         quoteId: '',
         quoteDate: dayjs(),
@@ -139,15 +147,48 @@ export const Quotation = () => {
     }, [quotationPrice]);
 
     const getAllQuotation = async () => {
+        setIsLoading(true);
         try {
             const response = await apiCalls(
                 'get',
                 `/transaction/getAllQuotationByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
 
-            if (response.status === true) {
-                setListViewData(response.paramObjectsMap.quotationVO.reverse());
-            } else {
+            // if (response.status === true) {
+            //     setListViewData(response.paramObjectsMap.quotationVO.reverse());
+            // }
+            if (response.status === true && response.paramObjectsMap?.quotationVO?.length > 0) {
+                setListViewData([...response.paramObjectsMap.quotationVO].reverse());
+                setIsLoading(false);
+                const counts = {
+                    New: 0,
+                    Qualified: 0,
+                    Unqualified: 0,
+                    InProgress: 0,
+                };
+                response.paramObjectsMap.quotationVO.forEach((lead) => {
+                    switch (lead.status) {
+                        case 'NEW':
+                        case 'REVICE':
+                            counts.InProgress += 1;
+                            break;
+                        case 'APPROVED':
+                            counts.Qualified += 1;
+                            break;
+                        case 'REJECTED':
+                            counts.Unqualified += 1;
+                            break;
+                        default:
+                            break;
+                    }
+                });
+                setSummaryCounts(counts);
+                setSummaryCounts(prev => ({
+                    ...prev,
+                    New: response.paramObjectsMap.quotationVO.length
+                }));
+            }
+            else {
                 showToast('error', response.message || 'Failed to fetch leads');
             }
         } catch (error) {
@@ -157,7 +198,7 @@ export const Quotation = () => {
     };
     const getQuotationDocId = async () => {
         setIsDocIdLoading(true);
-        setLoading(false);
+        setIsLoading(false);
         try {
             const response = await apiCalls(
                 'get',
@@ -165,23 +206,22 @@ export const Quotation = () => {
             );
 
             if (response.status === true) {
-                setLoading(true);
                 setFormData(prev => ({
                     ...prev,
                     quoteId: response.paramObjectsMap.quotationDocid
                 }));
             }
         } catch (error) {
-            setLoading(false);
+            // setLoading(false);
             console.error('Error getting document ID:', error);
             showToast('error', 'Failed to generate document ID');
         } finally {
-            setLoading(false);
+            // setLoading(false);
             setIsDocIdLoading(false);
         }
     };
     const getQuotationById = async (id) => {
-        setLoading(true);
+        setIsLoading(true);
         try {
             const response = await apiCalls('get', `/transaction/getAllQuotationById?id=${id}`);
             if (response.status === true) {
@@ -228,7 +268,7 @@ export const Quotation = () => {
                         amount: row.amount
                     }))
                 );
-                setLoading(false);
+                setIsLoading(false);
             } else {
                 showToast('error', response.paramObjectsMap.message || 'Failed to fetch lead details');
             }
@@ -238,7 +278,7 @@ export const Quotation = () => {
         }
     };
     const handleSave = async () => {
-        setLoading(true);
+        setIsLoading(true);
 
         // Main form validation
         const errors = {};
@@ -281,7 +321,7 @@ export const Quotation = () => {
         if (Object.keys(errors).length > 0 || !detailTableDataValid) {
             setFieldErrors(errors);
             setQuotationPriceErrors(newTableErrors);
-            setLoading(false);
+            setIsLoading(false);
             return;
         }
         const subTableData = quotationPrice.map((row) => ({
@@ -330,7 +370,7 @@ export const Quotation = () => {
             console.error('Error:', error);
             showToast('error', 'Quotation creation failed');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
     const getClientName = async () => {
@@ -591,6 +631,11 @@ export const Quotation = () => {
     };
     return (
         <>
+            {isLoading && (
+                <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+                    <FullScreenLoader />
+                </div>
+            )}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
                     <div className="row d-flex ml">
@@ -607,13 +652,14 @@ export const Quotation = () => {
                         </div>
                     </div>
 
-                    {listView ? (
+                    {listView && !isLoading ? (
                         <div>
-                            <CommonListViewTable
+                            <CommonTableWithStatus
                                 data={listViewData}
                                 columns={listViewColumns}
                                 blockEdit={true}
                                 toEdit={(row) => getQuotationById(row.original.id)}
+                                summaryCounts={summaryCounts}
                             />
                         </div>
                     ) : (
@@ -933,7 +979,7 @@ export const Quotation = () => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ backgroundColor: '#12162e' , color:'#ffff' }}>
+                                                                <tr style={{ backgroundColor: '#12162e', color: '#ffff' }}>
                                                                     <th className="table-header">Action</th>
                                                                     <th className="table-header">#</th>
                                                                     <th className="table-header">Product Name</th>

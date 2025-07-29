@@ -15,8 +15,9 @@ import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
+import FullScreenLoader from 'utils/FullScreenLoader';
 
 const Lead = () => {
     const [listViewData, setListViewData] = useState([]);
@@ -28,8 +29,8 @@ const Lead = () => {
     const [finYear] = useState(localStorage.getItem('finYear'));
     const [value, setValue] = useState(0);
     const [editId, setEditId] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [listView, setListView] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [listView, setListView] = useState(true);
     const [docId, setDocId] = useState('');
     const [open, setOpen] = useState(false);
     const [cityList, setCityList] = useState([]);
@@ -152,18 +153,59 @@ const Lead = () => {
             const response = await apiCalls('get', `/transaction/getAllLeadByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
             console.log("getAll Leads", response.status);
 
-            if (response.status === true) {
-                setListViewData(response.paramObjectsMap.leadVO.reverse());
+            if (response.status === true && response.paramObjectsMap?.leadVO?.length > 0) {
+                setListViewData([...response.paramObjectsMap.leadVO].reverse());
+
+                const counts = {
+                    New: 0,
+                    Qualified: 0,
+                    Unqualified: 0,
+                    InProgress: 0,
+                };
+
+                response.paramObjectsMap.leadVO.forEach((lead) => {
+                    switch (lead.stage) {
+                        case 'Progressing':
+                        case 'Proposal':
+                        case 'Negotiation':
+                            counts.InProgress += 1;
+                            break;
+                        case 'Closed Won':
+                            counts.Qualified += 1;
+                            break;
+                        case 'Closed Lost':
+                            counts.Unqualified += 1;
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                // First set the calculated counts
+                setSummaryCounts(counts);
+
+                // Then update the 'New' count properly
+                setSummaryCounts(prev => ({
+                    ...prev,
+                    New: response.paramObjectsMap.leadVO.length
+                }));
             } else {
-                showToast('error', response.message || 'Failed to fetch leads');
+                setListViewData([]);
+                showToast('info', 'No leads found');
             }
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching leads:', error);
             showToast('error', 'Failed to fetch leads');
+            setIsLoading(false);
         }
     };
-
+    // useEffect(() => {
+    //     console.log("Get all leads", listViewData);
+    //     listViewData.length > 0 ? setIsLoading(false) : setIsLoading(true);
+    // }, [listViewData])
     const getLeadById = async (row) => {
+        setIsLoading(true);
         setEditId(row.original.id);
         try {
             const response = await apiCalls('get', `/transaction/getLeadById?id=${row.original.id}`);
@@ -229,9 +271,11 @@ const Lead = () => {
                     preferredContact: 0, workAnniversaryDate: ''
                 }]);
             }
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching lead details:', error);
             showToast('error', 'Failed to fetch lead details');
+            setIsLoading(false);
         }
     };
     const getCityName = async () => {
@@ -389,10 +433,7 @@ const Lead = () => {
             showToast('error', 'Please correct the highlighted fields');
             return;
         }
-
         setIsLoading(true);
-
-        // Prepare API payload
         const payload = {
             ...(editId && { id: editId }),
             address: formData.address || '',
@@ -458,7 +499,9 @@ const Lead = () => {
             } else {
                 showToast('error', response.message || 'Operation failed');
             }
+            setIsLoading(false);
         } catch (error) {
+            setIsLoading(false);
             console.error('Error saving lead:', error);
             showToast('error', 'Failed to save lead: ' + (error.response?.data?.message || error.message));
         } finally {
@@ -682,8 +725,20 @@ const Lead = () => {
         const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
         setFormData(prev => ({ ...prev, [field]: formattedDate }));
     };
+    const [summaryCounts, setSummaryCounts] = useState({
+        New: 0,
+        Qualified: 0,
+        Unqualified: 0,
+        InProgress: 0,
+    });
+
     return (
         <>
+            {isLoading && (
+                <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+                    <FullScreenLoader />
+                </div>
+            )}
             <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
@@ -691,10 +746,17 @@ const Lead = () => {
                         {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                         <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} disabled={isLoading} />
+                        <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                     </div>
-
-                    {!listView ? (
+                    {listView && !isLoading ? (
+                        <CommonTableWithStatus
+                            data={listViewData}
+                            columns={listViewColumns}
+                            enableEditing={true}
+                            toEdit={getLeadById}
+                            summaryCounts={summaryCounts}
+                        />
+                    ) : (
                         <>
                             <div className="row d-flex ml">
                                 <div className="col-md-3 mb-3">
@@ -1045,7 +1107,7 @@ const Lead = () => {
                                             startIcon={<CloudUploadIcon />}
                                             sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
                                         >
-                                            {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Company Logo'}
+                                            {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Attachment'}
 
                                             <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
                                         </Button>
@@ -1059,14 +1121,14 @@ const Lead = () => {
                                     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                                         <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
                                             <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
-                                                Company Logo
+                                                Attachment
                                             </Typography>
                                             {companyLogo ? (
                                                 <Box>
                                                     <Avatar
                                                         src={typeof companyLogo === 'object' ? URL.createObjectURL(companyLogo) : `data:image/jpeg;base64,${companyLogo}`}
-                                                        alt="Company Logo"
-                                                        sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                                                        alt="Attachment"
+                                                        sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2, backgroundColor: 'transparent' }}
                                                     />
                                                     <Box display="flex" gap={2} mt={2}>
                                                         <IconButton
@@ -1088,7 +1150,7 @@ const Lead = () => {
                                             ) : (
                                                 <Box>
                                                     <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                                                        <Typography variant="caption">Company Logo</Typography>
+                                                        <Typography variant="caption">Attachment</Typography>
                                                     </Avatar>
                                                     <Box display="flex" gap={2} mt={2}>
                                                         <IconButton
@@ -1442,13 +1504,6 @@ const Lead = () => {
                                 </Box>
                             </div>
                         </>
-                    ) : (
-                        <CommonListViewTable
-                            data={listViewData}
-                            columns={listViewColumns}
-                            enableEditing={true}
-                            toEdit={getLeadById}
-                        />
                     )}
                 </div>
             </div>

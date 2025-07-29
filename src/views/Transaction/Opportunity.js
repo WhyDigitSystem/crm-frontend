@@ -10,15 +10,16 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
+import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
+import FullScreenLoader from 'utils/FullScreenLoader';
 
 const Opportunity = () => {
     // State management
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [listView, setListView] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [listView, setListView] = useState(true);
     const [editId, setEditId] = useState('');
     const [docId, setDocId] = useState('');
     const [clientNameList, setClientNameList] = useState([]);
@@ -28,7 +29,12 @@ const Opportunity = () => {
     const [value, setValue] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
-    const [isBranchLoading, setIsBranchLoading] = useState(false);
+    const [summaryCounts, setSummaryCounts] = useState({
+        New: 0,
+        Qualified: 0,
+        Unqualified: 0,
+        InProgress: 0,
+    });
 
     // User session data
     const orgId = parseInt(localStorage.getItem('orgId'));
@@ -109,23 +115,9 @@ const Opportunity = () => {
         getAllOpportunities();
         getOpportunityDocId();
         getAllCategories();
-        getAllSubCategories();
         getClientName();
         getProductName();
     }, []);
-    const getAllSubCategories = async () => {
-        try {
-            const response = await apiCalls('get', `/master/getSubCategoryByOrgId?orgId=${orgId}`);
-            if (response.status) {
-                setSubCategoryList(response.paramObjectsMap?.subCategoryVO || []);
-            } else {
-                showToast('error', response.message || 'Failed to load subcategories');
-            }
-        } catch (error) {
-            console.error('Error fetching subcategories:', error);
-            showToast('error', 'Failed to load subcategories');
-        }
-    };
 
     const getAllCategories = async () => {
         try {
@@ -221,18 +213,52 @@ const Opportunity = () => {
     };
 
     const getAllOpportunities = async () => {
+        setIsLoading(true);
         try {
             const response = await apiCalls(
                 'get',
                 `/transaction/getOpportunityByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
             );
-            if (response.status) {
-                const opportunities = response.paramObjectsMap?.opportunityVO.reverse() || [];
-                setListViewData(opportunities.map(opp => ({
-                    ...opp,
-                    totalAmount: opp.opportunityDetailsVO?.reduce((sum, item) => sum + (item.opportunityAmount || 0), 0) || 0
-                })));
-            } else {
+            // if (response.status) {
+            //     const opportunities = response.paramObjectsMap?.opportunityVO.reverse() || [];
+            //     setListViewData(opportunities.map(opp => ({
+            //         ...opp,
+            //         totalAmount: opp.opportunityDetailsVO?.reduce((sum, item) => sum + (item.opportunityAmount || 0), 0) || 0
+            //     })));
+            // } 
+            if (response.status === true && response.paramObjectsMap?.opportunityVO?.length > 0) {
+                setListViewData([...response.paramObjectsMap.opportunityVO].reverse());
+                setIsLoading(false);
+                const counts = {
+                    New: 0,
+                    Qualified: 0,
+                    Unqualified: 0,
+                    InProgress: 0,
+                };
+                response.paramObjectsMap.opportunityVO.forEach((lead) => {
+                    switch (lead.stage) {
+                        case 'Progressing':
+                        case 'Proposal':
+                        case 'Negotiation':
+                            counts.InProgress += 1;
+                            break;
+                        case 'Closed Won':
+                            counts.Qualified += 1;
+                            break;
+                        case 'Closed Lost':
+                            counts.Unqualified += 1;
+                            break;
+                        default:
+                            break;
+                    }
+                });
+                setSummaryCounts(counts);
+                setSummaryCounts(prev => ({
+                    ...prev,
+                    New: response.paramObjectsMap.opportunityVO.length
+                }));
+            }
+            else {
                 showToast('error', response.message || 'Failed to fetch opportunities');
             }
         } catch (error) {
@@ -302,6 +328,7 @@ const Opportunity = () => {
             } else {
                 showToast('error', response.message || 'Failed to fetch opportunity details');
             }
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching opportunity details:', error);
             showToast('error', 'Failed to fetch opportunity details');
@@ -494,7 +521,7 @@ const Opportunity = () => {
             if (response.status) {
                 showToast('success', editId ? 'Opportunity updated successfully' : 'Opportunity created successfully');
                 handleClear();
-                await getAllOpportunities();
+                getAllOpportunities();
             } else {
                 showToast('error', response.message || 'Operation failed');
             }
@@ -635,6 +662,11 @@ const Opportunity = () => {
     };
     return (
         <>
+            {isLoading && (
+                <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+                    <FullScreenLoader />
+                </div>
+            )}
             <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
@@ -651,10 +683,17 @@ const Opportunity = () => {
                         />
                     </div>
 
-                    {!listView ? (
+                    {listView && !isLoading ? (
+                        <CommonTableWithStatus
+                            data={listViewData}
+                            columns={listViewColumns}
+                            enableEditing={true}
+                            toEdit={getOpportunityById}
+                            summaryCounts={summaryCounts}
+                        />
+                    ) : (
                         <>
                             <div className="row d-flex ml">
-                                {/* Opportunity ID */}
                                 <div className="col-md-3 mb-3">
                                     <TextField
                                         label="Opportunity ID"
@@ -1098,13 +1137,6 @@ const Opportunity = () => {
                                 </Box>
                             </div>
                         </>
-                    ) : (
-                        <CommonListViewTable
-                            data={listViewData}
-                            columns={listViewColumns}
-                            enableEditing={true}
-                            toEdit={getOpportunityById}
-                        />
                     )}
                 </div>
             </div>
