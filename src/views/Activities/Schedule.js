@@ -17,7 +17,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-// import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoToneIcon';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
 const Schedule = () => {
@@ -89,10 +88,10 @@ const Schedule = () => {
     { accessorKey: 'priority', header: 'Priority', size: 100 },
     { accessorKey: 'startDate', header: 'Start Date', size: 120 },
     { accessorKey: 'status', header: 'Status', size: 120 },
-    { accessorKey: 'assignedTo', header: 'Assigned To', size: 150 },
+    { accessorKey: 'assignedName', header: 'Assigned To', size: 150 },
     {
       accessorKey: 'active', header: 'Active', size: 100,
-      Cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive'
+      Cell: ({ cell }) => cell.getValue() === "Active" || cell.getValue() === true ? 'Active' : 'Inactive'
     },
   ];
 
@@ -212,14 +211,17 @@ const Schedule = () => {
   const getAllTasks = async () => {
     try {
       const response = await apiCalls(
-        'get', `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+        'get', 
+        `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.ScheduleVO.map(task => ({
+        const formattedData = response.paramObjectsMap.scheduleVO.map(task => ({
           ...task,
+          id: task.id, // Ensure id is included for editing
           active: task.active === "Active" || task.active === true
-        })));
+        }));
+        setListViewData(formattedData);
       } else {
         showToast('error', response.message || 'Failed to fetch tasks');
       }
@@ -254,10 +256,13 @@ const Schedule = () => {
 
   const getTaskById = async (id) => {
     try {
-      const response = await apiCalls('get', `/activities/getScheduleById?id=${id}`);
+      const response = await apiCalls(
+        'get', 
+        `/activities/getScheduleById?id=${id}`
+      );
 
       if (response.status === true) {
-        const task = response.paramObjectsMap.ScheduleVO;
+        const task = response.paramObjectsMap.scheduleVO;
         setEditId(id);
         setListView(false);
         setImg(task.attachments);
@@ -281,7 +286,10 @@ const Schedule = () => {
           assignedTo: task.assignedTo || '',
           assignedName: task.assignedName || task.assignedTo || '',
           description: task.description || '',
-          active: task.active === "Active" || task.active === true
+          active: task.active === "Active" || task.active === true,
+          finYear: finYear,
+          orgId: orgId,
+          createdBy: loginUserName
         });
       } else {
         showToast('error', response.message || 'Failed to fetch task details');
@@ -380,7 +388,10 @@ const Schedule = () => {
       assignedTo: '',
       assignedName: '',
       description: '',
-      active: true
+      active: true,
+      finYear: finYear,
+      orgId: orgId,
+      createdBy: loginUserName
     });
     setEditId('');
     setFieldErrors({});
@@ -424,7 +435,7 @@ const Schedule = () => {
       orgId: parseInt(orgId),
       branch: formData.branch,
       branchCode: formData.branchCode,
-      active: formData.active === "Active" ? true : false,
+      active: formData.active,
       assignedName: formData.assignedName || formData.assignedTo,
       assignedTo: formData.assignedTo,
       clientName: formData.clientName,
@@ -444,7 +455,11 @@ const Schedule = () => {
     };
 
     try {
-      const response = await apiCalls('put', '/activities/createUpdateSchedule', payload);
+      const response = await apiCalls(
+        'put', 
+        '/activities/createUpdateSchedule', 
+        payload
+      );
 
       if (response.status === true) {
         showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
@@ -879,8 +894,6 @@ const Schedule = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                // multiline
-                // rows={3}
                 />
               </div>
 
