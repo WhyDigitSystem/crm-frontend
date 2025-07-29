@@ -35,39 +35,35 @@ const NotificationList = () => {
       }}
     >
       <CardContent sx={{ pb: 1 }}>
-        {' '}
-        {/* Reduced padding-bottom */}
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#343a40' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#000' }}>
             {item.heading}
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Typography variant="caption" sx={{ color: '#000' }}>
             {item.docDate}
           </Typography>
         </Stack>
         <Divider sx={{ my: 1.5 }} />
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" sx={{ color: '#000' }} gutterBottom>
           Name:{' '}
-          <Typography variant="body1" component="span" sx={{ fontWeight: '500' }}>
+          <Typography variant="body1" component="span" sx={{ fontWeight: '500', color: '#000' }}>
             {item.name}
           </Typography>
         </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" sx={{ color: '#000' }} gutterBottom>
           Expense ID:{' '}
-          <Typography variant="body1" component="span" sx={{ fontWeight: '500' }}>
+          <Typography variant="body1" component="span" sx={{ fontWeight: '500', color: '#000' }}>
             {item.expenceId}
           </Typography>
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: '#000' }}>
           Amount:{' '}
-          <Typography variant="body1" component="span" sx={{ fontWeight: '500' }}>
+          <Typography variant="body1" component="span" sx={{ fontWeight: '500', color: '#000' }}>
             {item.amount} {item.currency}
           </Typography>
         </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: 'flex-end', pt: 0, pb: 1, mb: 1 }}>
-        {' '}
-        {/* Reduced padding-top */}
         <Button size="small" variant="contained" color="success" sx={{ borderRadius: 20, px: 3 }}>
           Approve
         </Button>
@@ -90,13 +86,7 @@ const NotificationList = () => {
         boxShadow: '0 6px 18px rgba(0, 0, 0, 0.05)'
       }}
     >
-      {/* <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: '#495057', textAlign: 'center' }}>
-        Notifications
-      </Typography> */}
-      {/* <Divider sx={{ mb: 3 }} /> */}
       <Stack spacing={2}>
-        {' '}
-        {/* Reduced spacing between cards */}
         {notifications.map((notification, index) => (
           <Box key={index}>{renderNotificationCard(notification)}</Box>
         ))}

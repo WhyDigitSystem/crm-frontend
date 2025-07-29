@@ -13,6 +13,7 @@ import TotalGrowthBarChart from './TotalGrowthBarChart';
 import TotalIncomeDarkCard from './TotalIncomeDarkCard';
 import TotalIncomeLightCard from './TotalIncomeLightCard';
 import TotalOrderLineChartCard from './TotalOrderLineChartCard';
+import BajajAreaChartCard from './BajajAreaChartCard';
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
@@ -46,6 +47,7 @@ const Dashboard = () => {
       <div>
         <ToastContainer />
       </div>
+      {/* 1 */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           {/* 1 */}
@@ -66,6 +68,7 @@ const Dashboard = () => {
           </Grid>
         </Grid>
       </Grid>
+      {/* 2 */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           {/* 1 */}
@@ -84,16 +87,31 @@ const Dashboard = () => {
           <Grid item lg={3} md={6} sm={6} xs={12}>
             <TotalIncomeLightCard isLoading={isLoading} />
           </Grid>
-          {/* <Grid item lg={3} md={12} sm={12} xs={12}>
-            <Grid container spacing={gridSpacing}>
-              <Grid item sm={6} xs={12} md={6} lg={12}>
-                <TotalIncomeLightCard isLoading={isLoading} />
-              </Grid>
-            </Grid>
-          </Grid> */}
           {/* 3 */}
         </Grid>
       </Grid>
+      {/* 3 */}
+      {/* <Grid item xs={12}>
+        <Grid container spacing={gridSpacing}>
+          
+          <Grid item lg={3} md={6} sm={6} xs={12}>
+            <BajajAreaChartCard isLoading={isLoading} />
+          </Grid>
+          
+          <Grid item lg={3} md={6} sm={6} xs={12}>
+            <PopularCard isLoading={isLoading} />
+          </Grid>
+          
+          <Grid item lg={3} md={6} sm={6} xs={12}>
+            <TotalGrowthBarChart isLoading={isLoading} />
+          </Grid>
+          
+          <Grid item lg={3} md={6} sm={6} xs={12}>
+            <gridSpacing isLoading={isLoading} />
+          </Grid>
+          
+        </Grid>
+      </Grid> */}
     </Grid>
   );
 };
