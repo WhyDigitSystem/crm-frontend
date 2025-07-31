@@ -39,7 +39,10 @@ const NavCollapse = ({ menu, level }) => {
       menu?.id !== 'Documents' &&
       menu?.id !== 'finance' &&
       menu?.id !== 'Activities' &&
-      menu?.id !== 'Transaction'
+      menu?.id !== 'Transaction' &&
+      menu.id !== 'rateCollapse' &&
+      menu.id !== 'dealerCollapse' &&
+      menu.id !== 'nomination-enquiries-collapse'
     ) {
       navigate(menu.children[0]?.url);
     }

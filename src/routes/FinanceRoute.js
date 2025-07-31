@@ -51,7 +51,6 @@ const Active = Loadable(lazy(() => import('views/Activities/Active')));
 const Schedule = Loadable(lazy(() => import('views/Activities/Schedule')));
 
 
-
 // Transaction
 const Lead = Loadable(lazy(() => import('views/Transaction/Lead')));
 const Opportunity = Loadable(lazy(() => import('views/Transaction/Opportunity')));
@@ -61,7 +60,15 @@ const CustomerDetails = Loadable(lazy(() => import('views/Transaction/CustomerDe
 
 //Rate Management
 const Rate = Loadable(lazy(() => import('views/RateManagement/Rate')));
+
+
+// Dealer
 const Dealer = Loadable(lazy(() => import('views/Dealers/Dealers')));
+
+// NominationEnquiries
+const NominationEnquiries = Loadable(lazy(() => import('views/NominationEnquiries/AllNominationEnquiries')));
+
+
 // login option 3 routing
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -226,6 +233,10 @@ const FinanceRoute = {
       path: '/Dealers/Dealer',
       element: <Dealer />
     },
+    {
+      path: '/NominationEnquiries/AllNominationEnquiries',
+      element: <NominationEnquiries />
+    }
   ]
 };
 

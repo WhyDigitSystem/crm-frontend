@@ -26,20 +26,20 @@ const DealerChilder = [
 ].filter(Boolean);
 
 const DealerManagement =
-  DealerChilder.length > 0
-    ? {
-      id: 'dealer',
-      type: 'group',
-      children: [
-        {
-          id: 'dealerCollapse',
-          title: 'Dealers',
-          type: 'collapse',
-        //   icon: IconKey,
-          children: DealerChilder
+    DealerChilder.length > 0
+        ? {
+            id: 'dealer',
+            type: 'group',
+            children: [
+                {
+                    id: 'dealerCollapse',
+                    title: 'Dealers',
+                    type: 'collapse',
+                    icon: icons.IconUserCog, // <-- Added icon here
+                    children: DealerChilder
+                }
+            ]
         }
-      ]
-    }
-    : null;
+        : null;
 
 export default DealerManagement;

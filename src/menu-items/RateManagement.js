@@ -26,20 +26,20 @@ const rateChildren = [
 ].filter(Boolean);
 
 const rate =
-  rateChildren.length > 0
-    ? {
-      id: 'rate',
-      type: 'group',
-      children: [
-        {
-          id: 'rateCollapse',
-          title: 'Rate Management',
-          type: 'collapse',
-        //   icon: IconKey,
-          children: rateChildren
+    rateChildren.length > 0
+        ? {
+            id: 'rate',
+            type: 'group',
+            children: [
+                {
+                    id: 'rateCollapse',
+                    title: 'Rate Management',
+                    type: 'collapse',
+                    icon: icons.IconCurrencyRupee, // <-- Added icon here
+                    children: rateChildren
+                }
+            ]
         }
-      ]
-    }
-    : null;
+        : null;
 
 export default rate;
