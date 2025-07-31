@@ -70,11 +70,11 @@ const Dealer = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'clientName', header: 'Dealer Name', size: 140 },
-    { accessorKey: 'clientType', header: 'DOB', size: 140 },
-    { accessorKey: 'contactNo', header: 'Anniversary', size: 140 },
-    { accessorKey: 'mail', header: 'Place/Town', size: 140 },
-    { accessorKey: 'industry', header: 'Manager', size: 140 },
+    { accessorKey: 'name', header: 'Dealer Name', size: 140 },
+    { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
+    { accessorKey: 'anniversary', header: 'Anniversary', size: 140 },
+    { accessorKey: 'place', header: 'Place/Town', size: 140 },
+    { accessorKey: 'manager', header: 'Manager', size: 140 },
   ];
   const getAllStates = async () => {
     try {
