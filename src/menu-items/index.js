@@ -8,6 +8,10 @@ import companySetup from './companySetup';
 import dashboard from './dashboard';
 import Activities from './Activities';
 import Transaction from './Transaction';
+import rate from './RateManagement';
+import DealerManagement from './DealerManagement';
+
+
 
 // Helper to remove null/undefined modules
 const filterValid = (items) => items.filter(Boolean);
@@ -22,7 +26,9 @@ const getMenuItems = () => {
       basicMaster,
       Documents,
       Activities,
-      Transaction
+      Transaction,
+      rate,
+      DealerManagement
     ])
   };
 };

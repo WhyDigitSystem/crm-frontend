@@ -59,6 +59,9 @@ const Quotation = Loadable(lazy(() => import('views/Transaction/Quotation')));
 const SaleOrder = Loadable(lazy(() => import('views/Transaction/SaleOrder')));
 const CustomerDetails = Loadable(lazy(() => import('views/Transaction/CustomerDetails')));
 
+//Rate Management
+const Rate = Loadable(lazy(() => import('views/RateManagement/Rate')));
+const Dealer = Loadable(lazy(() => import('views/Dealers/Dealers')));
 // login option 3 routing
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -210,6 +213,18 @@ const FinanceRoute = {
     {
       path: '/Transaction/CustomerDetails',
       element: <CustomerDetails />
+    },
+
+    // Rate Management
+    {
+      path: '/RateManagement/Rate',
+      element: <Rate />
+    },
+
+    // Dealer
+    {
+      path: '/Dealers/Dealer',
+      element: <Dealer />
     },
   ]
 };
