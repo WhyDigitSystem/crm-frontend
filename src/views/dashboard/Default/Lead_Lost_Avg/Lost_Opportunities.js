@@ -15,8 +15,8 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown'; // Updated icon
 const lostOpportunities = [
   { name: 'Manager User', team: 'Unassigned', count: 2 },
   { name: 'Simba Well', team: 'Unassigned', count: 1 },
-  { name: 'Sales User', team: "Manager's Team", count: 0 },
-  { name: 'Marshall Well', team: "Simba's Team", count: 4 },
+  { name: 'Sales User', team: "Manager's Team", count: 1 },
+  { name: 'Marshall Well', team: "Simba's Team", count: 1 },
   { name: 'Akki Well', team: "Simba's Team", count: 1 }
 ];
 

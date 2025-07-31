@@ -36,6 +36,8 @@ import AvgConversionRate from './Lead_Lost_Avg/Avg_Conversion_Rate';
 import RecentActivities from './Task/RecentActivities';
 import UpcomingTasks from './Task/UpcomingTasks'
 
+import CompanyDetails from './CompanyDetails'
+
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 const Dashboard = () => {
@@ -136,6 +138,14 @@ const Dashboard = () => {
           {/* 1 */}
           <Grid item lg={6} md={6} sm={6} xs={12}>
             <UpcomingTasks isLoading={isLoading} />
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Grid container spacing={gridSpacing}>
+          <Grid item lg={12} md={6} sm={6} xs={12}>
+            <CompanyDetails isLoading={isLoading} />
           </Grid>
         </Grid>
       </Grid>
