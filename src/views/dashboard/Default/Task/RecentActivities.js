@@ -28,7 +28,7 @@ import TaskIcon from '@mui/icons-material/TaskAltOutlined';
 import { motion } from 'framer-motion';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-    backgroundColor: theme.palette.secondary.dark,
+    backgroundColor: theme.palette.secondary.light,
     color: '#fff',
     overflow: 'hidden',
     position: 'relative',
