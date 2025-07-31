@@ -15,6 +15,27 @@ import TotalIncomeLightCard from './TotalIncomeLightCard';
 import TotalOrderLineChartCard from './TotalOrderLineChartCard';
 import BajajAreaChartCard from './BajajAreaChartCard';
 
+import Home from './Home';
+// CurrentMonthRevenue
+import CurrentMonthRevenue from './CurrentMonth/CurrentMonthRevenue';
+import CurrentMonthActiveLeads from './CurrentMonth/CurrentMonthActiveLeads';
+import CurrentMonthWinRate from './CurrentMonth/CurrentMonthWinRate';
+import CurrentMonthPipelineValue from './CurrentMonth/CurrentMonthPipelineValue';
+
+// SalesTeamPerformance
+import SalesTeamPerformance from './SalesTeamPerformance/SalesTeamPerformance';
+import AllSalesWinRateRatio from './SalesTeamPerformance/All_Sales_Win_Rate_Ratio'
+import AllSalesPerformance from './SalesTeamPerformance/All_Sales_Performance';
+
+// Lead_Lost_Avg
+import LeadGeneration from './Lead_Lost_Avg/Lead_Generation';
+import LostOpportunities from './Lead_Lost_Avg/Lost_Opportunities';
+import AvgConversionRate from './Lead_Lost_Avg/Avg_Conversion_Rate';
+
+// Task 
+import RecentActivities from './Task/RecentActivities';
+import UpcomingTasks from './Task/UpcomingTasks'
+
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 const Dashboard = () => {
@@ -50,68 +71,75 @@ const Dashboard = () => {
       {/* 1 */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
+          <Grid item lg={12} md={6} sm={6} xs={12}>
+            <Home isLoading={isLoading} />
+          </Grid>
           {/* 1 */}
           <Grid item lg={3} md={6} sm={6} xs={12}>
-            <EarningCard isLoading={isLoading} />
+            <CurrentMonthRevenue isLoading={isLoading} />
           </Grid>
           {/* 2 */}
           <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
+            <CurrentMonthActiveLeads isLoading={isLoading} />
           </Grid>
           {/* 3 */}
           <Grid item lg={3} md={6} sm={6} xs={12}>
-            <EarningCard isLoading={isLoading} />
+            <CurrentMonthWinRate isLoading={isLoading} />
           </Grid>
           {/* 4 */}
           <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
+            <CurrentMonthPipelineValue isLoading={isLoading} />
           </Grid>
         </Grid>
       </Grid>
-      {/* 2 */}
+
+      {/* 1 */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
+          <Grid item lg={12} md={6} sm={6} xs={12}>
+            <SalesTeamPerformance isLoading={isLoading} />
+          </Grid>
           {/* 1 */}
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalIncomeDarkCard isLoading={isLoading} />
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <AllSalesWinRateRatio isLoading={isLoading} />
           </Grid>
           {/* 2 */}
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalIncomeLightCard isLoading={isLoading} />
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <AllSalesPerformance isLoading={isLoading} />
           </Grid>
-          {/* 3 */}
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalIncomeDarkCard isLoading={isLoading} />
-          </Grid>
-          {/* 4 */}
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalIncomeLightCard isLoading={isLoading} />
-          </Grid>
-          {/* 3 */}
         </Grid>
       </Grid>
-      {/* 3 */}
-      {/* <Grid item xs={12}>
+
+      {/* 1 */}
+      <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
-          
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <BajajAreaChartCard isLoading={isLoading} />
+          <Grid item lg={4} md={6} sm={6} xs={12}>
+            <LeadGeneration isLoading={isLoading} />
           </Grid>
-          
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <PopularCard isLoading={isLoading} />
+          {/* 1 */}
+          <Grid item lg={4} md={6} sm={6} xs={12}>
+            <LostOpportunities isLoading={isLoading} />
           </Grid>
-          
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <TotalGrowthBarChart isLoading={isLoading} />
+          {/* 2 */}
+          <Grid item lg={4} md={6} sm={6} xs={12}>
+            <AvgConversionRate isLoading={isLoading} />
           </Grid>
-          
-          <Grid item lg={3} md={6} sm={6} xs={12}>
-            <gridSpacing isLoading={isLoading} />
-          </Grid>
-          
         </Grid>
-      </Grid> */}
+      </Grid>
+
+      {/* 1 */}
+      <Grid item xs={12}>
+        <Grid container spacing={gridSpacing}>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <RecentActivities isLoading={isLoading} />
+          </Grid>
+          {/* 1 */}
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            <UpcomingTasks isLoading={isLoading} />
+          </Grid>
+        </Grid>
+      </Grid>
+
     </Grid>
   );
 };

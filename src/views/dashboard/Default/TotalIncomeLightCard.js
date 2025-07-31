@@ -94,6 +94,6 @@ const TotalIncomeLightCard = ({ isLoading }) => {
 
 TotalIncomeLightCard.propTypes = {
   isLoading: PropTypes.bool
-};
+}; 
 
 export default TotalIncomeLightCard;
