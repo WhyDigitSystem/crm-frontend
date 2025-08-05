@@ -16,7 +16,7 @@ const icons = {
 // ==============================|| RATE MANAGEMENT MENU ITEMS ||============================== //
 
 const rateChildren = [
-    hasScreenAccess('RT') && {
+    hasScreenAccess('RA') && {
         id: 'rateManagement',
         title: 'Rate',
         type: 'item',
@@ -35,7 +35,7 @@ const rate =
                     id: 'rateCollapse',
                     title: 'Rate Management',
                     type: 'collapse',
-                    icon: icons.IconCurrencyRupee, // <-- Added icon here
+                    icon: icons.IconCurrencyRupee, 
                     children: rateChildren
                 }
             ]

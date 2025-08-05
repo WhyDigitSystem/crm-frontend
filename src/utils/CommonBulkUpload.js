@@ -19,10 +19,12 @@ const CommonBulkUpload = ({
   handleFileUpload,
   onOpenClick,
   apiUrl,
-  screen
+  screen,
+  loginUser,
+  orgId
 }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  // const [orgId, setOrgId] = useState(localStorage.getItem('orgId')); 
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -50,34 +52,75 @@ const CommonBulkUpload = ({
     setSuccessfulUploads(0);
   };
 
+  // const handleSubmit = async () => {
+  //   if (selectedFile) {
+  //     const formData = new FormData();
+  //     formData.append('files', selectedFile);
+  //     try {
+  //       const headers = {
+  //         'Content-Type': 'multipart/form-data'
+  //       };
+  //       const response = await apiCalls('post', `${apiUrl}`, formData, {}, headers);
+  //       if (response.status === true) {
+  //         console.log('File uploaded successfully:', response);
+  //         const message = response.paramObjectsMap.paramObjectsMap.message;
+  //         const successfulUploads = response.paramObjectsMap.successfulUploads;
+  //         setSuccessMessage(message);
+  //         setSuccessfulUploads(successfulUploads);
+  //         setSuccessDialogOpen(true);
+  //         setSelectedFile(null);
+  //         showToast('success', message);
+  //       } else {
+  //         showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Uploaded failed`);
+  //         // showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order Bulk Uploaded failed');
+  //         setErrorMessage(response.paramObjectsMap.errorMessage);
+  //         setErrorDialogOpen(true);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error:', error);
+  //       showToast('error', ' failed');
+  //       setErrorMessage(errorMessage);
+  //       setErrorDialogOpen(true);
+  //     }
+
+  //     handleClose();
+  //     onSubmit();
+  //   }
+  // };
   const handleSubmit = async () => {
     if (selectedFile) {
       const formData = new FormData();
-      formData.append('files', selectedFile);
+      formData.append('files', selectedFile); // required by API
+
       try {
         const headers = {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
         };
-        const response = await apiCalls('post', `${apiUrl}`, formData, {}, headers);
+
+        // Send createdBy and orgId as query params
+        const url = `${apiUrl}?createdBy=${loginUser}&orgId=${orgId}`;
+
+        const response = await apiCalls('post', url, formData, {}, headers);
+
         if (response.status === true) {
-          console.log('File uploaded successfully:', response);
-          const message = response.paramObjectsMap.paramObjectsMap.message;
-          const successfulUploads = response.paramObjectsMap.successfulUploads;
+          // const message = response.paramObjectsMap.paramObjectsMap.message;
+          // const successfulUploads = response.paramObjectsMap.successfulUploads;
+          const message = response.paramObjectsMap?.message || 'Upload successful';
+          const successfulUploads = response.paramObjectsMap?.successfulUploads || 0;
           setSuccessMessage(message);
           setSuccessfulUploads(successfulUploads);
           setSuccessDialogOpen(true);
           setSelectedFile(null);
           showToast('success', message);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Uploaded failed`);
-          // showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order Bulk Uploaded failed');
+          showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Upload failed`);
           setErrorMessage(response.paramObjectsMap.errorMessage);
           setErrorDialogOpen(true);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', ' failed');
-        setErrorMessage(errorMessage);
+        showToast('error', `${screen} Upload failed`);
+        setErrorMessage(error.message || 'Unknown error');
         setErrorDialogOpen(true);
       }
 

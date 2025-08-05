@@ -220,6 +220,30 @@ export const Quotation = () => {
             setIsDocIdLoading(false);
         }
     };
+    const getIterationId = async (branchName, clientName) => {
+        setIsDocIdLoading(true);
+        setIsLoading(false);
+        try {
+            const response = await apiCalls(
+                'get',
+                `/transaction/getOpportunityIdIteration?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`
+            );
+
+            if (response.status === true) {
+                setFormData(prev => ({
+                    ...prev,
+                    iterations: response.paramObjectsMap.iterationId
+                }));
+            }
+        } catch (error) {
+            // setLoading(false);
+            console.error('Error getting document ID:', error);
+            showToast('error', 'Failed to generate document ID');
+        } finally {
+            // setLoading(false);
+            setIsDocIdLoading(false);
+        }
+    };
     const getQuotationById = async (id) => {
         setIsLoading(true);
         try {
@@ -753,6 +777,7 @@ export const Quotation = () => {
                                                 address: newValue.address,
                                             }));
                                             getOpportunityName(newValue.branch, formData.clientName);
+                                            getIterationId(newValue.branch, formData.clientName);
                                             setFieldErrors((prev) => ({ ...prev, branchName: '', address: '' }));
                                         } else {
                                             setFormData((prev) => ({ ...prev, branchName: '' }));
@@ -952,6 +977,7 @@ export const Quotation = () => {
                                     }
                                     variant="outlined"
                                     size="small"
+                                    disabled
                                     fullWidth
                                     name="iterations"
                                     value={formData.iterations}
