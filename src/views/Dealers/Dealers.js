@@ -72,7 +72,7 @@ const Dealer = () => {
   const listViewColumns = [
     { accessorKey: 'name', header: 'Dealer Name', size: 140 },
     { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
-    { accessorKey: 'anniversary', header: 'Anniversary', size: 140 },
+    { accessorKey: 'anniversaryDate', header: 'Anniversary Date', size: 140 },
     { accessorKey: 'place', header: 'Place/Town', size: 140 },
     { accessorKey: 'manager', header: 'Manager', size: 140 },
   ];
@@ -145,7 +145,7 @@ const Dealer = () => {
           id: DealerVO.id || '',
           docDate: DealerVO.docDate ? dayjs(DealerVO.docDate, 'YYYY-MM-DD') : null,
           dealerDOB: DealerVO.dateOfBirth ? dayjs(DealerVO.dateOfBirth, 'YYYY-MM-DD') : null,
-          dealerAnniversary: DealerVO.anniversary ? dayjs(DealerVO.anniversary, 'YYYY-MM-DD') : null,
+          dealerAnniversary: DealerVO.anniversaryDate ? dayjs(DealerVO.anniversaryDate, 'YYYY-MM-DD') : null,
           dealerType: DealerVO.dealerType || '',
           manager: DealerVO.manager || '',
           salesRep: DealerVO.saleRep || '',
@@ -300,7 +300,7 @@ const Dealer = () => {
         otherInfo: formData.otherInfo,
         status: formData.status,
         dateOfBirth: formData.dealerDOB?.format('YYYY-MM-DD'),
-        anniversary: formData.dealerAnniversary?.format('YYYY-MM-DD'),
+        anniversaryDate: formData.dealerAnniversary?.format('YYYY-MM-DD'),
         active: true
       };
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -381,7 +381,7 @@ const Dealer = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.dealerType}>
-                    <InputLabel id="dealerType-label">Dealer Type</InputLabel>
+                    <InputLabel id="dealerType-label">Dealer Type <span className="asterisk">*</span></InputLabel>
                     <Select
                       labelId="dealerType-label"
                       label="Dealer Type"
@@ -638,7 +638,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Place <span className="asterisk">*</span>
+                        Place
                       </span>
                     }
                     variant="outlined"
@@ -656,7 +656,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Address <span className="asterisk">*</span>
+                        Address
                       </span>
                     }
                     variant="outlined"
@@ -674,7 +674,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Pin Code <span className="asterisk">*</span>
+                        Pin Code
                       </span>
                     }
                     variant="outlined"
@@ -728,7 +728,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Contact Person 2 <span className="asterisk">*</span>
+                        Contact Person 2
                       </span>
                     }
                     variant="outlined"
@@ -743,7 +743,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Mobile No 2 <span className="asterisk">*</span>
+                        Mobile No 2
                       </span>
                     }
                     variant="outlined"
@@ -758,7 +758,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Latitude <span className="asterisk">*</span>
+                        Latitude
                       </span>
                     }
                     variant="outlined"
@@ -773,7 +773,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Longitude <span className="asterisk">*</span>
+                        Longitude
                       </span>
                     }
                     variant="outlined"
@@ -788,7 +788,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Reg No <span className="asterisk">*</span>
+                        Reg No
                       </span>
                     }
                     variant="outlined"
@@ -803,7 +803,7 @@ const Dealer = () => {
                   <TextField
                     label={
                       <span>
-                        Other Info <span className="asterisk">*</span>
+                        Other Info
                       </span>
                     }
                     variant="outlined"
@@ -816,10 +816,10 @@ const Dealer = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                    <InputLabel id="status-label">Status</InputLabel>
+                    <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
                     <Select
                       labelId="status-label"
-                      // label="Dealer Type"
+                      label="Status"
                       value={formData.status}
                       onChange={handleInputChange}
                       name="status"

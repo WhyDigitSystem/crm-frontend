@@ -124,7 +124,14 @@ const basicMasterChildren = [
     type: 'item',
     url: '/basicMaster/roles',
     icon: IconShieldLock
-  }
+  },
+  hasScreenAccess('PT') && {
+    id: 'port',
+    title: 'Port',
+    type: 'item',
+    url: '/basicMaster/port',
+    icon: IconShieldLock
+  },
 ].filter(Boolean);
 
 const basicMaster =

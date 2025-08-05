@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import { element } from 'prop-types';
+const Port = Loadable(lazy(() => import( 'views/basicMaster/Port')));
 
 
 
@@ -174,6 +175,10 @@ const FinanceRoute = {
     {
       path: '/basicMaster/ScreenAccess',
       element: <ScreenAccess />
+    },
+    {
+      path: '/basicMaster/port',
+      element: <Port />
     },
 
     // Document
