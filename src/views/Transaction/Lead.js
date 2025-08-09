@@ -743,10 +743,13 @@ const Lead = () => {
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                        {!listView &&
+                            <>
+                                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                            </>
+                        }
                     </div>
                     {listView && !isLoading ? (
                         <CommonTableWithStatus
@@ -1397,11 +1400,6 @@ const Lead = () => {
                                                                                     renderInput={(params) => (
                                                                                         <TextField
                                                                                             {...params}
-                                                                                            label={
-                                                                                                <span>
-                                                                                                    Branch Name <span className="asterisk">*</span>
-                                                                                                </span>
-                                                                                            }
                                                                                             size="small"
                                                                                             fullWidth
                                                                                         />

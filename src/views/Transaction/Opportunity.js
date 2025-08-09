@@ -259,9 +259,11 @@ const Opportunity = () => {
                 }));
             }
             else {
-                showToast('error', response.message || 'Failed to fetch opportunities');
+                setIsLoading(false);
+                showToast('error', response.message);
             }
         } catch (error) {
+            setIsLoading(false);
             console.error('Error fetching opportunities:', error);
             showToast('error', 'Failed to fetch opportunities');
         }
@@ -590,21 +592,21 @@ const Opportunity = () => {
         const amount = parseFloat(lastDetail.opportunityAmount);
         const amountValid = !isNaN(amount) && amount > 0;
 
-        if (!productNameValid || !categoryValid || !amountValid) {
-            const newErrors = [...detailErrors];
-            newErrors[newErrors.length - 1] = {
-                productName: !productNameValid ? 'Product name is required' : '',
-                category: !categoryValid ? 'Category is required' : '',
-                opportunityAmount: isNaN(amount)
-                    ? 'Must be a number'
-                    : amount <= 0
-                        ? 'Amount must be positive'
-                        : ''
-            };
-            setDetailErrors(newErrors);
-            showToast('warning', 'Please fill current product details before adding new');
-            return;
-        }
+        // if (!productNameValid || !categoryValid || !amountValid) {
+        //     const newErrors = [...detailErrors];
+        //     newErrors[newErrors.length - 1] = {
+        //         productName: !productNameValid ? 'Product name is required' : '',
+        //         category: !categoryValid ? 'Category is required' : '',
+        //         opportunityAmount: isNaN(amount)
+        //             ? 'Must be a number'
+        //             : amount <= 0
+        //                 ? 'Amount must be positive'
+        //                 : ''
+        //     };
+        //     setDetailErrors(newErrors);
+        //     showToast('warning', 'Please fill current product details before adding new');
+        //     return;
+        // }
 
         setOpportunityDetails(prev => [
             ...prev,
@@ -972,164 +974,190 @@ const Opportunity = () => {
                                                 />
                                             </div>
                                             <div className="col-lg-12">
-                                                <div className="table-responsive">
-                                                    <table className="table table-bordered">
-                                                        <thead>
-                                                            <tr style={{ background: '#12162e', color: '#ede7f6' }}>
-                                                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                                                <th className="px-2 py-2 text-white text-center">Product Name *</th>
-                                                                <th className="px-2 py-2 text-white text-center">Category *</th>
-                                                                <th className="px-2 py-2 text-white text-center">Sub Category</th>
-                                                                <th className="px-2 py-2 text-white text-center">Amt *</th>
-                                                                <th className="px-2 py-2 text-white text-center">Quantity</th>
-                                                                <th className="px-2 py-2 text-white text-center">Status</th>
-                                                                <th className="px-2 py-2 text-white text-center">Remarks</th>
-                                                                <th className="px-2 py-2 text-white text-center">Description</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {opportunityDetails.map((detail, index) => (
-                                                                <tr key={index}>
-                                                                    <td className="border px-2 py-2 text-center">
-                                                                        <ActionButton
-                                                                            title="Delete"
-                                                                            icon={DeleteIcon}
-                                                                            onClick={() => handleDeleteDetail(index)}
-                                                                            aria-label={`Delete product ${index + 1}`}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="text-center pt-3">{index + 1}</td>
-                                                                    <td>
-                                                                        <Box sx={{ minWidth: 150, flexGrow: 1 }}>
-                                                                            <Autocomplete
-                                                                                options={productNameList}
-                                                                                getOptionLabel={(option) => option?.productName || ''}
-                                                                                value={
-                                                                                    productNameList.find((item) => item.productName === detail.productName) || null
-                                                                                }
-                                                                                onChange={(event, newValue) => {
-                                                                                    const updatedOpportunities = [...opportunityDetails];
-                                                                                    const updatedOpportunitiesErrors = [...detailErrors];
-                                                                                    if (newValue) {
-                                                                                        updatedOpportunities[index] = {
-                                                                                            ...updatedOpportunities[index],
-                                                                                            productName: newValue.productName,
-                                                                                            category: newValue.category,
-                                                                                            subCategory: newValue.subCategory || '',
-                                                                                        };
-                                                                                        updatedOpportunitiesErrors[index] = {
-                                                                                            ...updatedOpportunitiesErrors[index],
-                                                                                            productName: '',
-                                                                                            category: '',
-                                                                                            subCategory: '',
-                                                                                        };
-                                                                                    } else {
-                                                                                        updatedOpportunities[index] = {
-                                                                                            ...updatedOpportunities[index],
-                                                                                            productName: '',
-                                                                                            subCategory: '',
-                                                                                            category: '',
-                                                                                        };
-                                                                                    }
-                                                                                    setOpportunityDetails(updatedOpportunities);
-                                                                                    setDetailErrors(updatedOpportunitiesErrors);
-                                                                                }}
-                                                                                renderInput={(params) => (
-                                                                                    <TextField
-                                                                                        {...params}
-                                                                                        size="small"
-                                                                                        fullWidth
-                                                                                        error={!!detailErrors[index]?.productName}
-                                                                                        helperText={detailErrors[index]?.productName}
-                                                                                    />
-                                                                                )}
-                                                                            />
-                                                                        </Box>
-                                                                    </td>
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={detail.category}
-                                                                            disabled
-                                                                            onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                                                                            onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
-                                                                            error={!!detailErrors[index]?.category}
-                                                                            helperText={detailErrors[index]?.category}
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={detail.subCategory}
-                                                                            disabled
-                                                                            onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                                                            onBlur={(e) => validateDetailField(index, 'subCategory', e.target.value)}
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            type="number"
-                                                                            value={detail.opportunityAmount}
-                                                                            onChange={(e) => handleDetailChange(index, 'opportunityAmount', e.target.value)}
-                                                                            onBlur={(e) => validateDetailField(index, 'opportunityAmount', e.target.value)}
-                                                                            error={!!detailErrors[index]?.opportunityAmount}
-                                                                            helperText={detailErrors[index]?.opportunityAmount}
-                                                                            inputProps={{ min: 0, step: "0.01" }}
-                                                                        />
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            type="number"
-                                                                            value={detail.quantity}
-                                                                            onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
-                                                                            inputProps={{ min: 1 }}
-                                                                        />
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <FormControl fullWidth size="small">
-                                                                            <Select
-                                                                                value={detail.status}
-                                                                                onChange={(e) => handleDetailChange(index, 'status', e.target.value)}
-                                                                            >
-                                                                                {productStatusOptions.map(status => (
-                                                                                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                                                                                ))}
-                                                                            </Select>
-                                                                        </FormControl>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            multiline
-                                                                            value={detail.remarks}
-                                                                            onChange={(e) => handleDetailChange(index, 'remarks', e.target.value)}
-                                                                        />
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <TextField
-                                                                            fullWidth
-                                                                            size="small"
-                                                                            value={detail.description}
-                                                                            onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
-                                                                            multiline
-                                                                        />
-                                                                    </td>
+                                                <div className="table-responsive" style={{ maxWidth: '100%', overflowX: 'auto' }}>
+                                                    <Box
+                                                        sx={{
+                                                            '&::-webkit-scrollbar': {
+                                                                height: '8px',
+                                                            },
+                                                            '&::-webkit-scrollbar-track': {
+                                                                backgroundColor: 'transparent',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb': {
+                                                                backgroundColor: '#555',
+                                                                borderRadius: '10px',
+                                                            },
+                                                            '&::-webkit-scrollbar-thumb:hover': {
+                                                                backgroundColor: '#888',
+                                                            },
+                                                            borderRadius: '8px',
+                                                            backgroundColor: '#1c1f3a',
+                                                            boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
+                                                            overflowX: 'auto',
+                                                        }}
+                                                    >
+                                                        <table className="table table-bordered">
+                                                            <thead>
+                                                                <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Product Name *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Category *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Sub Category</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Amt *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Quantity</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Status</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Remarks</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Description</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody>
+                                                                {opportunityDetails.map((detail, index) => (
+                                                                    <tr key={index}>
+                                                                        <td className="border px-2 py-2 text-center">
+                                                                            <ActionButton
+                                                                                title="Delete"
+                                                                                icon={DeleteIcon}
+                                                                                onClick={() => handleDeleteDetail(index)}
+                                                                                aria-label={`Delete product ${index + 1}`}
+                                                                            />
+                                                                        </td>
+                                                                        <td className="text-center pt-3" style={{color:'white'}}>{index + 1}</td>
+                                                                        <td>
+                                                                            <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                <Autocomplete
+                                                                                    options={productNameList}
+                                                                                    getOptionLabel={(option) => option?.productName || ''}
+                                                                                    value={
+                                                                                        productNameList.find((item) => item.productName === detail.productName) || null
+                                                                                    }
+                                                                                    onChange={(event, newValue) => {
+                                                                                        const updatedOpportunities = [...opportunityDetails];
+                                                                                        const updatedOpportunitiesErrors = [...detailErrors];
+                                                                                        if (newValue) {
+                                                                                            updatedOpportunities[index] = {
+                                                                                                ...updatedOpportunities[index],
+                                                                                                productName: newValue.productName,
+                                                                                                category: newValue.category,
+                                                                                                subCategory: newValue.subCategory || '',
+                                                                                            };
+                                                                                            updatedOpportunitiesErrors[index] = {
+                                                                                                ...updatedOpportunitiesErrors[index],
+                                                                                                productName: '',
+                                                                                                category: '',
+                                                                                                subCategory: '',
+                                                                                            };
+                                                                                        } else {
+                                                                                            updatedOpportunities[index] = {
+                                                                                                ...updatedOpportunities[index],
+                                                                                                productName: '',
+                                                                                                subCategory: '',
+                                                                                                category: '',
+                                                                                            };
+                                                                                        }
+                                                                                        setOpportunityDetails(updatedOpportunities);
+                                                                                        setDetailErrors(updatedOpportunitiesErrors);
+                                                                                    }}
+                                                                                    renderInput={(params) => (
+                                                                                        <TextField
+                                                                                            {...params}
+                                                                                            size="small"
+                                                                                            fullWidth
+                                                                                            error={!!detailErrors[index]?.productName}
+                                                                                            helperText={detailErrors[index]?.productName}
+                                                                                        />
+                                                                                    )}
+                                                                                />
+                                                                            </Box>
+                                                                        </td>
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={detail.category}
+                                                                                disabled
+                                                                                sx={{ minWidth: '100px' }}
+                                                                                onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                                onBlur={(e) => validateDetailField(index, 'category', e.target.value)}
+                                                                                error={!!detailErrors[index]?.category}
+                                                                                helperText={detailErrors[index]?.category}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={detail.subCategory}
+                                                                                disabled
+                                                                                sx={{ minWidth: '120px' }}
+                                                                                onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
+                                                                                onBlur={(e) => validateDetailField(index, 'subCategory', e.target.value)}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                type="number"
+                                                                                sx={{ minWidth: '120px' }}
+                                                                                value={detail.opportunityAmount}
+                                                                                onChange={(e) => handleDetailChange(index, 'opportunityAmount', e.target.value)}
+                                                                                onBlur={(e) => validateDetailField(index, 'opportunityAmount', e.target.value)}
+                                                                                error={!!detailErrors[index]?.opportunityAmount}
+                                                                                helperText={detailErrors[index]?.opportunityAmount}
+                                                                                inputProps={{ min: 0, step: "0.01" }}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                type="number"
+                                                                                value={detail.quantity}
+                                                                                onChange={(e) => handleDetailChange(index, 'quantity', e.target.value)}
+                                                                                inputProps={{ min: 1 }}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <FormControl fullWidth size="small">
+                                                                                <Select
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    value={detail.status}
+                                                                                    onChange={(e) => handleDetailChange(index, 'status', e.target.value)}
+                                                                                >
+                                                                                    {productStatusOptions.map(status => (
+                                                                                        <MenuItem key={status} value={status}>{status}</MenuItem>
+                                                                                    ))}
+                                                                                </Select>
+                                                                            </FormControl>
+                                                                        </td>
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                multiline
+                                                                                sx={{ minWidth: '150px' }}
+                                                                                value={detail.remarks}
+                                                                                onChange={(e) => handleDetailChange(index, 'remarks', e.target.value)}
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <TextField
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                sx={{ minWidth: '150px' }}
+                                                                                value={detail.description}
+                                                                                onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
+                                                                                multiline
+                                                                            />
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </Box>
                                                 </div>
                                             </div>
                                         </>

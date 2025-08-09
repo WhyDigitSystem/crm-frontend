@@ -48,12 +48,17 @@ const CurrentMonthRevenue = () => {
     return (
         <StyledCard>
             <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={2}
+                    sx={{ height: 60, width: '100%' }} 
+                >
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                         Current Month Revenue
                     </Typography>
                 </Box>
-
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <Box display="flex" alignItems="center">

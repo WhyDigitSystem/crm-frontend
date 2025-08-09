@@ -189,9 +189,11 @@ export const Quotation = () => {
                 }));
             }
             else {
-                showToast('error', response.message || 'Failed to fetch leads');
+                setIsLoading(false);
+                showToast('error', response.message);
             }
         } catch (error) {
+            setIsLoading(false);
             console.error('Error fetching leads:', error);
             showToast('error', 'Failed to fetch leads');
         }
@@ -226,7 +228,7 @@ export const Quotation = () => {
         try {
             const response = await apiCalls(
                 'get',
-                `/transaction/getOpportunityIdIteration?branchName=${branchName}&clientName=${clientName}&orgId=${orgId}`
+                `/transaction/getOpportunityIdIteration?branchName=${branchName}&clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
             );
 
             if (response.status === true) {
@@ -413,8 +415,7 @@ export const Quotation = () => {
     };
     const getBranch = async (clientName) => {
         try {
-            const encodedClientName = encodeURIComponent(clientName);
-            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getBranchNameFromOpportunity?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setBranchList(response.paramObjectsMap.branchName || []);
             } else {
@@ -442,7 +443,7 @@ export const Quotation = () => {
     };
     const getProductName = async (oppurtunityId, clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getProductNameFromLeadScreen?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getProductNameFromOpportunity?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`);
             if (response.status === true) {
                 setProductList(response.paramObjectsMap.productNameDetails || []);
             } else {
@@ -761,23 +762,23 @@ export const Quotation = () => {
                                 <Autocomplete
                                     options={branchList}
                                     getOptionLabel={(option) =>
-                                        option?.branch
-                                            ? `${option.branch}`
+                                        option?.branchName
+                                            ? `${option.branchName}`
                                             : ''
                                     }
                                     value={
-                                        branchList.find((item) => item.branch === formData.branchName) || null
+                                        branchList.find((item) => item.branchName === formData.branchName) || null
                                     }
                                     onChange={(event, newValue) => {
                                         if (newValue) {
                                             setFormData((prev) => ({
                                                 ...prev,
-                                                branchName: newValue.branch,
+                                                branchName: newValue.branchName,
                                                 gstNo: newValue.gstNo,
                                                 address: newValue.address,
                                             }));
-                                            getOpportunityName(newValue.branch, formData.clientName);
-                                            getIterationId(newValue.branch, formData.clientName);
+                                            getOpportunityName(newValue.branchName, formData.clientName);
+                                            getIterationId(newValue.branchName, formData.clientName);
                                             setFieldErrors((prev) => ({ ...prev, branchName: '', address: '' }));
                                         } else {
                                             setFormData((prev) => ({ ...prev, branchName: '' }));
@@ -1003,170 +1004,199 @@ export const Quotation = () => {
                                             <div className="row mt-2">
                                                 <div className="col-lg-12">
                                                     <div className="table-responsive">
-                                                        <table className="table table-bordered">
-                                                            <thead>
-                                                                <tr style={{ backgroundColor: '#12162e', color: '#ffff' }}>
-                                                                    <th className="table-header">Action</th>
-                                                                    <th className="table-header">#</th>
-                                                                    <th className="table-header">Product Name</th>
-                                                                    <th className="table-header">Category</th>
-                                                                    <th className="table-header">Sub Category</th>
-                                                                    <th className="table-header">Selling Price</th>
-                                                                    <th className="table-header">Qty</th>
-                                                                    <th className="table-header">Price</th>
-                                                                    <th className="table-header">Discount %</th>
-                                                                    <th className="table-header">Amount</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {quotationPrice.map((row, index) => (
-                                                                    <tr key={row.id}>
-                                                                        <td className="border px-2 py-2 text-center">
-                                                                            <ActionButton
-                                                                                title="Delete"
-                                                                                icon={DeleteOutlineIcon}
-                                                                                onClick={() => handleDeleteRow(
-                                                                                    row.id,
-                                                                                    quotationPrice,
-                                                                                    setQuotationPrice,
-                                                                                    quotationPriceErrors,
-                                                                                    setQuotationPriceErrors
-                                                                                )}
-                                                                            />
-                                                                        </td>
-                                                                        <td className="text-center">
-                                                                            <div className="pt-2">{index + 1}</div>
-                                                                        </td>
-                                                                        <td>
-                                                                            <Box sx={{ minWidth: 150, flexGrow: 1 }}>
-                                                                                <Autocomplete
-                                                                                    options={productList}
-                                                                                    getOptionLabel={(option) => option?.productName || ''}
-                                                                                    value={productList.find(item => item.productName === row.productName) || null}
-                                                                                    isOptionEqualToValue={(option, value) =>
-                                                                                        option.productName === value.productName
-                                                                                    }
-                                                                                    onChange={(event, newValue) => {
-                                                                                        const updatedRows = [...quotationPrice];
-                                                                                        const updatedRowsError = [...quotationPriceErrors];
-                                                                                        if (newValue) {
-                                                                                            updatedRows[index] = {
-                                                                                                ...updatedRows[index],
-                                                                                                productName: newValue.productName || '',
-                                                                                                category: newValue.category || '',
-                                                                                                subCategory: newValue.subCategory || '',
-                                                                                            };
-                                                                                            updatedRowsError[index] = {
-                                                                                                ...updatedRowsError[index],
-                                                                                                productName: '',
-                                                                                                category: '',
-                                                                                                subCategory: '',
-                                                                                            };
-                                                                                            setQuotationPrice(updatedRows);
-                                                                                            setQuotationPriceErrors(updatedRowsError);
-                                                                                            getSellingPrice(newValue.productName, index);
-                                                                                        } else {
-                                                                                            updatedRows[index] = {
-                                                                                                ...updatedRows[index],
-                                                                                                productName: '',
-                                                                                                category: '',
-                                                                                                subCategory: '',
-                                                                                            };
-                                                                                            setQuotationPrice(updatedRows);
-                                                                                        }
-                                                                                    }}
-                                                                                    renderInput={(params) => (
-                                                                                        <TextField
-                                                                                            {...params}
-                                                                                            size="small"
-                                                                                            fullWidth
-                                                                                        />
+                                                        <Box
+                                                            sx={{
+                                                                '&::-webkit-scrollbar': {
+                                                                    height: '8px',
+                                                                },
+                                                                '&::-webkit-scrollbar-track': {
+                                                                    backgroundColor: 'transparent',
+                                                                },
+                                                                '&::-webkit-scrollbar-thumb': {
+                                                                    backgroundColor: '#555',
+                                                                    borderRadius: '10px',
+                                                                },
+                                                                '&::-webkit-scrollbar-thumb:hover': {
+                                                                    backgroundColor: '#888',
+                                                                },
+                                                                borderRadius: '8px',
+                                                                backgroundColor: '#1c1f3a',
+                                                                boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
+                                                                overflowX: 'auto',
+                                                            }}
+                                                        >
+                                                            <table className="table table-bordered">
+                                                                <thead>
+                                                                    <tr style={{ backgroundColor: '#12162e', color: '#ffff' }}>
+                                                                        <th className="table-header">Action</th>
+                                                                        <th className="table-header">#</th>
+                                                                        <th className="table-header">Product Name</th>
+                                                                        <th className="table-header">Category</th>
+                                                                        <th className="table-header">Sub Category</th>
+                                                                        <th className="table-header">Selling Price</th>
+                                                                        <th className="table-header">Qty</th>
+                                                                        <th className="table-header">Price</th>
+                                                                        <th className="table-header">Discount %</th>
+                                                                        <th className="table-header">Amount</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {quotationPrice.map((row, index) => (
+                                                                        <tr key={row.id}>
+                                                                            <td className="border px-2 py-2 text-center">
+                                                                                <ActionButton
+                                                                                    title="Delete"
+                                                                                    icon={DeleteOutlineIcon}
+                                                                                    onClick={() => handleDeleteRow(
+                                                                                        row.id,
+                                                                                        quotationPrice,
+                                                                                        setQuotationPrice,
+                                                                                        quotationPriceErrors,
+                                                                                        setQuotationPriceErrors
                                                                                     )}
                                                                                 />
-                                                                            </Box>
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={row.category}
-                                                                                disabled
-                                                                                onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                            </td>
+                                                                            <td className="text-center">
+                                                                                <div className="pt-2" style={{ color: 'white' }}>{index + 1}</div>
+                                                                            </td>
+                                                                            <td>
+                                                                                <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                                                                    <Autocomplete
+                                                                                        options={productList}
+                                                                                        getOptionLabel={(option) => option?.productName || ''}
+                                                                                        value={productList.find(item => item.productName === row.productName) || null}
+                                                                                        isOptionEqualToValue={(option, value) =>
+                                                                                            option.productName === value.productName
+                                                                                        }
+                                                                                        onChange={(event, newValue) => {
+                                                                                            const updatedRows = [...quotationPrice];
+                                                                                            const updatedRowsError = [...quotationPriceErrors];
+                                                                                            if (newValue) {
+                                                                                                updatedRows[index] = {
+                                                                                                    ...updatedRows[index],
+                                                                                                    productName: newValue.productName || '',
+                                                                                                    category: newValue.category || '',
+                                                                                                    subCategory: newValue.subCategory || '',
+                                                                                                };
+                                                                                                updatedRowsError[index] = {
+                                                                                                    ...updatedRowsError[index],
+                                                                                                    productName: '',
+                                                                                                    category: '',
+                                                                                                    subCategory: '',
+                                                                                                };
+                                                                                                setQuotationPrice(updatedRows);
+                                                                                                setQuotationPriceErrors(updatedRowsError);
+                                                                                                getSellingPrice(newValue.productName, index);
+                                                                                            } else {
+                                                                                                updatedRows[index] = {
+                                                                                                    ...updatedRows[index],
+                                                                                                    productName: '',
+                                                                                                    category: '',
+                                                                                                    subCategory: '',
+                                                                                                };
+                                                                                                setQuotationPrice(updatedRows);
+                                                                                            }
+                                                                                        }}
+                                                                                        renderInput={(params) => (
+                                                                                            <TextField
+                                                                                                {...params}
+                                                                                                size="small"
+                                                                                                fullWidth
+                                                                                            />
+                                                                                        )}
+                                                                                    />
+                                                                                </Box>
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    value={row.category}
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    disabled
+                                                                                    onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
+                                                                                    // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                    error={!!quotationPriceErrors[index]?.category}
+                                                                                    helperText={quotationPriceErrors[index]?.category}
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    disabled
+                                                                                    value={row.subCategory}
+                                                                                    onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
                                                                                 // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                                error={!!quotationPriceErrors[index]?.category}
-                                                                                helperText={quotationPriceErrors[index]?.category}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                disabled
-                                                                                value={row.subCategory}
-                                                                                onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                                                            // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type="number"
-                                                                                value={row.sellingPrice}
-                                                                                disabled
-                                                                                onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
-                                                                                error={!!quotationPriceErrors[index]?.sellingPrice}
-                                                                                helperText={quotationPriceErrors[index]?.sellingPrice}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type='number'
-                                                                                value={row.qty}
-                                                                                onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
-                                                                                // onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
-                                                                                error={!!quotationPriceErrors[index]?.qty}
-                                                                                helperText={quotationPriceErrors[index]?.qty}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type='number'
-                                                                                value={row.price}
-                                                                                onChange={(e) => handleDetailChange(index, 'price', e.target.value)}
-                                                                            // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type='number'
-                                                                                value={row.discountPer}
-                                                                                onChange={(e) => handleDetailChange(index, 'discountPer', e.target.value)}
-                                                                            // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                type='number'
-                                                                                value={row.amount}
-                                                                                onChange={(e) => handleDetailChange(index, 'amount', e.target.value)}
-                                                                                // onBlur={(e) => validateDetailField(index, 'amount', e.target.value)}
-                                                                                error={!!quotationPriceErrors[index]?.amount}
-                                                                                helperText={quotationPriceErrors[index]?.amount}
-                                                                            />
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    type="number"
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    value={row.sellingPrice}
+                                                                                    disabled
+                                                                                    onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
+                                                                                    error={!!quotationPriceErrors[index]?.sellingPrice}
+                                                                                    helperText={quotationPriceErrors[index]?.sellingPrice}
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    type='number'
+                                                                                    value={row.qty}
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
+                                                                                    // onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
+                                                                                    error={!!quotationPriceErrors[index]?.qty}
+                                                                                    helperText={quotationPriceErrors[index]?.qty}
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    type='number'
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    value={row.price}
+                                                                                    onChange={(e) => handleDetailChange(index, 'price', e.target.value)}
+                                                                                // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    type='number'
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    value={row.discountPer}
+                                                                                    onChange={(e) => handleDetailChange(index, 'discountPer', e.target.value)}
+                                                                                // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <TextField
+                                                                                    fullWidth
+                                                                                    size="small"
+                                                                                    type='number'
+                                                                                    value={row.amount}
+                                                                                    sx={{ minWidth: '100px' }}
+                                                                                    onChange={(e) => handleDetailChange(index, 'amount', e.target.value)}
+                                                                                    // onBlur={(e) => validateDetailField(index, 'amount', e.target.value)}
+                                                                                    error={!!quotationPriceErrors[index]?.amount}
+                                                                                    helperText={quotationPriceErrors[index]?.amount}
+                                                                                />
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </Box>
                                                     </div>
                                                 </div>
                                             </div>

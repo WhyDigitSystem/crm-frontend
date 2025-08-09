@@ -132,6 +132,13 @@ const basicMasterChildren = [
     url: '/basicMaster/port',
     icon: IconShieldLock
   },
+  hasScreenAccess('LOV') && {
+    id: 'listOfValues',
+    title: 'List Of Values',
+    type: 'item',
+    url: '/basicMaster/listOfValues',
+    icon: IconShieldLock
+  },
 ].filter(Boolean);
 
 const basicMaster =

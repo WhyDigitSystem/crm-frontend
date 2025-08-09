@@ -3,7 +3,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText, Tab, Tabs, Autocomplete } from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -199,7 +199,7 @@ const SalesOrder = () => {
     };
     const getBranch = async (clientName) => {
         try {
-            const response = await apiCalls('get', `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getBranchNameFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
             if (response.status === true) {
                 setBranchList(response.paramObjectsMap.branchName || []);
             } else {
@@ -316,7 +316,7 @@ const SalesOrder = () => {
             }
             else {
                 setIsLoading(false);
-                showToast('error', response.message || 'Failed to fetch sales orders');
+                showToast('error', response.message);
             }
         } catch (error) {
             setIsLoading(false);
@@ -708,54 +708,21 @@ const SalesOrder = () => {
         setEditId('');
         getSalesOrderDocId();
     };
-
-    const handleAddDetail = () => {
-        const lastDetail = salesOrderDetails[salesOrderDetails.length - 1];
-        const lastError = detailErrors[detailErrors.length - 1] || {};
-
-        const productNameValid = lastDetail.productName?.trim();
-        const categoryValid = lastDetail.category;
-        const price = parseFloat(lastDetail.sellingPrice);
-        const priceValid = !isNaN(price) && price >= 0;
-        const qty = parseInt(lastDetail.qty);
-        const qtyValid = !isNaN(qty) && qty > 0;
-
-        if (!productNameValid || !categoryValid || !priceValid || !qtyValid) {
-            const newErrors = [...detailErrors];
-            newErrors[newErrors.length - 1] = {
-                productName: !productNameValid ? 'Product name is required' : '',
-                category: !categoryValid ? 'Category is required' : '',
-                sellingPrice: isNaN(price)
-                    ? 'Must be a number'
-                    : price < 0
-                        ? 'Price cannot be negative'
-                        : '',
-                qty: isNaN(qty)
-                    ? 'Must be a number'
-                    : qty <= 0
-                        ? 'Quantity must be positive'
-                        : ''
-            };
-            setDetailErrors(newErrors);
-            showToast('warning', 'Please fill current product details before adding new');
-            return;
-        }
-
-        setSalesOrderDetails(prev => [
-            ...prev,
+    const handleAddRow = () => {
+        const newRow = {
+            id: Date.now(),
+            category: '',
+            discount: 0,
+            productName: '',
+            qty: 1,
+            sellingPrice: 0,
+            subCategory: '',
+        };
+        setSalesOrderDetails([...salesOrderDetails, newRow]);
+        setDetailErrors([
+            ...detailErrors,
             {
-                category: '',
-                discount: 0,
-                productName: '',
-                qty: 1,
-                sellingPrice: 0,
-                subCategory: '',
-            }
-        ]);
-
-        setDetailErrors(prev => [
-            ...prev,
-            {
+                sno: '',
                 productName: '',
                 category: '',
                 sellingPrice: '',
@@ -763,7 +730,6 @@ const SalesOrder = () => {
             }
         ]);
     };
-
     const handleDeleteDetail = (index) => {
         if (salesOrderDetails.length <= 1) {
             showToast('warning', 'At least one product is required');
@@ -1119,9 +1085,9 @@ const SalesOrder = () => {
                                 <Box sx={{ padding: 2 }}>
                                     {value === 0 && (
                                         <>
-                                            {/* <div className="mb-1">
-                                                <ActionButton title="Add Branch" icon={AddIcon} onClick={handleAddBranch} />
-                                            </div> */}
+                                            <div className="mb-1">
+                                                <ActionButton title="Add Branch" icon={AddCircleOutlineIcon} onClick={handleAddRow} />
+                                            </div>
                                             <div className="row mt-2">
                                                 <div className="col-lg-12">
                                                     <div className="table-responsive">
@@ -1134,7 +1100,7 @@ const SalesOrder = () => {
                                                                     <th className="px-2 py-2 text-white text-center">Category *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Sub Category</th>
                                                                     <th className="px-2 py-2 text-white text-center">Price *</th>
-                                                                    <th className="px-2 py-2 text-white text-center">Quantity *</th>
+                                                                    <th className="px-2 py-2 text-white text-center">Qty *</th>
                                                                     <th className="px-2 py-2 text-white text-center">Discount</th>
                                                                     <th className="px-2 py-2 text-white text-center">Amount</th>
                                                                 </tr>
@@ -1152,7 +1118,7 @@ const SalesOrder = () => {
                                                                                     aria-label={`Delete product ${index + 1}`}
                                                                                 />
                                                                             </td>
-                                                                            <td className="text-center pt-3">{index + 1}</td>
+                                                                            <td className="text-center pt-3" style={{ color: 'white' }}>{index + 1}</td>
                                                                             <td>
                                                                                 <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                                                                     <Autocomplete
@@ -1265,7 +1231,7 @@ const SalesOrder = () => {
                                                                                 />
                                                                             </td>
 
-                                                                            <td className="text-center pt-3">
+                                                                            <td className="text-center pt-3" style={{ color: 'white' }}>
                                                                                 {amount.toFixed(2)}
                                                                             </td>
                                                                         </tr>

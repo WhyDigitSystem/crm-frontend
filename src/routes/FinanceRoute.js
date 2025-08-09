@@ -4,10 +4,14 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
-import { element } from 'prop-types';
-const Port = Loadable(lazy(() => import( 'views/basicMaster/Port')));
-
-
+// import { element } from 'prop-types';
+//Report
+const LeadReport = Loadable(lazy(() => import('views/Reports/LeadReport')));
+const OpportunityReport = Loadable(lazy(() => import('views/Reports/OpportunityReport')));
+const QuotationReport = Loadable(lazy(() => import('views/Reports/QuotationReport')));
+const SalesOrderReport = Loadable(lazy(() => import('views/Reports/SalesOrderReport')));
+const ActiveReport = Loadable(lazy(() => import('views/Reports/ActiveReport')));
+const ScheduleReport = Loadable(lazy(() => import('views/Reports/ScheduleReport')));
 
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
@@ -32,6 +36,8 @@ const PriceMaster = Loadable(lazy(() => import('views/basicMaster/PriceMaster'))
 const UnitMaster = Loadable(lazy(() => import('views/basicMaster/UnitMaster')));
 const CategoryMaster = Loadable(lazy(() => import('views/basicMaster/CategoryMaster')));
 const SubCategory = Loadable(lazy(() => import('views/basicMaster/SubCategory')));
+const Port = Loadable(lazy(() => import('views/basicMaster/Port')));
+const ListOfValues = Loadable(lazy(() => import('views/basicMaster/ListOfValues')));
 const ScreenAccess = Loadable(lazy(() => import('views/basicMaster/ScreenAccess')));
 
 
@@ -169,6 +175,10 @@ const FinanceRoute = {
       element: <Roles />
     },
     {
+      path: '/basicMaster/ListOfValues',
+      element: <ListOfValues />
+    },
+    {
       path: '/basicMaster/ScreenNames',
       element: <ScreenNames />
     },
@@ -241,7 +251,32 @@ const FinanceRoute = {
     {
       path: '/NominationEnquiries/AllNominationEnquiries',
       element: <NominationEnquiries />
-    }
+    },
+    // Reports
+    {
+      path: '/Report/LeadReport',
+      element: <LeadReport />
+    },
+    {
+      path: '/Report/OpportunityReport',
+      element: <OpportunityReport />
+    },
+    {
+      path: '/Report/QuotationReport',
+      element: <QuotationReport />
+    },
+    {
+      path: '/Report/SalesOrderReport',
+      element: <SalesOrderReport />
+    },
+    {
+      path: '/Report/ActiveReport',
+      element: <ActiveReport />
+    },
+    {
+      path: '/Report/ScheduleReport',
+      element: <ScheduleReport />
+    },
   ]
 };
 

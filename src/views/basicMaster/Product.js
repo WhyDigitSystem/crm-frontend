@@ -76,7 +76,6 @@ export const Product = () => {
   useEffect(() => {
     getAllCategories();
     getAllUnits();
-    getAllSubCategories();
     getAllProducts();
     getProductDocId();
   }, []);
@@ -101,10 +100,10 @@ export const Product = () => {
     }
   };
 
-  const getAllSubCategories = async () => {
+  const getAllSubCategories = async (category) => {
     try {
-      const res = await apiCalls('get', `master/getSubCategoryByOrgId?orgId=${orgId}`);
-      setSubCategoryList(res.paramObjectsMap?.subCategoryVO || []);
+      const res = await apiCalls('get', `/master/getSubCategoryName?category=${category}&orgId=${orgId}`);
+      setSubCategoryList(res.paramObjectsMap?.subCategory || []);
     } catch (err) {
       console.error('Error fetching subcategories:', err);
       showToast('error', 'Failed to load subcategories');
@@ -192,6 +191,7 @@ export const Product = () => {
         showToast('success', editId ? 'Product updated successfully' : 'Product created successfully');
         handleClear();
         getAllProducts();
+        getProductDocId();
       } else {
         const errorMsg = res.paramObjectsMap?.errorMessage || 'Save failed';
         showToast('error', errorMsg);
@@ -332,6 +332,7 @@ export const Product = () => {
                       ...prev,
                       category: newValue.categoryName || '',
                     }));
+                    getAllSubCategories(newValue.categoryName);
                     setFieldErrors((prev) => ({
                       ...prev,
                       category: '',
@@ -363,16 +364,16 @@ export const Product = () => {
               <Autocomplete
                 options={subCategoryList}
                 getOptionLabel={(option) =>
-                  option?.subCategoryName ? `${option.subCategoryName}` : ''
+                  option?.subCategory ? `${option.subCategory}` : ''
                 }
                 value={
-                  subCategoryList.find((item) => item.subCategoryName === formData.subCategory) || null
+                  subCategoryList.find((item) => item.subCategory === formData.subCategory) || null
                 }
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
-                      subCategory: newValue.subCategoryName || '',
+                      subCategory: newValue.subCategory || '',
                     }));
                     setFieldErrors((prev) => ({
                       ...prev,
@@ -401,60 +402,6 @@ export const Product = () => {
                 )}
               />
             </div>
-            {/* <div className="col-md-3 mb-3">
-              <FormControl size="small" fullWidth error={!!fieldErrors.category}>
-                <InputLabel>Category *</InputLabel>
-                <Select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  label="Category *"
-                >
-                  {categoryList.map((row) => (
-                    <MenuItem key={row.id} value={row.categoryName}>
-                      {row.categoryName}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {fieldErrors.category && <FormHelperText>{fieldErrors.category}</FormHelperText>}
-              </FormControl>
-            </div>     
-            <div className="col-md-3 mb-3">
-              <FormControl size="small" fullWidth error={!!fieldErrors.subCategory}>
-                <InputLabel>Sub Category *</InputLabel>
-                <Select
-                  name="subCategory"
-                  value={formData.subCategory}
-                  onChange={handleInputChange}
-                  label="Sub Category *"
-                >
-                  {subCategoryList.map((row) => (
-                    <MenuItem key={row.id} value={row.subCategoryName}>
-                      {row.subCategoryName}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {fieldErrors.subCategory && <FormHelperText>{fieldErrors.subCategory}</FormHelperText>}
-              </FormControl>
-            </div> 
-            <div className="col-md-3 mb-3">
-              <FormControl size="small" fullWidth error={!!fieldErrors.unit}>
-                <InputLabel>Unit *</InputLabel>
-                <Select
-                  name="unit"
-                  value={formData.unit}
-                  onChange={handleInputChange}
-                  label="Unit *"
-                >
-                  {unitList.map((row) => (
-                    <MenuItem key={row.id} value={row.unitDescription}>
-                      {row.unitDescription}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {fieldErrors.unit && <FormHelperText>{fieldErrors.unit}</FormHelperText>}
-              </FormControl>
-            </div>*/}
             <div className="col-md-3 mb-3">
               <Autocomplete
                 options={unitList}
