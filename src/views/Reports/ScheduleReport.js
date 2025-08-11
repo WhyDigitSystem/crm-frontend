@@ -27,6 +27,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import FullScreenLoader from 'utils/FullScreenLoader';
+import Schedule from 'views/Activities/Schedule';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -763,8 +765,16 @@ function ScheduleReport() {
                 </IconButton>
               </Box>
             </DialogTitle>
-            <DialogContent className="pb-0">
-
+            <DialogContent>
+              {fillGridData && (
+                <>
+                  {isLoading ? (
+                    <FullScreenLoader open={true} />
+                  ) : (
+                    <Schedule selectedRow={fillGridData} />
+                  )}
+                </>
+              )}
             </DialogContent>
           </Dialog>
         </>

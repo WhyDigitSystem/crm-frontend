@@ -16,7 +16,7 @@ import apiCalls from 'apicall';
 import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import FullScreenLoader from 'utils/FullScreenLoader';
 
-const SalesOrder = () => {
+const SalesOrder = ({ selectedRow }) => {
     // State management
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
@@ -34,7 +34,12 @@ const SalesOrder = () => {
     const [branchList, setBranchList] = useState([]);
     const [quotationList, setQuotationList] = useState([]);
     const [value, setValue] = useState(0);
-
+    useEffect(() => {
+        if (selectedRow) {
+            setIsLoading(true);
+            getSalesOrderById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [summaryCounts, setSummaryCounts] = useState({
         New: 0,
         Qualified: 0,
@@ -340,12 +345,6 @@ const SalesOrder = () => {
                     return;
                 }
 
-                // Find the branch details from branchList
-                const selectedBranch = branchList.find(b =>
-                    b.branchCode === salesOrder.branchCode ||
-                    b.branch === salesOrder.branch
-                );
-
                 getBranch(salesOrder.clientName);
                 getQuotationDetails(salesOrder.branchName, salesOrder.clientName);
                 getProductName(salesOrder.quotationId, salesOrder.clientName);
@@ -389,12 +388,14 @@ const SalesOrder = () => {
                     sellingPrice: '',
                     qty: ''
                 })));
+                setIsLoading(false);
             } else {
-                showToast('error', response.message || 'Failed to fetch sales order details');
+                setIsLoading(false);
+                showToast('error', response.message);
             }
         } catch (error) {
             console.error('Error fetching sales order details:', error);
-            showToast('error', 'Failed to fetch sales order details');
+            setIsLoading(false);
         } finally {
             setIsLoading(false);
         }
@@ -778,19 +779,17 @@ const SalesOrder = () => {
             <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                        <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton
-                            title="Save"
-                            icon={SaveIcon}
-                            onClick={handleSave}
-                            disabled={isLoading}
-                            loading={isLoading}
-                        />
-                    </div>
-
+                    {!selectedRow &&
+                        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+                            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                            {!listView &&
+                                <>
+                                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                    <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                                </>
+                            }
+                        </div>
+                    }
                     {listView && !isLoading ? (
                         <CommonTableWithStatus
                             data={listViewData}

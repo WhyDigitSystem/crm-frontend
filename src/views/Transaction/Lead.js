@@ -19,7 +19,7 @@ import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
 
-const Lead = () => {
+const Lead = ({ selectedRow }) => {
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
     const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -38,7 +38,12 @@ const Lead = () => {
     const [sources] = useState(['Call', 'Email', 'Existing Customer', 'Partner', 'Public Relations', 'Campaign', 'Website', 'Other']);
     const [clientTypes] = useState(['Company', 'Individual']);
     const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'Manufacturing', 'Construction']);
-
+    useEffect(() => {
+        if (selectedRow) {
+            setIsLoading(true);
+            getLeadById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [formData, setFormData] = useState({
         docDate: dayjs(),
         source: '',
@@ -742,15 +747,17 @@ const Lead = () => {
             <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        {!listView &&
-                            <>
-                                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-                            </>
-                        }
-                    </div>
+                    {!selectedRow &&
+                        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+                            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                            {!listView &&
+                                <>
+                                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                    <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                                </>
+                            }
+                        </div>
+                    }
                     {listView && !isLoading ? (
                         <CommonTableWithStatus
                             data={listViewData}
@@ -1001,7 +1008,7 @@ const Lead = () => {
                                             Customer <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                                         </InputLabel>
                                         <Select
-                                            labelId="customerLabel"
+                                            labelId="customer"
                                             value={formData.customer}
                                             onChange={handleInputChange}
                                             label="Existing Customer"

@@ -27,6 +27,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import FullScreenLoader from 'utils/FullScreenLoader';
+import Active from 'views/Activities/Active';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -217,7 +219,7 @@ function ActiveReport() {
   const handleDocClick = async (docId, screenCode) => {
     setModalOpen(true);
     try {
-      const response = await apiCalls('get', `/activities/getActiveByDocIdandScreenCode?docId=${screenCode}&ScreenCode=${docId}`);
+      const response = await apiCalls('get', `/activities/getActiveByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`);
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.activeVO);
       } else {
@@ -757,8 +759,16 @@ function ActiveReport() {
                 </IconButton>
               </Box>
             </DialogTitle>
-            <DialogContent className="pb-0">
-
+            <DialogContent>
+              {fillGridData && (
+                <>
+                  {isLoading ? (
+                    <FullScreenLoader open={true} />
+                  ) : (
+                    <Active selectedRow={fillGridData} />
+                  )}
+                </>
+              )}
             </DialogContent>
           </Dialog>
         </>

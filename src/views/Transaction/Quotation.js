@@ -41,7 +41,7 @@ import FullScreenLoader from 'utils/FullScreenLoader';
 import { tr } from 'date-fns/locale';
 // import FullScreenLoader from 'utils/FullScreenLoader';
 
-export const Quotation = () => {
+export const Quotation = ({ selectedRow }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [editId, setEditId] = useState('');
     const [orgId] = useState(localStorage.getItem('orgId'));
@@ -60,6 +60,12 @@ export const Quotation = () => {
     const [branchList, setBranchList] = useState([]);
     const [opportunityList, setOpportunityList] = useState([]);
     const [productList, setProductList] = useState([]);
+    useEffect(() => {
+        if (selectedRow) {
+            setLoading(true);
+            getQuotationById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [summaryCounts, setSummaryCounts] = useState({
         New: 0,
         Qualified: 0,
@@ -246,13 +252,13 @@ export const Quotation = () => {
             setIsDocIdLoading(false);
         }
     };
-    const getQuotationById = async (id) => {
+    const getQuotationById = async (row) => {
         setIsLoading(true);
         try {
-            const response = await apiCalls('get', `/transaction/getAllQuotationById?id=${id}`);
+            const response = await apiCalls('get', `/transaction/getAllQuotationById?id=${row.original.id}`);
+            setEditId(row.original.id);
             if (response.status === true) {
                 const lead = response.paramObjectsMap.quotationVO;
-                setEditId(id);
                 setListView(false);
                 getBranch(lead.clientName);
                 getOpportunityName(lead.branchName, lead.clientName);
@@ -296,11 +302,13 @@ export const Quotation = () => {
                 );
                 setIsLoading(false);
             } else {
-                showToast('error', response.paramObjectsMap.message || 'Failed to fetch lead details');
+                setIsLoading(false);
+                showToast('error', response.paramObjectsMap.message);
             }
         } catch (error) {
             console.error('Error fetching lead details:', error);
             showToast('error', 'Failed to fetch lead details');
+            setIsLoading(false);
         }
     };
     const handleSave = async () => {
@@ -663,19 +671,19 @@ export const Quotation = () => {
             )}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-                    <div className="row d-flex ml">
+                    {/* <div className="row d-flex ml"> */}
+                    {!selectedRow &&
                         <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
                             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                            <ActionButton
-                                title="Save"
-                                icon={SaveIcon}
-                                isLoading={isLoading}
-                                onClick={handleSave}
-                                margin="0 10px 0 10px"
-                            />
+                            {!listView &&
+                                <>
+                                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                    <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                                </>
+                            }
                         </div>
-                    </div>
+                    }
+                    {/* </div> */}
 
                     {listView && !isLoading ? (
                         <div>

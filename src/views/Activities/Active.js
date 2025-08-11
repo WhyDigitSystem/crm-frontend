@@ -20,8 +20,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
-
-export const Active = () => {
+const Active = ({ selectedRow }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [editId, setEditId] = useState('');
     const [branchList, setBranchList] = useState([]);
@@ -42,7 +41,12 @@ export const Active = () => {
     const [typeOptions] = useState(['Call', 'Meeting', 'Visit']);
     const [directionOptions] = useState(['Call Received', 'Call Made']);
 
-    // Form state
+    useEffect(() => {
+        if (selectedRow) {
+            setIsLoading(true);
+            getActiveById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [formData, setFormData] = useState({
         activeDocId: '',
         docDate: null,
@@ -361,16 +365,13 @@ export const Active = () => {
         }
     };
 
-    const getActiveById = async (id) => {
+    const getActiveById = async (row) => {
         try {
-            const response = await apiCalls('get', `/activities/getActiveById?id=${id}`);
-
+            setEditId(row.original.id);
+            const response = await apiCalls('get', `/activities/getActiveById?id=${row.original.id}`);
             if (response.status === true && response.paramObjectsMap.activeVO) {
                 const active = response.paramObjectsMap.activeVO;
-                setEditId(id);
                 setListView(false);
-
-                // Convert dates/times to Dayjs
                 const docDate = active.docDate ? dayjs(active.docDate, 'YYYY-MM-DD') : null;
                 const startDate = active.startDate ? dayjs(active.startDate, 'YYYY-MM-DD') : null;
                 const endDate = active.endDate ? dayjs(active.endDate, 'YYYY-MM-DD') : null;
@@ -653,27 +654,24 @@ export const Active = () => {
     return (
         <>
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-                <div className="row d-flex ml">
+                {!selectedRow &&
                     <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
                         <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                        <ActionButton
-                            title="Save"
-                            icon={SaveIcon}
-                            isLoading={isLoading}
-                            onClick={handleSave}
-                            margin="0 10px 0 10px"
-                        />
+                        {!listView &&
+                            <>
+                                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                            </>
+                        }
                     </div>
-                </div>
-
+                }
                 {listView ? (
                     <div className="">
                         <CommonListViewTable
                             data={listViewData}
                             columns={listViewColumns}
                             blockEdit={true}
-                            toEdit={(row) => getActiveById(row.original.id)}
+                            toEdit={getActiveById}
                         />
                     </div>
                 ) : (

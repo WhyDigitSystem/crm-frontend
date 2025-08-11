@@ -14,7 +14,7 @@ import apiCalls from 'apicall';
 import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import FullScreenLoader from 'utils/FullScreenLoader';
 
-const Opportunity = () => {
+const Opportunity = ({ selectedRow }) => {
     // State management
     const [listViewData, setListViewData] = useState([]);
     const [isDocIdLoading, setIsDocIdLoading] = useState(false);
@@ -29,6 +29,12 @@ const Opportunity = () => {
     const [value, setValue] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
     const [subCategoryList, setSubCategoryList] = useState([]);
+    useEffect(() => {
+        if (selectedRow) {
+            setIsLoading(true);
+            getOpportunityById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [summaryCounts, setSummaryCounts] = useState({
         New: 0,
         Qualified: 0,
@@ -672,19 +678,23 @@ const Opportunity = () => {
             <ToastComponent />
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                        {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                        <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                        <ActionButton
-                            title="Save"
-                            icon={SaveIcon}
-                            onClick={handleSave}
-                            disabled={isLoading}
-                            loading={isLoading}
-                        />
-                    </div>
-
+                    {!selectedRow &&
+                        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+                            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                            {!listView &&
+                                <>
+                                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                                    <ActionButton
+                                        title="Save"
+                                        icon={SaveIcon}
+                                        onClick={handleSave}
+                                        disabled={isLoading}
+                                        loading={isLoading}
+                                    />
+                                </>
+                            }
+                        </div>
+                    }
                     {listView && !isLoading ? (
                         <CommonTableWithStatus
                             data={listViewData}
@@ -1022,7 +1032,7 @@ const Opportunity = () => {
                                                                                 aria-label={`Delete product ${index + 1}`}
                                                                             />
                                                                         </td>
-                                                                        <td className="text-center pt-3" style={{color:'white'}}>{index + 1}</td>
+                                                                        <td className="text-center pt-3" style={{ color: 'white' }}>{index + 1}</td>
                                                                         <td>
                                                                             <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                                                                 <Autocomplete

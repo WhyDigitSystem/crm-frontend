@@ -19,7 +19,7 @@ import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
-const Schedule = () => {
+const Schedule = ({ selectedRow }) => {
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [branch] = useState(localStorage.getItem('branch'));
@@ -39,7 +39,12 @@ const Schedule = () => {
   const [branchOptions, setBranchOptions] = useState([]);
   const [customerOptions, setCustomerOptions] = useState([]);
   const [assignedToOptions, setAssignedToOptions] = useState([]);
-
+  useEffect(() => {
+    if (selectedRow) {
+      setIsLoading(true);
+      getTaskById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   // Form state
   const [formData, setFormData] = useState({
     taskId: '',
@@ -211,7 +216,7 @@ const Schedule = () => {
   const getAllTasks = async () => {
     try {
       const response = await apiCalls(
-        'get', 
+        'get',
         `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
 
@@ -254,16 +259,16 @@ const Schedule = () => {
     }
   };
 
-  const getTaskById = async (id) => {
+  const getTaskById = async (row) => {
     try {
+      setEditId(row.original.id);
       const response = await apiCalls(
-        'get', 
-        `/activities/getScheduleById?id=${id}`
+        'get',
+        `/activities/getScheduleById?id=${row.original.id}`
       );
 
       if (response.status === true) {
         const task = response.paramObjectsMap.scheduleVO;
-        setEditId(id);
         setListView(false);
         setImg(task.attachments);
         setFormData({
@@ -291,8 +296,9 @@ const Schedule = () => {
           orgId: orgId,
           createdBy: loginUserName
         });
+        setIsLoading(false);
       } else {
-        showToast('error', response.message || 'Failed to fetch task details');
+        showToast('error', response.message);
       }
     } catch (error) {
       console.error('Error fetching task details:', error);
@@ -456,8 +462,8 @@ const Schedule = () => {
 
     try {
       const response = await apiCalls(
-        'put', 
-        '/activities/createUpdateSchedule', 
+        'put',
+        '/activities/createUpdateSchedule',
         payload
       );
 
@@ -549,7 +555,7 @@ const Schedule = () => {
               columns={listViewColumns}
               enableEditing={true}
               blockEdit={true}
-              toEdit={(row) => getTaskById(row.original.id)}
+              toEdit={getTaskById}
             />
           </div>
         ) : (
