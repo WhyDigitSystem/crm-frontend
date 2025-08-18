@@ -15,6 +15,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import dealerSample from '../../assets/sample-files/dealer.xlsx';
 
 const Dealer = () => {
   const [showForm, setShowForm] = useState(true);
@@ -31,6 +34,7 @@ const Dealer = () => {
   const [docId, setDocId] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [districtList, setDistrictList] = useState([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [formData, setFormData] = useState({
     docDate: dayjs(),
     dealerType: '',
@@ -78,9 +82,9 @@ const Dealer = () => {
   ];
   const getAllStates = async () => {
     try {
-      const response = await apiCalls('get', `/commonmaster/city?orgid=${orgId}`);
+      const response = await apiCalls('get', `/commonmaster/state?orgid=${orgId}`);
       if (response.status === true) {
-       setStateList(response.paramObjectsMap.cityVO || []);
+        setStateList(response.paramObjectsMap.stateVO || []);
       } else {
         console.error('API Error:', response);
         return response;
@@ -94,7 +98,7 @@ const Dealer = () => {
     try {
       const response = await apiCalls('get', `/dealer/getCityNameFromState?orgId=${orgId}&state=${state}`);
       if (response.status === true) {
-       setDistrictList(response.paramObjectsMap.city || []);
+        setDistrictList(response.paramObjectsMap.city || []);
       } else {
         console.error('API Error:', response);
         return response;
@@ -327,6 +331,21 @@ const Dealer = () => {
       setLoading(false);
     }
   };
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+  const handleBulkUpload = () => {
+    setUploadOpen(true);
+  };
   return (
     <>
       {loading && (
@@ -340,6 +359,26 @@ const Dealer = () => {
           <div className="d-flex justify-content-between align-items-center mb-4" style={{ width: '100%' }}>
             <div className="d-flex">
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
+              {uploadOpen && (
+                <CommonBulkUpload
+                  open={uploadOpen}
+                  handleClose={handleBulkUploadClose}
+                  title="Upload Files"
+                  uploadText="Upload file"
+                  downloadText="Sample File"
+                  onSubmit={handleSubmit}
+                  sampleFileDownload={dealerSample}
+                  handleFileUpload={handleFileUpload}
+                  apiUrl={`/dealer/excelUploadForDealer`}
+                  screen="DEALERS"
+                  loginUser={loginUserName}
+                  orgId={orgId}
+                  branch={branch}
+                  branchCode={branchCode}
+                  finYear={finYear}
+                ></CommonBulkUpload>
+              )}
               {showForm && (
                 <>
                   <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -551,22 +590,22 @@ const Dealer = () => {
                   <Autocomplete
                     options={stateList}
                     getOptionLabel={(option) =>
-                      option?.state ? `${option.state}` : ''
+                      option?.stateName ? `${option.stateName}` : ''
                     }
                     value={
-                      stateList.find((item) => item.state === formData.state) || null
+                      stateList.find((item) => item.stateName === formData.state) || null
                     }
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          state: newValue.state,
+                          state: newValue.stateName,
                         }));
                         setFieldErrors((prev) => ({
                           ...prev,
                           state: '',
                         }));
-                        getCityByState(newValue.state)
+                        getCityByState(newValue.stateName)
                       } else {
                         setFormData((prev) => ({
                           ...prev,

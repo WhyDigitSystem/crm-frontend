@@ -691,7 +691,7 @@ export const Quotation = ({ selectedRow }) => {
                                 data={listViewData}
                                 columns={listViewColumns}
                                 blockEdit={true}
-                                toEdit={(row) => getQuotationById(row.original.id)}
+                                toEdit={getQuotationById}
                                 summaryCounts={summaryCounts}
                             />
                         </div>

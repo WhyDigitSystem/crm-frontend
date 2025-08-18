@@ -522,7 +522,7 @@ export const CustomerDetails = () => {
         </div>
 
         {listView ? (
-          <div className="">
+          <div>
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}

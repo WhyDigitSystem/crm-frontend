@@ -64,7 +64,7 @@ const Rate = () => {
         'Rail Freight': ['Indian Railways Cargo', 'DB Cargo'],
         'Road Freight': ['GATI', 'Delhivery', 'Blue Dart Road'],
     };
-    const [freightList] = useState(['Air Freight', 'Sea Freight', 'Rail Freight', 'Road Freight', 'Courier', 'Port Delivery', 'Warehouse Pickup', 'Door to Door', 'Container Load (FCL)', 'Less Container Load (LCL)']);
+    const [freightList, setFreightList] = useState([]);
     const [currencyList, setCurrencyList] = useState([]);
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -160,8 +160,23 @@ const Rate = () => {
             return error;
         }
     };
+    const getFreightType = async () => {
+        try {
+            const response = await apiCalls('get', `/commonmaster/getAllPortType?orgId=${orgId}`);
+            if (response.status === true) {
+                setFreightList(response.paramObjectsMap.typeDeatils || []);
+            } else {
+                console.error('API Error:', response);
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return error;
+        }
+    };
     useEffect(() => {
         getCalcType();
+        getFreightType();
         getCurrency();
         getAllRate();
         getDocIdRate();
@@ -479,23 +494,25 @@ const Rate = () => {
                                 <div className="col-md-3 mb-3">
                                     <Autocomplete
                                         options={freightList}
-                                        getOptionLabel={(option) => option || ''}
-                                        value={formData.freightType || null}
+                                        getOptionLabel={(option) =>
+                                            option?.type
+                                                ? `${option.type}`
+                                                : ''
+                                        }
+                                        value={
+                                            freightList.find((item) => item.type === formData.freightType) || null
+                                        }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    freightType: newValue,
-                                                    cargoType: '',
+                                                    freightType: newValue.type,
                                                 }));
+                                                getOriginType(newValue.type);
                                                 setFieldErrors((prev) => ({ ...prev, freightType: '' }));
-                                                getOriginType(newValue);
                                             } else {
                                                 setFormData((prev) => ({ ...prev, freightType: '' }));
-                                                setFieldErrors((prev) => ({
-                                                    ...prev,
-                                                    freightType: 'Freight Type is required',
-                                                }));
+                                                setFieldErrors((prev) => ({ ...prev, freightType: 'Origin Port/Airport is required' }));
                                             }
                                         }}
                                         renderInput={(params) => (
@@ -503,7 +520,7 @@ const Rate = () => {
                                                 {...params}
                                                 label={
                                                     <span>
-                                                        Freight Type {/* <span className="asterisk">*</span> */}
+                                                        Freight Type
                                                     </span>
                                                 }
                                                 size="small"
@@ -585,19 +602,19 @@ const Rate = () => {
                                     <Autocomplete
                                         options={originList}
                                         getOptionLabel={(option) =>
-                                            option?.orgin
-                                                ? `${option.orgin}`
+                                            option?.portName
+                                                ? `${option.portName}`
                                                 : ''
                                         }
 
                                         value={
-                                            originList.find((item) => item.orgin === formData.orgin) || null
+                                            originList.find((item) => item.portName === formData.orgin) || null
                                         }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    orgin: newValue.orgin,
+                                                    orgin: newValue.portName,
 
                                                 }));
                                                 setFieldErrors((prev) => ({ ...prev, orgin: '' }));
@@ -628,18 +645,18 @@ const Rate = () => {
                                     <Autocomplete
                                         options={originList}
                                         getOptionLabel={(option) =>
-                                            option?.designation
-                                                ? `${option.designation}`
+                                            option?.portName
+                                                ? `${option.portName}`
                                                 : ''
                                         }
                                         value={
-                                            originList.find((item) => item.designation === formData.designation) || null
+                                            originList.find((item) => item.portName === formData.designation) || null
                                         }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    designation: newValue.designation,
+                                                    designation: newValue.portName,
 
                                                 }));
                                                 setFieldErrors((prev) => ({ ...prev, designation: '' }));
