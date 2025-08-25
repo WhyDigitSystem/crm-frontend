@@ -59,7 +59,14 @@ const reportChildren = [
         type: 'item',
         url: '/Report/ScheduleReport',
         icon: IconMap
-    }
+    },
+    hasScreenAccess('DLR') && {
+        id: 'DealerReport',
+        title: 'Dealer Report',
+        type: 'item',
+        url: '/Report/DealerReport',
+        icon: IconMap
+    },
 ].filter(Boolean);
 
 const Reports =

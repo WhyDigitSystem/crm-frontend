@@ -4,6 +4,7 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
 //Report
 const LeadReport = Loadable(lazy(() => import('views/Reports/LeadReport')));
@@ -12,6 +13,7 @@ const QuotationReport = Loadable(lazy(() => import('views/Reports/QuotationRepor
 const SalesOrderReport = Loadable(lazy(() => import('views/Reports/SalesOrderReport')));
 const ActiveReport = Loadable(lazy(() => import('views/Reports/ActiveReport')));
 const ScheduleReport = Loadable(lazy(() => import('views/Reports/ScheduleReport')));
+const DealerReport = Loadable(lazy(() => import('views/Reports/DealerReport')));
 
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
@@ -276,6 +278,14 @@ const FinanceRoute = {
     {
       path: '/Report/ScheduleReport',
       element: <ScheduleReport />
+    },
+    {
+      path: '/Report/DealerReport',
+      element: <DealerReport />
+    },
+    {
+      path: '/Crm/BulkEmail',
+      element: <BulkEmail />
     },
   ]
 };

@@ -19,7 +19,7 @@ import CommonBulkUpload from 'utils/CommonBulkUpload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import dealerSample from '../../assets/sample-files/dealer.xlsx';
 
-const Dealer = () => {
+const Dealer = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -35,6 +35,12 @@ const Dealer = () => {
   const [stateList, setStateList] = useState([]);
   const [districtList, setDistrictList] = useState([]);
   const [uploadOpen, setUploadOpen] = useState(false);
+  useEffect(() => {
+    if (selectedRow) {
+      setLoading(true);
+      getDealersById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     docDate: dayjs(),
     dealerType: '',
@@ -357,35 +363,37 @@ const Dealer = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex justify-content-between align-items-center mb-4" style={{ width: '100%' }}>
-            <div className="d-flex">
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-              <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
-              {uploadOpen && (
-                <CommonBulkUpload
-                  open={uploadOpen}
-                  handleClose={handleBulkUploadClose}
-                  title="Upload Files"
-                  uploadText="Upload file"
-                  downloadText="Sample File"
-                  onSubmit={handleSubmit}
-                  sampleFileDownload={dealerSample}
-                  handleFileUpload={handleFileUpload}
-                  apiUrl={`/dealer/excelUploadForDealer`}
-                  screen="DEALERS"
-                  loginUser={loginUserName}
-                  orgId={orgId}
-                  branch={branch}
-                  branchCode={branchCode}
-                  finYear={finYear}
-                ></CommonBulkUpload>
-              )}
-              {showForm && (
-                <>
-                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                  <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-                </>
-              )}
-            </div>
+            {!selectedRow &&
+              <div className="d-flex">
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
+                {uploadOpen && (
+                  <CommonBulkUpload
+                    open={uploadOpen}
+                    handleClose={handleBulkUploadClose}
+                    title="Upload Files"
+                    uploadText="Upload file"
+                    downloadText="Sample File"
+                    onSubmit={handleSubmit}
+                    sampleFileDownload={dealerSample}
+                    handleFileUpload={handleFileUpload}
+                    apiUrl={`/dealer/excelUploadForDealer`}
+                    screen="DEALERS"
+                    loginUser={loginUserName}
+                    orgId={orgId}
+                    branch={branch}
+                    branchCode={branchCode}
+                    finYear={finYear}
+                  ></CommonBulkUpload>
+                )}
+                {showForm && (
+                  <>
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                    <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                  </>
+                )}
+              </div>
+            }
           </div>
           {showForm ? (
             <>

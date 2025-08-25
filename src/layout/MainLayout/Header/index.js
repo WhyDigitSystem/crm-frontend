@@ -17,6 +17,7 @@ import GlobalSection from './GlobalSection';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
+import MenuBar from './GlobalSection/MenuBar';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -95,10 +96,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       {/* header search */}
       <SearchSection />
-      {/* <HAISection/> */}
       <Box sx={{ flexGrow: 1 }} />
-
-      {/* notification & profile */}
       <div
         className="mt-2"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}
@@ -154,7 +152,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       <NotificationSection />
       <GlobalSection />
-      {/* <SiteMapSection /> */}
+      <MenuBar />
       <ProfileSection />
     </>
   );
