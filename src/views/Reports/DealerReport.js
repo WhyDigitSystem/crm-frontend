@@ -36,7 +36,6 @@ function DealerReport() {
     const [orgId] = useState(localStorage.getItem('orgId'));
     const [finYear] = useState(localStorage.getItem('finYear'));
     const [loginUserName] = useState(localStorage.getItem('userName'));
-    const [branchCode] = useState(localStorage.getItem('branchCode'));
     const [isLoading, setIsLoading] = useState(false);
     const [dealerNameList, setDealerNameList] = useState([]);
     const [fillGridData, setFillGridData] = useState([]);

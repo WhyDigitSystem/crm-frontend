@@ -6,7 +6,8 @@ import {
     IconFileText,
     IconShoppingCart,
     IconPhoneCall,
-    IconMap
+    IconMap, 
+    IconUserExclamation
 } from '@tabler/icons-react';
 
 // screen access utility
@@ -18,6 +19,13 @@ const hasScreenAccess = (screenId) => {
 
 // transaction children menu
 const reportChildren = [
+    hasScreenAccess('UAL') && {
+        id: 'UnAssignedLeads',
+        title: 'UnAssigned Leads',
+        type: 'item',
+        url: '/Report/UnAssignedLeads',
+        icon: IconUserExclamation
+    },
     hasScreenAccess('LDR') && {
         id: 'LeadReport',
         title: 'Lead Report',

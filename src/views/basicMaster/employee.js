@@ -31,7 +31,7 @@ const EmployeeDetails = () => {
   const [orgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [branch] = useState(localStorage.getItem('branch'));
-  const [branchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear] = useState(localStorage.getItem('finYear'));
   const [editId, setEditId] = useState();
   const [branchList, setBranchList] = useState([]);

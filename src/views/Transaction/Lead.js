@@ -185,11 +185,7 @@ const Lead = ({ selectedRow }) => {
                             break;
                     }
                 });
-
-                // First set the calculated counts
                 setSummaryCounts(counts);
-
-                // Then update the 'New' count properly
                 setSummaryCounts(prev => ({
                     ...prev,
                     New: response.paramObjectsMap.leadVO.length
@@ -299,9 +295,9 @@ const Lead = ({ selectedRow }) => {
     };
     const getAssignTo = async () => {
         try {
-            const response = await apiCalls('get', `/master/getUserNameAndAssigned?orgId=${orgId}`);
+            const response = await apiCalls('get', `/transaction/getAssignedNameSales?orgId=${orgId}`);
             if (response.status === true) {
-                setAssignToList(response.paramObjectsMap.userName || []);
+                setAssignToList(response.paramObjectsMap.assignedUser || []);
             } else {
                 console.error('API Error:', response);
                 return response;
@@ -1055,21 +1051,25 @@ const Lead = ({ selectedRow }) => {
                                     <Autocomplete
                                         options={assignToList}
                                         getOptionLabel={(option) =>
-                                            option?.userName ? `${option.userName}` : ''
+                                            option?.empoyeeCode && option?.employeeName
+                                                ? `${option.empoyeeCode} - ${option.employeeName}`
+                                                : ''
                                         }
                                         value={
-                                            assignToList.find((item) => item.userName === formData.assignTo) || null
+                                            assignToList.find((item) => item.empoyeeCode === formData.assignTo) || null
                                         }
                                         onChange={(event, newValue) => {
                                             if (newValue) {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    assignTo: newValue.userName
+                                                    assignTo: newValue.empoyeeCode,
+                                                    assignName: newValue.employeeName,
                                                 }));
                                             } else {
                                                 setFormData((prev) => ({
                                                     ...prev,
-                                                    assignTo: ''
+                                                    assignTo: '',
+                                                    assignName:''
                                                 }));
                                             }
                                         }}
@@ -1099,8 +1099,8 @@ const Lead = ({ selectedRow }) => {
                                             label="Stage"
                                         >
                                             <MenuItem value="Progressing">Progressing</MenuItem>
-                                            <MenuItem value="Prospecting">Prospecting</MenuItem>
-                                            <MenuItem value="Qualification">Qualification</MenuItem>
+                                            {/* <MenuItem value="Prospecting">Prospecting</MenuItem> */}
+                                            {/* <MenuItem value="Qualification">Qualification</MenuItem> */}
                                             <MenuItem value="Proposal">Proposal</MenuItem>
                                             <MenuItem value="Negotiation">Negotiation</MenuItem>
                                             <MenuItem value="Closed Won">Closed Won</MenuItem>

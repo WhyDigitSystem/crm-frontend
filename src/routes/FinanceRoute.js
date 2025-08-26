@@ -4,6 +4,7 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+import UnAssignedLeads from 'views/Reports/UnAssignedLeads';
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
 //Report
@@ -255,6 +256,10 @@ const FinanceRoute = {
       element: <NominationEnquiries />
     },
     // Reports
+    {
+      path: '/Report/UnAssignedLeads',
+      element: <UnAssignedLeads />
+    },
     {
       path: '/Report/LeadReport',
       element: <LeadReport />

@@ -22,17 +22,17 @@ const getMenuItems = () => {
   return {
     items: filterValid([
       dashboard,
-      calendar,
-      companySetup,
-      admin,
-      basicMaster,
-      Documents,
       Activities,
       Transaction,
       rate,
       DealerManagement,
       NominationEnquiries,
-      Reports
+      Reports,
+      calendar,
+      companySetup,
+      admin,
+      basicMaster,
+      Documents,
     ])
   };
 };

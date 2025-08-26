@@ -23,7 +23,7 @@ const Calendar = () => {
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [loginUserName] = useState(localStorage.getItem('userName'));
-  const [branchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [branchName] = useState(localStorage.getItem('branch'));
   const [department] = useState(localStorage.getItem('department'));
   const [empCode] = useState(localStorage.getItem('employeeCode'));
