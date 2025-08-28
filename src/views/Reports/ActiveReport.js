@@ -540,7 +540,7 @@ function ActiveReport() {
                     />
                   }
                   label="Date"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -554,7 +554,7 @@ function ActiveReport() {
                     />
                   }
                   label="Client Name"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -568,7 +568,7 @@ function ActiveReport() {
                     />
                   }
                   label="Branch"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
             </div>

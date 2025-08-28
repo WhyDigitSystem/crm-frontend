@@ -743,7 +743,15 @@ export const CustomerDetails = () => {
                   component="label"
                   multiline
                   startIcon={<CloudUploadIcon />}
-                  sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  sx={{
+                    color: '#c156ff',
+                    borderColor: '#c156ff',
+                    borderRadius: '12px',
+                    '&:hover': {
+                      borderColor: '#c156ff',
+                      backgroundColor: 'rgba(193, 86, 255, 0.08)', // light hover effect
+                    }
+                  }}
                 >
                   {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : '') : 'Upload Img'}
 
@@ -751,7 +759,12 @@ export const CustomerDetails = () => {
                 </Button>
 
                 {supportingImg && (
-                  <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                  <IconButton variant="contained"
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      color: '#c156ff'
+                    }}
+                    onClick={handleOpen}>
                     <ControlCameraIcon />
                   </IconButton>
                 )}
@@ -822,7 +835,7 @@ export const CustomerDetails = () => {
                         <div className="table-responsive">
                           <table className="table table-bordered">
                             <thead>
-                              <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                              <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                 <th className="px-2 py-2 text-white text-center">Branch Code *</th>
@@ -981,7 +994,7 @@ export const CustomerDetails = () => {
                         <div className="table-responsive">
                           <table className="table table-bordered">
                             <thead>
-                              <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                              <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Referred Contact</th>
@@ -1016,7 +1029,7 @@ export const CustomerDetails = () => {
                                   <td className="text-center pt-3">{index + 1}</td>
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.referedContact}
@@ -1026,7 +1039,7 @@ export const CustomerDetails = () => {
                                   </td>
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.name}
@@ -1038,7 +1051,7 @@ export const CustomerDetails = () => {
                                   </td>
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.branchName}
@@ -1049,7 +1062,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.mobileNo}
@@ -1062,7 +1075,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.email}
@@ -1075,7 +1088,7 @@ export const CustomerDetails = () => {
 
                                   <td>
                                     <TextField
-                                     sx={{ minWidth: 130, flexGrow: 1 }}
+                                      sx={{ minWidth: 130, flexGrow: 1 }}
                                       fullWidth
                                       size="small"
                                       value={contact.designation}

@@ -6,42 +6,34 @@ import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
 import dayjs from 'dayjs';
-// import {  } from 'material-ui';
 
-const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf, enableEditing, summaryCounts }) => {
-
-    const [tableData, setTableData] = useState(data || []);
+const CommonTableWithStatus = ({
+    data = [],
+    columns = [],
+    blockEdit,
+    toEdit,
+    disableEditIcon,
+    viewIcon,
+    isPdf,
+    GeneratePdf,
+    enableEditing,
+    summaryCounts = { New: 0, Qualified: 0, Unqualified: 0, InProgress: 0 }
+}) => {
+    const [tableData, setTableData] = useState(data);
     const theme = useTheme();
 
-    const chipSX = {
-        height: 24,
-        padding: '0 6px'
-    };
+    const chipSX = { height: 24, padding: '0 6px' };
+    const chipSuccessSX = { ...chipSX, color: theme.palette.success.dark, backgroundColor: theme.palette.success.light, height: 28 };
+    const chipErrorSX = { ...chipSX, color: theme.palette.orange.dark, backgroundColor: theme.palette.orange.light, marginRight: '5px' };
 
-    const chipSuccessSX = {
-        ...chipSX,
-        color: theme.palette.success.dark,
-        backgroundColor: theme.palette.success.light,
-        height: 28
-    };
-
-    const chipErrorSX = {
-        ...chipSX,
-        color: theme.palette.orange.dark,
-        backgroundColor: theme.palette.orange.light,
-        marginRight: '5px'
-    };
-
-    const handleButtonClick = (row) => {
-        toEdit(row);
-    };
+    const handleButtonClick = (row) => toEdit?.(row);
 
     useEffect(() => {
         console.log('BlockEdit', blockEdit);
-    }, []);
+    }, [blockEdit]);
 
     const customColumns = columns.map((column) => {
-        if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
+        if (column.accessorKey?.toLowerCase().includes('date')) {
             return {
                 ...column,
                 Cell: ({ cell }) => {
@@ -50,10 +42,7 @@ const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIc
                 }
             };
         }
-
         if (column.accessorKey === 'active') {
-            console.log('the columns are:', column);
-
             return {
                 ...column,
                 Cell: ({ cell }) => (
@@ -64,10 +53,7 @@ const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIc
                 )
             };
         }
-
         if (column.accessorKey === 'closed') {
-            console.log('the columns are:', column);
-
             return {
                 ...column,
                 Cell: ({ cell }) => (
@@ -75,28 +61,26 @@ const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIc
                 )
             };
         }
-
         return column;
     });
 
     const renderRowActions = ({ row }) => (
         <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            {isPdf && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={() => GeneratePdf(row)} />}
+            {isPdf && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={() => GeneratePdf?.(row)} />}
             {!disableEditIcon && <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />}
         </Box>
     );
-    const customLocalization = {
-        toggleDensity: "Wide View",
-    };
+
     return (
         <>
+            {/* Summary Cards */}
             <Box sx={{ mb: 3 }}>
                 <Grid container spacing={2}>
                     {[
                         { label: 'New', count: summaryCounts.New, color: '#1e88e5', icon: '🆕' },
                         { label: 'Won', count: summaryCounts.Qualified, color: '#43a047', icon: '✅' },
                         { label: 'Lost', count: summaryCounts.Unqualified, color: '#e53935', icon: '❌' },
-                        { label: 'In Progress', count: summaryCounts.InProgress, color: '#fb8c00', icon: '⏳' },
+                        { label: 'In Progress', count: summaryCounts.InProgress, color: '#fb8c00', icon: '⏳' }
                     ].map(({ label, count, color, icon }) => (
                         <Grid item xs={12} sm={6} md={3} key={label}>
                             <Paper
@@ -106,15 +90,16 @@ const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIc
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     p: 2,
-                                    backgroundColor: '#1c2232',
-                                    color: '#fff',
+                                    backgroundColor: '#ffffff',
+                                    color: '#111827',
                                     borderLeft: `6px solid ${color}`,
+                                    border: '1px solid #e5e7eb',
                                     borderRadius: 2,
                                     transition: 'transform 0.2s',
                                     '&:hover': {
                                         transform: 'scale(1.02)',
-                                        boxShadow: `0 4px 20px ${color}66`,
-                                    },
+                                        boxShadow: `0 4px 20px ${color}33`
+                                    }
                                 }}
                             >
                                 <Box>
@@ -128,91 +113,83 @@ const CommonTableWithStatus = ({ data, columns, blockEdit, toEdit, disableEditIc
                 </Grid>
             </Box>
 
+            {/* Table */}
             <MaterialReactTable
                 displayColumnDefOptions={{
-                    "mrt-row-actions": {
+                    'mrt-row-actions': {
                         muiTableHeadCellProps: {
                             sx: {
-                                backgroundColor: "#1c2232",
-                                color: "#ffffff",
-                                fontWeight: "bold",
-                                fontSize: "13px",
-                                textAlign: "left",
-                                borderBottom: "2px solid #2e3a59",
-                                padding: "10px 12px",
-                            },
+                                backgroundColor: '#f3f4f6',
+                                color: '#111827',
+                                fontWeight: 'bold',
+                                fontSize: '13px',
+                                textAlign: 'left',
+                                borderBottom: '2px solid #e5e7eb',
+                                padding: '10px 12px'
+                            }
                         },
                         muiTableBodyCellProps: {
-                            sx: {
-                                borderBottom: "none", // <-- This removes the white line
-                                padding: "10px 12px",
-                            },
+                            sx: { borderBottom: 'none', padding: '10px 12px' }
                         },
-                        size: 40,
-                    },
+                        size: 40
+                    }
                 }}
                 columns={customColumns.map((col) => ({
                     ...col,
                     muiTableHeadCellProps: {
                         sx: {
-                            backgroundColor: "#1c2232", // Match card bg
-                            color: "#ffffff",
-                            fontWeight: "bold",
-                            fontSize: "13px",
-                            textAlign: "left",
-                            borderBottom: "2px solid #2e3a59",
-                            padding: "10px 12px",
-                        },
+                            backgroundColor: '#f3f4f6',
+                            color: '#111827',
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            textAlign: 'left',
+                            borderBottom: '2px solid #e5e7eb',
+                            padding: '10px 12px'
+                        }
                     },
                     muiTableBodyCellProps: {
                         sx: {
-                            fontSize: "14px",
-                            color: "#E0E0E0",
-                            padding: "10px 12px",
-                            textAlign: "left",
-                            borderBottom: "1px solid #2e3a59",
-                            // borderBottom: "1px solid #2e3a59",
-                        },
-                    },
+                            fontSize: '14px',
+                            color: '#111827',
+                            padding: '10px 12px',
+                            textAlign: 'left',
+                            borderBottom: '1px solid #e5e7eb'
+                        }
+                    }
                 }))}
-
-                data={tableData && tableData}
+                data={tableData}
                 enableColumnOrdering={false}
                 enableColumnActions={false}
                 enableEditing
                 renderRowActions={renderRowActions}
-                initialState={{ density: "compact" }}
-                localization={customLocalization}
+                initialState={{ density: 'compact' }}
                 muiTableContainerProps={{
                     sx: {
-                        background: "#111522",
-                        borderRadius: "5px",
-                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-                        border: "1px solid #2e3a59",
-                    },
+                        background: '#ffffff',
+                        borderRadius: '5px',
+                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.05)',
+                        border: '1px solid #e5e7eb'
+                    }
                 }}
                 muiTableProps={{
                     sx: {
-                        backgroundColor: "#111522",
-                        borderRadius: "5px",
-                        overflow: "hidden",
-                        border: "1px solid #2e3a59",
-                    },
+                        backgroundColor: '#ffffff',
+                        borderRadius: '5px',
+                        overflow: 'hidden',
+                        border: '1px solid #e5e7eb'
+                    }
                 }}
                 muiTableBodyRowProps={{
                     sx: {
-                        height: "50px",
-                        "&:nth-of-type(even)": {
-                            backgroundColor: "#151a2e",
-                        },
-                        "&:hover": {
-                            backgroundColor: "#222c44",
-                            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-                            transition: "0.2s ease-in-out",
-                        },
-                    },
+                        height: '50px',
+                        '&:nth-of-type(even)': { backgroundColor: '#f9fafb' },
+                        '&:hover': {
+                            backgroundColor: '#f3f4f6',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                            transition: '0.2s ease-in-out'
+                        }
+                    }
                 }}
-
             />
         </>
     );

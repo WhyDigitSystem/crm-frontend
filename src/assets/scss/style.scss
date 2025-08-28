@@ -19,6 +19,8 @@
 /* src/styles.css */
 .gradient-text {
   background: linear-gradient(to right, #0061ff, #60efff);
+  /* Gemini AI colors */
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -168,150 +170,25 @@
   margin-left: 14px;
 }
 
-/* Card Background */
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
-  background-color: #12162e !important;
-  background-clip: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.25rem;
-  color: #f6f3f361 !important;
+.table-header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.5rem;
+  /* Equivalent to 'px-2 py-2' */
+  border: 1px solid #dee2e6;
+  /* Adjust this as needed */
+  text-align: center;
+  /* For centering text */
+  background-color: #673AB7;
+  /* For background color */
+  color: white;
+  /* For text color */
 }
 
-/* Input Root and General Field Styling */
-.MuiOutlinedInput-root {
-  border-radius: 12px !important;
-  background: #12162e !important;
-  color: #f6f3f361 !important;
-}
-
-/* Input Field Inside the Outlined Input */
-.MuiOutlinedInput-input {
-  color: #f6f3f3 !important;
-  background: #12162e !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Select Field Styling */
-.MuiSelect-select {
-  color: #f6f3f3 !important;
-  background: #12162e !important;
-}
-
-/* Outline Border Styling */
-.MuiOutlinedInput-notchedOutline {
-  border-color: white !important;
-}
-
-.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
-.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: white !important;
-}
-
-.MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline {
-  border-color: red !important;
-}
-
-/* Disabled Label and Input Styling */
-.MuiFormLabel-root.Mui-disabled {
-  color: #f6f3f361 !important;
-}
-
-.MuiInputBase-input.Mui-disabled {
-  opacity: 1 !important;
-  -webkit-text-fill-color: #f6f3f361 !important;
-}
-
-/* Icon Button Styling */
-.MuiIconButton-root {
-  color: #ec407a !important;
-}
-
-/* Avatar Hover and Menu Styling */
-.MuiAvatar-root:hover,
-.MuiAvatar-root[aria-controls="menu-list-grow"]:hover {
-  background: #ec407a !important;
-  color: #ffffff !important;
-}
-
-/* Override Specific Generated MUI Classes (if needed for special edge cases) */
-.css-1kyh1vg-MuiInputBase-root-MuiOutlinedInput-root,
-.css-cjeaxr-MuiInputBase-root-MuiOutlinedInput-root,
-.css-lpa3hk-MuiInputBase-root-MuiOutlinedInput-root {
-  background: #12162e !important;
-  color: #f6f3f361 !important;
-}
-
-.css-4a5t8g-MuiInputBase-input-MuiOutlinedInput-input,
-.css-3vbiw9-MuiInputBase-input-MuiOutlinedInput-input,
-.css-1o8mwpb-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
-  color: #f6f3f361 !important;
-  background: #12162e !important;
-}
-
-.css-1yai43k-MuiFormLabel-root-MuiInputLabel-root.Mui-disabled {
-  color: #f6f3f361 !important;
-}
-
-.css-1imiru6-MuiInputBase-input-MuiOutlinedInput-input.Mui-disabled {
-  opacity: 1;
-  -webkit-text-fill-color: #f6f3f361 !important;
-}
-
-.css-78trlr-MuiButtonBase-root-MuiIconButton-root {
-  color: #ec407a !important;
-}
-
-.css-8d9zgr-MuiAvatar-root[aria-controls="menu-list-grow"],
-.css-8d9zgr-MuiAvatar-root:hover,
-.css-beqlbn-MuiAvatar-root:hover,
-.css-nu2dnc-MuiAvatar-root:hover {
-  background: #ec407a !important;
-  color: #ffffff !important;
-}
-
-.css-1je4gh-MuiTableRow-root:nth-of-type(even) {
-  background-color: #12162e !important;
-}
-
-.css-1je4gh-MuiTableRow-root {
-  background-color: #12162e !important;
-}
-
-.MuiIconButton-root {
-  color: #ffffff !important;
-}
-
-.form-control {
-  color: #ffffff !important;
-  background-color: #12162e !important;
-}
-
-.css-mnta6v-MuiPaper-root-MuiCard-root {
-  background-color: #ec407a45 !important;
-}
-
-.css-hfutr2-MuiSvgIcon-root-MuiSelect-icon {
-  color: #ffffff !important;
-}
-
-.css-ittuaa-MuiInputAdornment-root {
-  color: #ffffff !important;
-}
-
-.css-1s2lckk-MuiTableRow-root:nth-of-type(even) {
-  background-color: #12162e !important;
-}
-
-.css-1s2lckk-MuiTableRow-root {
-  color: inherit;
-  background-color: #12162e !important;
-}
-
-.css-eohnf1-MuiPickersDay-root.Mui-disabled:not(.Mui-selected) {
-  color: #ffffff !important;
+.error-text {
+  color: red;
+  font-size: 0.8rem;
+  margin-left: 3px;
+  margin-top: 3px;
 }

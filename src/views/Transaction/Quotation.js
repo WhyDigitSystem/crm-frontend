@@ -1013,29 +1013,29 @@ export const Quotation = ({ selectedRow }) => {
                                                 <div className="col-lg-12">
                                                     <div className="table-responsive">
                                                         <Box
-                                                            sx={{
-                                                                '&::-webkit-scrollbar': {
-                                                                    height: '8px',
-                                                                },
-                                                                '&::-webkit-scrollbar-track': {
-                                                                    backgroundColor: 'transparent',
-                                                                },
-                                                                '&::-webkit-scrollbar-thumb': {
-                                                                    backgroundColor: '#555',
-                                                                    borderRadius: '10px',
-                                                                },
-                                                                '&::-webkit-scrollbar-thumb:hover': {
-                                                                    backgroundColor: '#888',
-                                                                },
-                                                                borderRadius: '8px',
-                                                                backgroundColor: '#1c1f3a',
-                                                                boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
-                                                                overflowX: 'auto',
-                                                            }}
+                                                            // sx={{
+                                                            //     '&::-webkit-scrollbar': {
+                                                            //         height: '8px',
+                                                            //     },
+                                                            //     '&::-webkit-scrollbar-track': {
+                                                            //         backgroundColor: 'transparent',
+                                                            //     },
+                                                            //     '&::-webkit-scrollbar-thumb': {
+                                                            //         backgroundColor: '#555',
+                                                            //         borderRadius: '10px',
+                                                            //     },
+                                                            //     '&::-webkit-scrollbar-thumb:hover': {
+                                                            //         backgroundColor: '#888',
+                                                            //     },
+                                                            //     borderRadius: '8px',
+                                                            //     backgroundColor: '#1c1f3a',
+                                                            //     boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
+                                                            //     overflowX: 'auto',
+                                                            // }}
                                                         >
                                                             <table className="table table-bordered">
                                                                 <thead>
-                                                                    <tr style={{ backgroundColor: '#12162e', color: '#ffff' }}>
+                                                                    <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                         <th className="table-header">Action</th>
                                                                         <th className="table-header">#</th>
                                                                         <th className="table-header">Product Name</th>
@@ -1065,7 +1065,7 @@ export const Quotation = ({ selectedRow }) => {
                                                                                 />
                                                                             </td>
                                                                             <td className="text-center">
-                                                                                <div className="pt-2" style={{ color: 'white' }}>{index + 1}</div>
+                                                                                <div className="pt-2">{index + 1}</div>
                                                                             </td>
                                                                             <td>
                                                                                 <Box sx={{ minWidth: 150, flexGrow: 1 }}>

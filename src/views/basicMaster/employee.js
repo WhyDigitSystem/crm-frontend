@@ -886,7 +886,15 @@ const EmployeeDetails = () => {
                     component="label"
                     multiline
                     startIcon={<CloudUploadIcon />}
-                    sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                    sx={{
+                      color: '#c156ff',
+                      borderColor: '#c156ff',
+                      borderRadius: '12px',
+                      '&:hover': {
+                        borderColor: '#c156ff',
+                        backgroundColor: 'rgba(193, 86, 255, 0.08)', // light hover effect
+                      }
+                    }}
                   >
                     {logo ? (typeof logo === 'object' && logo.name ? logo.name : '') : 'Emp Img'}
 
@@ -894,14 +902,20 @@ const EmployeeDetails = () => {
                   </Button>
 
                   {logo && (
-                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                    <IconButton variant="contained" sx={{
+                      whiteSpace: 'nowrap',
+                      color: '#c156ff'
+                    }} onClick={handleOpen}>
                       <ControlCameraIcon />
                     </IconButton>
                   )}
                 </Box>
                 <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                   <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
-                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                    <Typography variant="h5" sx={{
+                      whiteSpace: 'nowrap',
+                      color: '#c156ff'
+                    }}>
                       Emp Img
                     </Typography>
                     {logo ? (

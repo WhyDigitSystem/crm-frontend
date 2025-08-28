@@ -90,11 +90,11 @@ const ScreenAccess = () => {
     }
   };
 
- const handleRoleChange = (event) => {
-  const selectedRole = event.target.value;
-  setRole(selectedRole);
-  setLoading(true);
-};
+  const handleRoleChange = (event) => {
+    const selectedRole = event.target.value;
+    setRole(selectedRole);
+    setLoading(true);
+  };
 
   const handleCheckboxChange = (screenCode, type) => {
     const updatedPermissions = permissions.map((item) => (item.screenCode === screenCode ? { ...item, [type]: !item[type] } : item));
@@ -151,66 +151,66 @@ const ScreenAccess = () => {
     }
   };
 
- const getScreenAccess = async () => {
-  try {
-    setLoading(true);
-    const response = await apiCalls('get', `auth/getRolesPermissionHeaderByRoleandOrgid?orgid=${orgId}&role=${role}`);
-    
-    const userList = response?.paramObjectsMap?.userVO;
-    let apiPermissions = [];
+  const getScreenAccess = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCalls('get', `auth/getRolesPermissionHeaderByRoleandOrgid?orgid=${orgId}&role=${role}`);
 
-    if (Array.isArray(userList) && userList.length > 0) {
-      const user = userList[0];
-      setEditId(user.id);
+      const userList = response?.paramObjectsMap?.userVO;
+      let apiPermissions = [];
 
-      const permissionList = user.rolesPermissionVO || [];
-      
-      // Create a map of permissions by screenCode
-      const permissionMap = new Map();
-      permissionList.forEach(perm => {
-        permissionMap.set(perm.screenId, {
-          canRead: !!perm.canRead,
-          canWrite: !!perm.canWrite,
-          canDelete: !!perm.canDelete
+      if (Array.isArray(userList) && userList.length > 0) {
+        const user = userList[0];
+        setEditId(user.id);
+
+        const permissionList = user.rolesPermissionVO || [];
+
+        // Create a map of permissions by screenCode
+        const permissionMap = new Map();
+        permissionList.forEach(perm => {
+          permissionMap.set(perm.screenId, {
+            canRead: !!perm.canRead,
+            canWrite: !!perm.canWrite,
+            canDelete: !!perm.canDelete
+          });
         });
-      });
 
-      // Merge API permissions with master screen list
-      apiPermissions = screenList.map(screen => {
-        const apiPerm = permissionMap.get(screen.screenCode);
-        return {
+        // Merge API permissions with master screen list
+        apiPermissions = screenList.map(screen => {
+          const apiPerm = permissionMap.get(screen.screenCode);
+          return {
+            module: screen.screenName,
+            screenCode: screen.screenCode,
+            canRead: apiPerm ? apiPerm.canRead : false,
+            canWrite: apiPerm ? apiPerm.canWrite : false,
+            canDelete: apiPerm ? apiPerm.canDelete : false
+          };
+        });
+      } else {
+        // No API data - use default false values
+        apiPermissions = screenList.map(screen => ({
           module: screen.screenName,
           screenCode: screen.screenCode,
-          canRead: apiPerm ? apiPerm.canRead : false,
-          canWrite: apiPerm ? apiPerm.canWrite : false,
-          canDelete: apiPerm ? apiPerm.canDelete : false
-        };
-      });
-    } else {
-      // No API data - use default false values
-      apiPermissions = screenList.map(screen => ({
-        module: screen.screenName,
-        screenCode: screen.screenCode,
-        canRead: false,
-        canWrite: false,
-        canDelete: false
-      }));
-      setEditId('');
-    }
+          canRead: false,
+          canWrite: false,
+          canDelete: false
+        }));
+        setEditId('');
+      }
 
-    setPermissions(apiPermissions);
-    setFilteredPermissions(filterPermissions(apiPermissions, searchText));
-  } catch (error) {
-    console.error('Error fetching permissions:', error);
-    setSnackbar({
-      open: true,
-      message: 'Failed to fetch permissions',
-      severity: 'error'
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      setPermissions(apiPermissions);
+      setFilteredPermissions(filterPermissions(apiPermissions, searchText));
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to fetch permissions',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const confirmResetPermissions = () => setConfirmReset(true);
   const handleResetConfirm = () => {
@@ -236,7 +236,7 @@ const ScreenAccess = () => {
     permissionsList.filter((item) => item.module.toLowerCase().includes(searchValue.toLowerCase()));
 
   return (
-    <Box p={2} sx={{ backgroundColor: '#12162e', minHeight: '100vh' }}>
+    <Box p={2} sx={{ minHeight: '100vh' }}>
       <Card elevation={2}>
         <CardContent>
           <Grid container spacing={2} alignItems="center" mb={1}>
@@ -288,15 +288,16 @@ const ScreenAccess = () => {
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ py: 0.5, backgroundColor: '#12162e' }}>
+                    <TableCell sx={{ py: 0.5, backgroundColor: '#12162e', color: 'white' }}>
                       <strong>Screen Name</strong>
                     </TableCell>
                     {['canRead', 'canWrite', 'canDelete'].map((type) => (
-                      <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#12162e' }}>
+                      <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#12162e', color: 'white' }}>
                         <Checkbox
                           size="small"
                           checked={filteredPermissions.length > 0 && filteredPermissions.every((p) => p[type])}
                           onChange={() => handleSelectAll(type)}
+                          sx={{color:'white'}}
                         />
                         <strong>{type.replace('can', '')}</strong>
                       </TableCell>

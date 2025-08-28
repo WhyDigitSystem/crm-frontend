@@ -179,7 +179,7 @@ export const DocumentTypeMapping = () => {
       if (name === 'branchName') {
         const selectedBranch = branchList.find((branch) => branch.branch === value);
         if (selectedBranch) {
-          console.log('Selected branchId:', selectedBranch.branchCode); 
+          console.log('Selected branchId:', selectedBranch.branchCode);
           setBranchNameGrid(selectedBranch.branch);
           setBranchCodeId(selectedBranch.branchCode);
           setFormData((prevData) => ({
@@ -191,7 +191,7 @@ export const DocumentTypeMapping = () => {
       } else if (name === 'finYear') {
         const selectedfinYear = finYearList.find((fin) => fin.finYear === value);
         if (selectedfinYear) {
-          console.log('Selected finYearId:', selectedfinYear.finYearIdentifier); 
+          console.log('Selected finYearId:', selectedfinYear.finYearIdentifier);
           setFinYearGrid(selectedfinYear.finYear);
           setfinYearId(selectedfinYear.finYearIdentifier);
           setFormData((prevData) => ({
@@ -382,7 +382,7 @@ export const DocumentTypeMapping = () => {
                       <div className="table-responsive mt-3">
                         <table className="table table-bordered ">
                           <thead>
-                            <tr style={{ backgroundColor: '#673AB7' }}>
+                            <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                 S.No
                               </th>

@@ -741,7 +741,7 @@ const Rate = () => {
                                                         <div className="table-responsive">
                                                             <table className="table table-bordered ">
                                                                 <thead>
-                                                                    <tr style={{ color: 'white' }}>
+                                                                    <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                         <th className="table-header">Action</th>
                                                                         <th className="table-header">#</th>
                                                                         <th className="table-header">Type</th>
@@ -770,7 +770,7 @@ const Rate = () => {
                                                                                 />
                                                                             </td>
                                                                             <td className="text-center">
-                                                                                <div className="pt-2" style={{ color: 'white' }}>{index + 1}</div>
+                                                                                <div className="pt-2">{index + 1}</div>
                                                                             </td>
                                                                             <td className="border px-2 py-2" style={{ width: '20%' }}>
                                                                                 <FormControl

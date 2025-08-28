@@ -204,11 +204,11 @@ const GlobalSection = () => {
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
               transition: 'all .2s ease-in-out',
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.dark,
+              background: '#feebf6',
+              color: '#c156ff',
               '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.secondary.dark,
-                color: theme.palette.secondary.light
+                background: '#c156ff', // slightly darker shade for hover
+                color: '#ffff'
               }
             }}
             ref={anchorRef}

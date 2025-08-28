@@ -17,7 +17,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from './CommonListViewTable';
 
 const ListOfValues = () => {
@@ -313,7 +312,7 @@ const ListOfValues = () => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered table-responsive">
                                                             <thead>
-                                                                <tr>
+                                                                <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                                                         Action
                                                                     </th>
@@ -347,7 +346,7 @@ const ListOfValues = () => {
                                                                             />
                                                                         </td>
                                                                         <td className="text-center">
-                                                                            <div className="pt-2" style={{ color: 'white' }}>{index + 1}</div>
+                                                                            <div className="pt-2">{index + 1}</div>
                                                                         </td>
 
                                                                         <td className="border px-2 py-2">

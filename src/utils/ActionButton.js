@@ -5,30 +5,38 @@ import { useTheme } from '@mui/material/styles';
 import React from 'react';
 
 const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px', isLoading }) => {
-  const theme = useTheme();
   const anchorRef = React.useRef(null);
 
   return (
     <Tooltip title={title} placement={placement}>
-      <ButtonBase sx={{ borderRadius: '12px', marginRight: margin }} onClick={onClick} disabled={isLoading}>
+      <ButtonBase
+        sx={{ borderRadius: '10px', marginRight: margin }}
+        onClick={onClick}
+        disabled={isLoading}
+      >
         <Avatar
           variant="rounded"
           sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
+            width: '35px',
+            height: '35px',
             transition: 'all .2s ease-in-out',
-            background: theme.palette.secondary.light,
-            color: theme.palette.secondary.dark,
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              background: theme.palette.secondary.dark,
-              color: theme.palette.secondary.light
+            background: '#feebf6',
+            color: '#c156ff',
+            borderRadius: '10px',
+            '&:hover': {
+              background: '#c156ff',
+              color: '#fff'
             }
           }}
           ref={anchorRef}
           aria-haspopup="true"
           color="inherit"
         >
-          {isLoading ? <CircularProgress size={22} color="inherit" /> : <Icon size="1.3rem" stroke={1.5} />}
+          {isLoading ? (
+            <CircularProgress size={22} color="inherit" />
+          ) : (
+            <Icon size="1.3rem" stroke={1.5} />
+          )}
         </Avatar>
       </ButtonBase>
     </Tooltip>

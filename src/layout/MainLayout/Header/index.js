@@ -78,12 +78,14 @@ const Header = ({ handleLeftDrawerToggle }) => {
             sx={{
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
+              width: 35,
+              height: 35,
               transition: 'all .2s ease-in-out',
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.dark,
+              background: '#feebf6',
+              color: '#c156ff',
               '&:hover': {
-                background: theme.palette.secondary.dark,
-                color: theme.palette.secondary.light
+                background: '#c156ff',
+                color: '#fff'
               }
             }}
             onClick={handleLeftDrawerToggle}

@@ -547,7 +547,7 @@ function OpportunityReport() {
                     />
                   }
                   label="Date"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -561,7 +561,7 @@ function OpportunityReport() {
                     />
                   }
                   label="Client Name"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -575,7 +575,7 @@ function OpportunityReport() {
                     />
                   }
                   label="Branch"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
             </div>

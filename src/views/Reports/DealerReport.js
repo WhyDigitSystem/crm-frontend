@@ -493,7 +493,7 @@ function DealerReport() {
                                 <FormControlLabel
                                     control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                                     label="Date"
-                                    style={{ color: 'white' }}
+                                    
                                 />
                             </div>
                             <div className="col-md-2 mb-1">
@@ -502,7 +502,7 @@ function DealerReport() {
                                         <Checkbox checked={selectedSections.dealerName} onChange={handleCheckboxChange} name="dealerName" color="secondary" />
                                     }
                                     label="Dealer"
-                                    style={{ color: 'white' }}
+                                    
                                 />
                             </div>
                         </div>

@@ -55,6 +55,13 @@ const basicMasterChildren = [
     url: '/basicMaster/RegionMaster',
     icon: IconMap
   },
+  hasScreenAccess('FY') && {
+    id: 'finYear',
+    title: 'FinYear',
+    type: 'item',
+    url: '/basicMaster/FinYear',
+    icon: IconMap
+  },
   hasScreenAccess('DP') && {
     id: 'department',
     title: 'Department',

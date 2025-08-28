@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
 import dayjs from 'dayjs';
 
-const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf,enableEditing }) => {
+const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf, enableEditing }) => {
   const [tableData, setTableData] = useState(data || []);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
@@ -96,23 +96,21 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
             muiTableHeadCellProps: {
               align: "center",
               sx: {
-                backgroundColor: "#0b0f22",
-                color: "white",
+                backgroundColor: "#f3f4f6", // light gray
+                color: "#111827", // dark text
                 fontWeight: "bold",
-                // height: "40px",
                 borderBottom: "2px solid #D1D5DB",
               },
             },
             size: 100,
           },
         }}
-
         columns={customColumns.map((col) => ({
           ...col,
           muiTableHeadCellProps: {
             sx: {
-              backgroundColor: "#0b0f22",
-              color: "white",
+              backgroundColor: "#f3f4f6",
+              color: "#111827",
               fontWeight: "bold",
               fontSize: "13px",
               textAlign: "left",
@@ -122,13 +120,12 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
           muiTableBodyCellProps: {
             sx: {
               fontSize: "14px",
-              color: "#ffffff",
+              color: "#111827",
               textAlign: "left",
               borderBottom: "1px solid #E5E7EB",
             },
           },
         }))}
-
         data={tableData && tableData}
         enableColumnOrdering={false}
         enableColumnActions={false}
@@ -138,15 +135,15 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         localization={customLocalization}
         muiTableContainerProps={{
           sx: {
-            background: "#111522",
+            background: "#ffffff",
             borderRadius: "10px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.05)",
             border: "1px solid #E5E7EB",
           },
         }}
         muiTableProps={{
           sx: {
-            backgroundColor: "#111522",
+            backgroundColor: "#ffffff",
             borderRadius: "10px",
             overflow: "hidden",
             border: "1px solid #E5E7EB",
@@ -155,22 +152,16 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         muiTableBodyRowProps={{
           sx: {
             height: "42px",
-            "&:nth-of-type(even)": { backgroundColor: "#111522" },
+            "&:nth-of-type(even)": { backgroundColor: "#f9fafb" }, // zebra striping
             "&:hover": {
-              backgroundColor: "#111522",
-              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
+              backgroundColor: "#f3f4f6", // light hover
+              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
               transition: "0.2s ease-in-out",
             },
           },
         }}
         renderTopToolbarCustomActions={() => (
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{
-              marginLeft: "20px",
-            }}
-          ></Stack>
+          <Stack direction="row" spacing={2} sx={{ marginLeft: "20px" }} />
         )}
       />
     </>

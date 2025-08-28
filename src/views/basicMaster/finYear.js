@@ -78,7 +78,7 @@ const FinYear = () => {
     { accessorKey: 'startDate', header: 'Start Date', size: 140 },
     { accessorKey: 'endDate', header: 'End Date', size: 140 },
     { accessorKey: 'closed', header: 'Closed', size: 140 },
-    { accessorKey: 'active', header: 'active', size: 140 }
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   useEffect(() => {
@@ -381,7 +381,7 @@ const FinYear = () => {
                       checked={formData.closed}
                       onChange={handleInputChange}
                       name="closed"
-                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      
                     />
                   }
                   label="Closed"
@@ -396,7 +396,7 @@ const FinYear = () => {
                       checked={formData.active}
                       onChange={handleInputChange}
                       name="active"
-                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      
                     />
                   }
                   label="Active"

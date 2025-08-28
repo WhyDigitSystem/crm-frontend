@@ -986,29 +986,29 @@ const Opportunity = ({ selectedRow }) => {
                                             <div className="col-lg-12">
                                                 <div className="table-responsive" style={{ maxWidth: '100%', overflowX: 'auto' }}>
                                                     <Box
-                                                        sx={{
-                                                            '&::-webkit-scrollbar': {
-                                                                height: '8px',
-                                                            },
-                                                            '&::-webkit-scrollbar-track': {
-                                                                backgroundColor: 'transparent',
-                                                            },
-                                                            '&::-webkit-scrollbar-thumb': {
-                                                                backgroundColor: '#555',
-                                                                borderRadius: '10px',
-                                                            },
-                                                            '&::-webkit-scrollbar-thumb:hover': {
-                                                                backgroundColor: '#888',
-                                                            },
-                                                            borderRadius: '8px',
-                                                            backgroundColor: '#1c1f3a',
-                                                            boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
-                                                            overflowX: 'auto',
-                                                        }}
+                                                    // sx={{
+                                                    //     '&::-webkit-scrollbar': {
+                                                    //         height: '8px',
+                                                    //     },
+                                                    //     '&::-webkit-scrollbar-track': {
+                                                    //         backgroundColor: 'transparent',
+                                                    //     },
+                                                    //     '&::-webkit-scrollbar-thumb': {
+                                                    //         backgroundColor: '#555',
+                                                    //         borderRadius: '10px',
+                                                    //     },
+                                                    //     '&::-webkit-scrollbar-thumb:hover': {
+                                                    //         backgroundColor: '#888',
+                                                    //     },
+                                                    //     borderRadius: '8px',
+                                                    //     backgroundColor: '#1c1f3a',
+                                                    //     boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
+                                                    //     overflowX: 'auto',
+                                                    // }}
                                                     >
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                                                                <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center">Product Name *</th>
@@ -1032,7 +1032,7 @@ const Opportunity = ({ selectedRow }) => {
                                                                                 aria-label={`Delete product ${index + 1}`}
                                                                             />
                                                                         </td>
-                                                                        <td className="text-center pt-3" style={{ color: 'white' }}>{index + 1}</td>
+                                                                        <td className="text-center pt-3">{index + 1}</td>
                                                                         <td>
                                                                             <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                                                                 <Autocomplete

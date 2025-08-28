@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import apiCalls from 'apicall';
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
@@ -24,6 +24,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import Lead from 'views/Transaction/Lead';
+import { Button } from "@mui/material";
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -43,6 +44,8 @@ function UnAssignedLeads() {
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [branchList, setBranchList] = useState([]);
+  const [editId, setEditId] = useState('');
+  const [assignee, setAssignee] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     clientName: false,
@@ -68,6 +71,44 @@ function UnAssignedLeads() {
     clientName: '',
     // branch: ''
   });
+  const [assignedData, setAssignedData] = useState({
+    docDate: dayjs(),
+    source: '',
+    clientType: '',
+    clientName: '',
+    mail: '',
+    contactNo: '',
+    industry: '',
+    website: '',
+    city: '',
+    state: '',
+    country: '',
+    pinCode: '',
+    customer: '',
+    address: '',
+    probability: '',
+    assignTo: '',
+    stage: '',
+  });
+  const [leadBranches, setLeadBranches] = useState([{
+    branch: '',
+    gstNo: '',
+    city: '',
+    state: '',
+    country: '',
+    address: '',
+  }]);
+  const [leadContacts, setLeadContacts] = useState([{
+    preferredContact: false,
+    branchName: '',
+    name: '',
+    mobileNo: '',
+    email: '',
+    designation: '',
+    dob: '',
+    workAnniversaryDate: '',
+    anniversaryDate: ''
+  }]);
   const handleClear = () => {
     setListView(false);
     setFormData({
@@ -91,6 +132,7 @@ function UnAssignedLeads() {
   useEffect(() => {
     getClientName();
     getBranch();
+    getAssignTo();
     getCompanyDetails();
   }, []);
   const getClientName = async () => {
@@ -109,11 +151,24 @@ function UnAssignedLeads() {
       console.error('Error fetching gate passes:', error);
     }
   };
+  const getAssignTo = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAssignedNameSales?orgId=${orgId}`);
+      if (response.status === true) {
+        setAssignee(response.paramObjectsMap.assignedUser || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
   const reportColumns = [
-    // { accessorKey: 'docId', header: 'Doc No', size: 100 },
     {
-      accessorKey: 'docId',
-      header: 'Doc Id',
+      accessorKey: "docId",
+      header: "Doc Id",
       size: 100,
       Cell: ({ row }) => {
         const docId = row.original.docId;
@@ -126,29 +181,118 @@ function UnAssignedLeads() {
               handleDocClick(docId, screenCode);
             }}
             style={{
-              color: '#f59e0b', // Amber
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.2s, text-shadow 0.2s'
+              color: "#f59e0b", // Amber
+              textDecoration: "none",
+              cursor: "pointer",
+              transition: "color 0.2s, textShadow 0.2s",
             }}
             onMouseEnter={(e) => {
-              e.target.style.color = '#fbbf24'; // Brighter yellow on hover
+              e.target.style.color = "#fbbf24"; // Brighter yellow on hover
             }}
             onMouseLeave={(e) => {
-              e.target.style.color = '#f59e0b';
+              e.target.style.color = "#f59e0b";
             }}
           >
             {docId}
           </a>
         );
-      }
+      },
     },
-    { accessorKey: 'clientType', header: 'Client Type', size: 100 },
-    { accessorKey: 'clientName', header: 'Client Name', size: 100 },
-    { accessorKey: 'industry', header: 'Industry', size: 100 },
-    { accessorKey: 'source', header: 'Source', size: 100 },
-  ];
+    { accessorKey: "clientName", header: "Client Name", size: 100 },
+    { accessorKey: "clientType", header: "Client Type", size: 100 },
+    { accessorKey: "stage", header: "Status", size: 100 },
+    { accessorKey: "probability", header: "Probability", size: 100 },
+    {
+      header: "Assign",
+      size: 300,
+      Cell: ({ row }) => {
+        const lead = row.original;
+        // console.log("Lead Details",row.original.leadBranchVO);
+        console.log("Lead Details", row.original);
 
+        const [selectedAssignee, setSelectedAssignee] = useState(null);
+
+        const handleAssign = async () => {
+          if (!selectedAssignee) {
+            showToast("error", "Please select a sales rep");
+            return;
+          }
+          const payload = {
+            id: lead.id,
+            docId: lead.docId,
+            finYear,
+            orgId,
+            updatedBy: loginUserName,
+            createdBy: lead.createdBy || loginUserName,
+
+            clientName: lead.clientName,
+            clientType: lead.clientType,
+            contactNo: lead.contactNo,
+            address: lead.address,
+            branch: lead.branch,
+            branchCode: lead.branchCode,
+            city: lead.city,
+            state: lead.state,
+            country: lead.country,
+            pinCode: lead.pinCode,
+            industry: lead.industry,
+            website: lead.website,
+            mail: lead.mail,
+            customer: lead.customer,
+            source: lead.source,
+            probability: lead.probability,
+            stage: lead.stage,
+            assignTo: selectedAssignee.empoyeeCode,
+            assignName: selectedAssignee.employeeName,
+
+
+            leadBranchDTO: lead.leadBranchVO || [],
+            leadContactDTO: lead.leadContactVO || [],
+          };
+
+          try {
+            const response = await apiCalls("put", "/transaction/createUpdateLead", payload);
+            if (response.status) {
+              showToast("success", "Assigned Successfully");
+              handleGo();
+            } else {
+              showToast("error", response.message || "Assign failed");
+            }
+          } catch (err) {
+            console.error("Error saving lead:", err);
+            showToast("error", "Failed to assign lead");
+          }
+        };
+
+        return (
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <Autocomplete
+              options={assignee}
+              sx={{ minWidth: 250 }}
+              getOptionLabel={(option) =>
+                option?.empoyeeCode && option?.employeeName
+                  ? `${option.empoyeeCode} - ${option.employeeName}`
+                  : ""
+              }
+              value={selectedAssignee}
+              onChange={(e, newValue) => setSelectedAssignee(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} size="small" placeholder="Select Rep" />
+              )}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleAssign}
+              disabled={!selectedAssignee}
+            >
+              Assign
+            </Button>
+          </div>
+        );
+      },
+    }
+  ];
   const handleGo = async () => {
     const errors = {};
     if (Object.keys(errors).length === 0) {
@@ -170,6 +314,8 @@ function UnAssignedLeads() {
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.unAssignedReport || []);
+          setEditId(response.paramObjectsMap.unAssignedReport.id);
+          console.log(response.paramObjectsMap.unAssignedReport.id);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -183,6 +329,32 @@ function UnAssignedLeads() {
       }
     } else {
       setFieldErrors(errors);
+    }
+  };
+  const handleSave = async () => {
+    setIsLoading(true);
+    const payload = {
+      ...(editId && { id: editId }),
+      ...rowData,
+      assignTo: assignedData.assignTo || '',
+    };
+
+    try {
+      const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
+      console.log("data to save", payload);
+
+      if (response.status) {
+        showToast('success', editId ? 'Assigned Successfully' : 'Assigned Successfully');
+      } else {
+        showToast('error', response.message || 'Operation failed');
+      }
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error saving lead:', error);
+      showToast('error', 'Failed to save lead: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
     }
   };
   const handleCloseModal = () => {
@@ -299,16 +471,13 @@ function UnAssignedLeads() {
 
     // 6) Define Column Widths (should match your table structure)
     const columnStyles = {
-      0: { cellWidth: 25 }, // Doc
-      1: { cellWidth: 20 }, // Date
-      2: { cellWidth: 40 }, // Customer
-      3: { cellWidth: 30 }, // Pro
-      4: { cellWidth: 25 }, // Task Name 
-      5: { cellWidth: 15 }, // Start time
-      6: { cellWidth: 30 }, // End Time
-      7: { cellWidth: 25 }, // Client name
-      8: { cellWidth: 40 }, // assn name
-      9: { cellWidth: 20 }, // assn to
+      0: { cellWidth: 25 },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 30 },
+      6: { cellWidth: 25 },
     };
 
     // 7) Draw Table
@@ -415,13 +584,9 @@ function UnAssignedLeads() {
         'Doc Id',
         'Client Type',
         'Client Name',
-        'Name',
-        'Industry',
-        'Source',
-        'Mobile No',
-        'Branch',
-        'Email',
-        'Existing Cust'
+        'Status',
+        'Probability',
+        'Assign',
       ];
       headers.forEach((header, index) => {
         const cell = headerRow.getCell(index + 1);
@@ -444,15 +609,11 @@ function UnAssignedLeads() {
       rowData.forEach((item) => {
         const row = sheet.addRow([
           item.docId || '',
-          item.clienttype || '-',
+          item.clientType || '-',
           item.clientName || '-',
-          item.name || '-',
-          item.industry || '-',
-          item.source || '-',
-          item.mobileNo,
-          item.branch,
-          item.email,
-          item.customer
+          item.stage || '-',
+          item.probability || '-',
+          item.assignTo || 'Not Assigned',
         ]);
 
         row.eachCell({ includeEmpty: true }, (cell) => {
@@ -493,6 +654,7 @@ function UnAssignedLeads() {
   };
   return (
     <>
+      <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <>
           <div className="row">
@@ -501,7 +663,7 @@ function UnAssignedLeads() {
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
-                  style={{ color: 'white' }}
+
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -510,7 +672,7 @@ function UnAssignedLeads() {
                     <Checkbox checked={selectedSections.clientName} onChange={handleCheckboxChange} name="clientName" color="secondary" />
                   }
                   label="Client Name"
-                  style={{ color: 'white' }}
+
                 />
               </div>
             </div>
@@ -672,7 +834,7 @@ function UnAssignedLeads() {
                   {isLoading ? (
                     <FullScreenLoader open={true} />
                   ) : (
-                      <Lead selectedRow={fillGridData} />
+                    <Lead selectedRow={fillGridData} />
                   )}
                 </>
               )}

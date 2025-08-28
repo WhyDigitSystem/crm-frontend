@@ -546,7 +546,7 @@ function ScheduleReport() {
                     />
                   }
                   label="Date"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -560,7 +560,7 @@ function ScheduleReport() {
                     />
                   }
                   label="Client Name"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -574,7 +574,7 @@ function ScheduleReport() {
                     />
                   }
                   label="Branch"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
             </div>

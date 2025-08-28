@@ -1,21 +1,19 @@
-// paper & background all
-$paper: #020714;
+// paper & background
+$paper: #EBD6FB;
 
 // primary
-// main bg color
-$primaryLight: #0b0f22;
-$primaryMain: #ec407a;
-$primaryDark: #1e88e5;
+$primaryLight: #f7eeff;
+$primaryMain: #c156ff;
+$primaryDark: #c156ff;
 $primary200: #90caf9;
 $primary800: #1565c0;
 
-// secondary
-$secondaryLight: #ec407a26;
-$secondaryMain: #ec407a;
-// menu icon color
-$secondaryDark: #ec407a;
+// secondary 
+$secondaryLight: #ede7f6;
+$secondaryMain: #673ab7;
+$secondaryDark: #5e35b1;
 $secondary200: #b39ddb;
-$secondary800: #ec407a;
+$secondary800: #4527a0;
 
 // success Colors
 $successLight: #b9f6ca;
@@ -39,15 +37,14 @@ $warningMain: #ffe57f;
 $warningDark: #ffc107;
 
 // grey
-$grey50: #ffffff;
-$grey100: #ffffff;
-$grey200: #ffffff;
-$grey300: #ffffff;
-$grey500: #ffffff;
-$grey600: #ffffff;
-// menu color
-$grey700: #ffffff;
-$grey900: #ffffff;
+$grey50: #f8fafc;
+$grey100: #eef2f6;
+$grey200: #e3e8ef;
+$grey300: #cdd5df;
+$grey500: #697586;
+$grey600: #4b5565;
+$grey700: #364152;
+$grey900: #121926;
 
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
@@ -74,12 +71,11 @@ $darkSecondary200: #b39ddb;
 $darkSecondary800: #6200ea;
 
 // text variants
-$darkTextTitle: #ffffff;
-$darkTextPrimary: #ffffff;
-$darkTextSecondary: #ffffff;
+$darkTextTitle: #d7dcec;
+$darkTextPrimary: #bdc8f0;
+$darkTextSecondary: #8492c4;
 
 // ==============================|| JAVASCRIPT ||============================== //
-
 :export {
   // paper & background
   paper: $paper;

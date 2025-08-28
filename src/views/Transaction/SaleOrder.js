@@ -1092,7 +1092,7 @@ const SalesOrder = ({ selectedRow }) => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                                                                <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center">Product Name *</th>
@@ -1117,7 +1117,7 @@ const SalesOrder = ({ selectedRow }) => {
                                                                                     aria-label={`Delete product ${index + 1}`}
                                                                                 />
                                                                             </td>
-                                                                            <td className="text-center pt-3" style={{ color: 'white' }}>{index + 1}</td>
+                                                                            <td className="text-center pt-3">{index + 1}</td>
                                                                             <td>
                                                                                 <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                                                                     <Autocomplete
@@ -1230,7 +1230,7 @@ const SalesOrder = ({ selectedRow }) => {
                                                                                 />
                                                                             </td>
 
-                                                                            <td className="text-center pt-3" style={{ color: 'white' }}>
+                                                                            <td className="text-center pt-3">
                                                                                 {amount.toFixed(2)}
                                                                             </td>
                                                                         </tr>

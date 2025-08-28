@@ -552,7 +552,7 @@ function QuotationReport() {
                     />
                   }
                   label="Date"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -566,7 +566,7 @@ function QuotationReport() {
                     />
                   }
                   label="Client Name"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -580,7 +580,7 @@ function QuotationReport() {
                     />
                   }
                   label="Branch"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -594,7 +594,7 @@ function QuotationReport() {
                     />
                   }
                   label="Product Name"
-                  style={{ color: 'white' }}
+                  
                 />
               </div>
             </div>

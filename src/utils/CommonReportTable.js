@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Box, Typography, Chip, Stack } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
-import ActionButton from 'utils/ActionButton';
 import { useTheme } from '@mui/material/styles';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { borderTop, padding, textAlign } from '@mui/system';
 import { Paper, IconButton } from '@mui/material';
 
 const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
@@ -71,14 +69,6 @@ const CommonReportTable = ({
   };
 
   const customColumns = columns.map((column) => {
-    // if (column.accessorKey?.toLowerCase().includes('date')) {
-    //   return {
-    //     ...column,
-    //     Cell: ({ cell }) => formatDate(cell.getValue());
-    //     //
-
-    //   };
-    // }
 
     if (column.accessorKey?.toLowerCase().includes('date')) {
       return {
@@ -98,14 +88,6 @@ const CommonReportTable = ({
         )
       };
     }
-    // if (column.accessorKey === 'status') {
-    //   return {
-    //     ...column,
-    //     Cell: ({ cell }) => (
-    //       <Chip label={cell.getValue() === 'SUBMIT' ? 'SUBMIT' : 'EDIT'} sx={cell.getValue() === 'SUBMIT' ? chipSuccessSX : chipErrorSX} />
-    //     )
-    //   };
-    // }
     if (column.accessorKey === 'closed') {
       return {
         ...column,
@@ -133,90 +115,56 @@ const CommonReportTable = ({
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
-                backgroundColor: '#111827',
-                boxShadow: '0px 2px 6px rgba(0,0,0,0.2)',
-                color: 'white'
+                backgroundColor: '#f3f4f6', // light gray
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.05)',
+                color: '#000000ff',
+                fontWeight: '600'
               }
             },
             muiTableBodyCellProps: {
               sx: {
                 fontSize: '11px',
-                color: 'white',
-                borderBottom: '1px solid #e5e7eb54',
-                borderTop: '1px solid #e5e7eb54',
-                borderRight: '1px solid #797979',
-                borderLeft: '1px solid #000000ff',
-                padding: '2px 4px'
+                color: '#000000ff',
+                borderBottom: '1px solid #e5e7eb',
+                borderTop: '1px solid #e5e7eb',
+                borderRight: '1px solid #e5e7eb',
+                borderLeft: '1px solid #e5e7eb',
+                padding: '1px 3px'
               }
             }
           }))}
-          enableColumnOrdering={false}
-          enableColumnActions={false}
-          enableFullScreenToggle={true}
-          initialState={{ density: 'compact' }}
-          localization={customLocalization}
           muiTableContainerProps={{
             sx: {
               width: '100vw',
               maxWidth: '100%',
               maxHeight: '100%',
-              background: 'transparent',
+              background: '#ffffff',
               borderRadius: '10px',
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-              // border: '1px solid #E5E7EB'
+              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #E5E7EB'
             }
           }}
           muiTableProps={{
             sx: {
-              backgroundColor: 'transparent',
-              color: 'white',
+              backgroundColor: '#ffffff',
+              color: '#000000ff',
               borderRadius: '10px',
-              overflow: 'hidden',
-              // border: '1px solid #E5E7EB'
+              overflow: 'hidden'
             }
           }}
           muiTableBodyRowProps={{
             sx: {
               '&:hover': {
-                backgroundColor: '#1f2937',
-                transform: 'scale(1.01)',
+                backgroundColor: '#f9fafb',
+                transform: 'scale(1.005)',
                 transition: 'all 0.2s ease-in-out',
-                cursor: 'pointer',
-              },
-            },
+                cursor: 'pointer'
+              }
+            }
           }}
           renderTopToolbarCustomActions={({ table }) => (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
               <Box sx={{ display: 'flex', gap: 2 }}>
-                {/* <ActionButton
-                  title="Excel"
-                  icon={FileDownloadIcon}
-                  onClick={handleDownloadExcel}
-                  sx={{
-                    backgroundColor: '#2E7D32',
-                    color: 'white',
-                    '&:hover': {
-                      transform: 'scale(1.01)',
-                      backgroundColor: '#B71C1C',
-                      transition: 'all 0.2s ease-in-out'
-                    }
-
-                  }}
-                />
-                <ActionButton
-                  title="PDF"
-                  icon={PictureAsPdfIcon}
-                  onClick={handleDownloadPdf}
-                  sx={{
-                    backgroundColor: '#D32F2F',
-                    color: 'white',
-                    '&:hover': {
-                      transform: 'scale(1.01)',
-                      backgroundColor: '#B71C1C',
-                      transition: 'all 0.2s ease-in-out'
-                    }
-                  }}
-                /> */}
                 <IconButton
                   onClick={handleDownloadExcel}
                   sx={{ backgroundColor: '#16a34a', color: 'white', '&:hover': { backgroundColor: '#15803d' } }}

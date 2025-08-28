@@ -1069,7 +1069,7 @@ const Lead = ({ selectedRow }) => {
                                                 setFormData((prev) => ({
                                                     ...prev,
                                                     assignTo: '',
-                                                    assignName:''
+                                                    assignName: ''
                                                 }));
                                             }
                                         }}
@@ -1115,15 +1115,37 @@ const Lead = ({ selectedRow }) => {
                                             component="label"
                                             multiline
                                             startIcon={<CloudUploadIcon />}
-                                            sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                                            sx={{
+                                                color: '#c156ff',
+                                                borderColor: '#c156ff',
+                                                borderRadius: '12px',
+                                                '&:hover': {
+                                                    borderColor: '#c156ff',
+                                                    backgroundColor: 'rgba(193, 86, 255, 0.08)', // light hover effect
+                                                }
+                                            }}
                                         >
-                                            {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Attachment'}
+                                            {companyLogo
+                                                ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '')
+                                                : 'Attachment'}
 
-                                            <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                                            <input
+                                                type="file"
+                                                hidden
+                                                accept="image/png, image/jpeg"
+                                                onChange={handleLogoChange}
+                                            />
                                         </Button>
 
                                         {companyLogo && (
-                                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                                            <IconButton
+                                                variant="contained"
+                                                sx={{
+                                                    whiteSpace: 'nowrap',
+                                                    color: '#c156ff'
+                                                }}
+                                                onClick={handleOpen}
+                                            >
                                                 <ControlCameraIcon />
                                             </IconButton>
                                         )}
@@ -1197,7 +1219,7 @@ const Lead = ({ selectedRow }) => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                                                                <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch *</th>
@@ -1355,10 +1377,10 @@ const Lead = ({ selectedRow }) => {
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered">
                                                             <thead>
-                                                                <tr style={{ background: '#12162e', color: '#ede7f6' }}>
+                                                                <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                                                    <th className="px-2 py-2 text-white text-center" >Preferred Contact</th>
+                                                                    <th className="px-2 py-2 text-white text-center" style={{ width: '80px' }}>Pref. Cont</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Name *</th>
                                                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Mobile No *</th>
@@ -1377,12 +1399,14 @@ const Lead = ({ selectedRow }) => {
                                                                         </td>
                                                                         <td className="text-center pt-3">{index + 1}</td>
 
-                                                                        <td className="text-center">
+                                                                        <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
                                                                             <FormControlLabel
+                                                                                sx={{ m: 0 }}
                                                                                 control={
                                                                                     <Checkbox
                                                                                         checked={contact.preferredContact}
                                                                                         onChange={(e) => handleContactChange(index, 'preferredContact', e.target.checked)}
+
                                                                                     />
                                                                                 }
                                                                             />
