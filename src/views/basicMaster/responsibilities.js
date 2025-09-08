@@ -1,7 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import apiCalls from 'apicall';
 import ActionButton from 'utils/ActionButton';
 import { getAllActiveScreens } from 'utils/CommonFunctions';
@@ -143,6 +142,7 @@ const Responsibilities = () => {
 
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   const getAllScreens = async () => {
@@ -250,11 +250,15 @@ const Responsibilities = () => {
       <div>
         <div>
           <Box sx={{ width: '100%', typography: 'body1' }}>
-            <div className="d-flex flex-wrap justify-content-start mb-4">
-              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+              {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+              {!listView && (
+                <>
+                  <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                  <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                </>
+              )}
             </div>
             {!listView ? (
               <div className="row d-flex">

@@ -62,7 +62,7 @@ const Transaction =
         children: [
           {
             id: 'Transaction',
-            title: 'Transaction',
+            title: 'Sales & Distribution',
             type: 'collapse',
             icon: IconArrowsExchange,
             children: transactionChildren

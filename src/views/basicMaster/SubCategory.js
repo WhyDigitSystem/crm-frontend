@@ -1,17 +1,8 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  Autocomplete,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField
-} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Checkbox, FormControl, FormControlLabel, Autocomplete, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import apiCalls from 'apicall';
 import 'react-tabs/style/react-tabs.css';
@@ -137,7 +128,7 @@ export const SubCategory = () => {
         createdBy: loginUserName
       };
 
-      console.log("Saving Payload:", payload); // debug log
+      console.log('Saving Payload:', payload); // debug log
 
       try {
         const response = await apiCalls('put', `master/createUpdateSubCatetory`, payload);
@@ -165,17 +156,22 @@ export const SubCategory = () => {
 
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4">
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
+          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
         </div>
 
@@ -205,26 +201,22 @@ export const SubCategory = () => {
             <div className="col-md-3 mb-3">
               <Autocomplete
                 options={categoryList}
-                getOptionLabel={(option) =>
-                  option?.categoryName ? `${option.categoryName}` : ''
-                }
-                value={
-                  categoryList.find((item) => item.categoryName === formData.categoryName) || null
-                }
+                getOptionLabel={(option) => (option?.categoryName ? `${option.categoryName}` : '')}
+                value={categoryList.find((item) => item.categoryName === formData.categoryName) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
-                      categoryName: newValue.categoryName || '',
+                      categoryName: newValue.categoryName || ''
                     }));
                     setFieldErrors((prev) => ({
                       ...prev,
-                      categoryName: '',
+                      categoryName: ''
                     }));
                   } else {
                     setFormData((prev) => ({
                       ...prev,
-                      categoryName: '',
+                      categoryName: ''
                     }));
                   }
                 }}
@@ -276,10 +268,7 @@ export const SubCategory = () => {
 
             {/* Active Checkbox */}
             <div className="col-md-3 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
-                label="Active"
-              />
+              <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />} label="Active" />
             </div>
           </div>
         )}

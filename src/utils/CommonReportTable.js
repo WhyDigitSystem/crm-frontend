@@ -19,7 +19,9 @@ const CommonReportTable = ({
   handleDownloadPdf,
   sumFields = [],
   headerFields = [],
-  filters = [], // [{ label, value, options, onChange }]
+  isExcel = true,   // 👈 new prop
+  isPdf = true,
+  filters = [],
   onFilterDone = () => { }
 }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -165,18 +167,22 @@ const CommonReportTable = ({
           renderTopToolbarCustomActions={({ table }) => (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <IconButton
-                  onClick={handleDownloadExcel}
-                  sx={{ backgroundColor: '#16a34a', color: 'white', '&:hover': { backgroundColor: '#15803d' } }}
-                >
-                  <FileDownloadIcon />
-                </IconButton>
-                <IconButton
-                  onClick={handleDownloadPdf}
-                  sx={{ backgroundColor: '#dc2626', color: 'white', '&:hover': { backgroundColor: '#b91c1c' } }}
-                >
-                  <PictureAsPdfIcon />
-                </IconButton>
+                {isExcel && (
+                  <IconButton
+                    onClick={handleDownloadExcel}
+                    sx={{ backgroundColor: '#16a34a', color: 'white', '&:hover': { backgroundColor: '#15803d' } }}
+                  >
+                    <FileDownloadIcon />
+                  </IconButton>
+                )}
+                {isPdf && (
+                  <IconButton
+                    onClick={handleDownloadPdf}
+                    sx={{ backgroundColor: '#dc2626', color: 'white', '&:hover': { backgroundColor: '#b91c1c' } }}
+                  >
+                    <PictureAsPdfIcon />
+                  </IconButton>
+                )}
               </Box>
             </Box>
           )}

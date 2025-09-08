@@ -1,7 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import { Checkbox, FormControlLabel, TextField } from '@mui/material';
 import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
@@ -147,6 +147,7 @@ export const CategoryMaster = () => {
 
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   const handleCheckboxChange = (event) => {
@@ -160,11 +161,15 @@ export const CategoryMaster = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4">
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
+          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
         </div>
 
@@ -201,10 +206,7 @@ export const CategoryMaster = () => {
             </div>
 
             <div className="col-md-3 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
-                label="Active"
-              />
+              <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />} label="Active" />
             </div>
           </div>
         )}

@@ -10,6 +10,7 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import ActionButton from 'utils/ActionButton';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import Box from '@mui/material/Box';
+import AddIcon from '@mui/icons-material/Add';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import { showToast } from 'utils/toast-component';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -181,10 +182,7 @@ const EmployeeDetails = () => {
   };
   const getAllReportingPerson = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `master/getReportingNameForEmployee?orgId=${orgId}&branchCode=${branchCode}`
-      );
+      const response = await apiCalls('get', `master/getReportingNameForEmployee?orgId=${orgId}&branchCode=${branchCode}`);
       if (response.status === true) {
         setAllReportingPerson(response.paramObjectsMap.employeeVO);
       } else {
@@ -296,7 +294,7 @@ const EmployeeDetails = () => {
       setFormData((prev) => ({
         ...prev,
         branchName: value,
-        branchCode: selectedBranch ? selectedBranch.branchCode : '',
+        branchCode: selectedBranch ? selectedBranch.branchCode : ''
       }));
     }
 
@@ -306,7 +304,7 @@ const EmployeeDetails = () => {
       setFormData((prev) => ({
         ...prev,
         reportingPerson: value,
-        reportingDesignation: selectedEmployee?.role || selectedEmployee?.designation || '',
+        reportingDesignation: selectedEmployee?.role || selectedEmployee?.designation || ''
       }));
     }
 
@@ -371,7 +369,7 @@ const EmployeeDetails = () => {
     if (!formData.designation) errors.designation = 'Designation is required';
 
     setFieldErrors(errors);
-    console.log("handlesave errors", errors);
+    console.log('handlesave errors', errors);
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -496,7 +494,7 @@ const EmployeeDetails = () => {
       setFormData((prev) => ({
         ...prev,
         employeeCode: response.paramObjectsMap.employeeDocId
-      }))
+      }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -623,20 +621,28 @@ const EmployeeDetails = () => {
     <div>
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={isLoading} />
+        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
           {!showForm && (
-            <ActionButton
-              title="Download PDF"
-              icon={PictureAsPdfIcon} // Fixed: passing the component directly
-              onClick={handleDownloadPDF}
-              isLoading={isLoading}
-              margin="0 10px 0 10px"
-            />
+            <>
+              <ActionButton title="New Entry" icon={AddIcon} onClick={handleList} />
+              <ActionButton
+                title="Download PDF"
+                icon={PictureAsPdfIcon} // Fixed: passing the component directly
+                onClick={handleDownloadPDF}
+                isLoading={isLoading}
+                margin="0 10px 0 10px"
+              />
+            </>
+          )}
+          {showForm && (
+            <>
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </>
           )}
         </div>
+
         {showForm ? (
           <>
             <div className="row">
@@ -654,7 +660,7 @@ const EmployeeDetails = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.employeeName}
                   helperText={fieldErrors.employeeName}
-                // disabled={isViewMode}
+                  // disabled={isViewMode}
                 />
               </div>
 
@@ -680,7 +686,7 @@ const EmployeeDetails = () => {
                   getOptionLabel={(option) => option.branch || ''}
                   sx={{ width: '100%' }}
                   size="small"
-                  value={branchList.find(c => c.branch === formData.branchName) || null}
+                  value={branchList.find((c) => c.branch === formData.branchName) || null}
                   onChange={(event, newValue) =>
                     handleInputChange({
                       target: {
@@ -892,7 +898,7 @@ const EmployeeDetails = () => {
                       borderRadius: '12px',
                       '&:hover': {
                         borderColor: '#c156ff',
-                        backgroundColor: 'rgba(193, 86, 255, 0.08)', // light hover effect
+                        backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
                       }
                     }}
                   >
@@ -902,20 +908,27 @@ const EmployeeDetails = () => {
                   </Button>
 
                   {logo && (
-                    <IconButton variant="contained" sx={{
-                      whiteSpace: 'nowrap',
-                      color: '#c156ff'
-                    }} onClick={handleOpen}>
+                    <IconButton
+                      variant="contained"
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        color: '#c156ff'
+                      }}
+                      onClick={handleOpen}
+                    >
                       <ControlCameraIcon />
                     </IconButton>
                   )}
                 </Box>
                 <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                   <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
-                    <Typography variant="h5" sx={{
-                      whiteSpace: 'nowrap',
-                      color: '#c156ff'
-                    }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        color: '#c156ff'
+                      }}
+                    >
                       Emp Img
                     </Typography>
                     {logo ? (
@@ -923,7 +936,14 @@ const EmployeeDetails = () => {
                         <Avatar
                           src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
                           alt="Emp Img"
-                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2, backgroundColor: 'transparent' }}
+                          sx={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            width: 'auto',
+                            height: 'auto',
+                            borderRadius: 2,
+                            backgroundColor: 'transparent'
+                          }}
                         />
                         <Box display="flex" gap={2} mt={2}>
                           <IconButton
@@ -1051,7 +1071,7 @@ const EmployeeDetails = () => {
                   error={!!fieldErrors.aadhaarNumber}
                   helperText={fieldErrors.aadhaarNumber}
                   inputProps={{
-                    maxLength: 12,
+                    maxLength: 12
                   }}
                 />
               </div>
@@ -1104,7 +1124,13 @@ const EmployeeDetails = () => {
             <CircularProgress />
           </div>
         ) : (
-          <CommonListViewTable data={listViewData} columns={columns} blockEdit={true} toEdit={getEmployeeDetailsById} enableEditing={false} />
+          <CommonListViewTable
+            data={listViewData}
+            columns={columns}
+            blockEdit={true}
+            toEdit={getEmployeeDetailsById}
+            enableEditing={false}
+          />
         )}
       </div>
     </div>

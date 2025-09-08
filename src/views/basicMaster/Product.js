@@ -1,17 +1,8 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import {
-  TextField,
-  Checkbox,
-  FormControlLabel,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Autocomplete
-} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { TextField, Checkbox, FormControlLabel, FormControl, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
 import FormHelperText from '@mui/material/FormHelperText';
 import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
@@ -40,10 +31,19 @@ export const Product = () => {
     type: '',
     description: '',
     active: true,
+    grade: '',
+    pricePerUnit: '',
+    lengthMM: '',
+    diameter: '',
+    weightPerMeter: '',
+    yieldStrength: '',
+    tensileStrength: '',
+    elongation: '',
+    standard: ''
   };
 
   const typeOptions = ['Product', 'Service'];
-
+  const gradeOptions = ['A Grade', 'B Grade', 'C Grade'];
 
   const [formData, setFormData] = useState(initialFormState);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -62,7 +62,7 @@ export const Product = () => {
         `/master/getProductDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       if (res.status) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           docId: res.paramObjectsMap.callsDocId
         }));
@@ -126,7 +126,7 @@ export const Product = () => {
       const res = await apiCalls('get', `master/getProductById?id=${row.original.id}`);
       if (res.status && res.paramObjectsMap?.productVO) {
         const data = res.paramObjectsMap.productVO;
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           brand: data.brand || '',
           productCode: data.productCode || '',
@@ -136,7 +136,16 @@ export const Product = () => {
           unit: data.unit || '',
           type: data.type || '',
           description: data.description || '',
-          active: data.active === 'Active',
+          active: data.active === 'Active' ? true : false,
+          grade:data.grade,
+          pricePerUnit:data.pricePerUnit,
+          lengthMM:data.lengthMM,
+          diameter:data.diameter,
+          weightPerMeter:data.weightPerMeter,
+          yieldStrength:data.yieldStrength,
+          tensileStrength:data.tensileStrength,
+          elongation:data.elongation,
+          standard:data.standard
         }));
         setListView(false);
       } else {
@@ -155,10 +164,11 @@ export const Product = () => {
     if (!formData.category) errors.category = 'Category is required';
     if (!formData.unit) errors.unit = 'Unit is required';
     if (!formData.subCategory) errors.subCategory = 'Sub Category is required';
+    if (!formData.pricePerUnit) errors.pricePerUnit = 'Price is required';
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      console.log("Errors", errors);
+      console.log('Errors', errors);
       showToast('error', 'Please fill all required fields');
       return;
     }
@@ -169,20 +179,30 @@ export const Product = () => {
 
     const saveData = {
       ...(editId && { id: editId }),
+      // productCode: productCode,
+      // type: formData.type,
+      
       active: formData.active,
+      orgId: parseInt(orgId),
+      branch: branch,
+      branchCode: branchCode,
       brand: formData.brand,
       category: formData.category,
       createdBy: loginUserName,
       description: formData.description,
-      productCode: productCode,
-      orgId: parseInt(orgId),
+      diameter: parseInt(formData.diameter),
+      elongation: parseFloat(formData.elongation),
+      finYear: finYear,
+      grade: formData.grade,
+      lengthMM: parseInt(formData.lengthMM),
+      pricePerUnit: parseFloat(formData.pricePerUnit),
       productName: formData.productName,
+      standard: formData.standard,
       subCategory: formData.subCategory,
-      type: formData.type,
+      tensileStrength: parseFloat(formData.tensileStrength),
       unit: formData.unit,
-      branch: branch,
-      branchCode: branchCode,
-      finYear: finYear
+      weightPerMeter: parseFloat(formData.weightPerMeter),
+      yieldStrength: parseFloat(formData.yieldStrength),
     };
 
     try {
@@ -208,7 +228,7 @@ export const Product = () => {
     const { name, value, checked, type } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value
     });
     setFieldErrors({ ...fieldErrors, [name]: '' });
   };
@@ -220,60 +240,42 @@ export const Product = () => {
     getProductDocId();
   };
 
-  const handleView = () => setListView(!listView);
+  const handleView = () => {
+    setListView(!listView);
+    handleClear();
+  };
 
   const listViewColumns = [
-    { accessorKey: 'productCode', header: 'Product Code', size: 140 },
-    { accessorKey: 'productName', header: 'Product', size: 140 },
-    { accessorKey: 'brand', header: 'Brand', size: 140 },
+    { accessorKey: 'productCode', header: 'Code', size: 140 },
+    { accessorKey: 'productName', header: 'Name', size: 140 },
     { accessorKey: 'category', header: 'Category', size: 140 },
+    { accessorKey: 'grade', header: 'Grade', size: 140 },
+    { accessorKey: 'diameter', header: 'Diameter(mm)', size: 140 },
     { accessorKey: 'unit', header: 'Unit', size: 140 },
-    { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'subCategory', header: 'Sub Category', size: 140 },
+    { accessorKey: 'pricePerUnit', header: 'Price', size: 140 },
     {
       accessorKey: 'active',
       header: 'Active',
       size: 140,
-      Cell: ({ cell }) => cell.getValue() ? 'Active' : 'Inactive'
-    },
-    // {
-    //   accessorKey: 'actions',
-    //   header: 'Actions',
-    //   size: 100,
-    //   Cell: ({ row }) => (
-    //     <button
-    //       onClick={() => getProductById(row.original.id)}
-    //       className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-    //     >
-    //       Edit
-    //     </button>
-    //   )
-    // }
+      Cell: ({ cell }) => (cell.getValue() ? 'Active' : 'Inactive')
+    }
   ];
 
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
-          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} /> */}
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-          <ActionButton
-            title={editId ? "Update" : "Save"}
-            icon={SaveIcon}
-            isLoading={isLoading}
-            onClick={handleSave}
-            margin="0 10px"
-          />
+        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+          {!listView && (
+            <>
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </>
+          )}
         </div>
-
         {listView ? (
-          <CommonListViewTable
-            data={listViewData}
-            columns={listViewColumns}
-            blockEdit={false}
-            toEdit={getProductById}
-          />
+          <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getProductById} />
         ) : (
           <div className="row">
             {/* Product Code */}
@@ -320,27 +322,23 @@ export const Product = () => {
             <div className="col-md-3 mb-3">
               <Autocomplete
                 options={categoryList}
-                getOptionLabel={(option) =>
-                  option?.categoryName ? `${option.categoryName}` : ''
-                }
-                value={
-                  categoryList.find((item) => item.categoryName === formData.category) || null
-                }
+                getOptionLabel={(option) => (option?.categoryName ? `${option.categoryName}` : '')}
+                value={categoryList.find((item) => item.categoryName === formData.category) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
-                      category: newValue.categoryName || '',
+                      category: newValue.categoryName || ''
                     }));
                     getAllSubCategories(newValue.categoryName);
                     setFieldErrors((prev) => ({
                       ...prev,
-                      category: '',
+                      category: ''
                     }));
                   } else {
                     setFormData((prev) => ({
                       ...prev,
-                      categoryName: '',
+                      categoryName: ''
                     }));
                   }
                 }}
@@ -363,26 +361,22 @@ export const Product = () => {
             <div className="col-md-3 mb-3">
               <Autocomplete
                 options={subCategoryList}
-                getOptionLabel={(option) =>
-                  option?.subCategory ? `${option.subCategory}` : ''
-                }
-                value={
-                  subCategoryList.find((item) => item.subCategory === formData.subCategory) || null
-                }
+                getOptionLabel={(option) => (option?.subCategory ? `${option.subCategory}` : '')}
+                value={subCategoryList.find((item) => item.subCategory === formData.subCategory) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
-                      subCategory: newValue.subCategory || '',
+                      subCategory: newValue.subCategory || ''
                     }));
                     setFieldErrors((prev) => ({
                       ...prev,
-                      subCategory: '',
+                      subCategory: ''
                     }));
                   } else {
                     setFormData((prev) => ({
                       ...prev,
-                      subCategory: '',
+                      subCategory: ''
                     }));
                   }
                 }}
@@ -404,27 +398,40 @@ export const Product = () => {
             </div>
             <div className="col-md-3 mb-3">
               <Autocomplete
+                size="small"
+                fullWidth
+                options={gradeOptions}
+                value={formData.grade || null}
+                onChange={(event, newValue) => {
+                  handleInputChange({
+                    target: {
+                      name: 'grade',
+                      value: newValue || ''
+                    }
+                  });
+                }}
+                renderInput={(params) => <TextField {...params} label="Grade" variant="outlined" />}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <Autocomplete
                 options={unitList}
-                getOptionLabel={(option) =>
-                  option?.unitDescription ? `${option.unitDescription}` : ''
-                }
-                value={
-                  unitList.find((item) => item.unitDescription === formData.unit) || null
-                }
+                getOptionLabel={(option) => (option?.unitDescription ? `${option.unitDescription}` : '')}
+                value={unitList.find((item) => item.unitDescription === formData.unit) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
-                      unit: newValue.unitDescription || '',
+                      unit: newValue.unitDescription || ''
                     }));
                     setFieldErrors((prev) => ({
                       ...prev,
-                      unit: '',
+                      unit: ''
                     }));
                   } else {
                     setFormData((prev) => ({
                       ...prev,
-                      unit: '',
+                      unit: ''
                     }));
                   }
                 }}
@@ -445,6 +452,20 @@ export const Product = () => {
               />
             </div>
             <div className="col-md-3 mb-3">
+              <TextField
+                label="Price Per Unit"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="pricePerUnit"
+                value={formData.pricePerUnit}
+                onChange={handleInputChange}
+                error={!!fieldErrors.pricePerUnit}
+                helperText={fieldErrors.pricePerUnit}
+              />
+            </div>
+            {/* <div className="col-md-3 mb-3">
               <Autocomplete
                 size="small"
                 fullWidth
@@ -458,18 +479,12 @@ export const Product = () => {
                     }
                   });
                 }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Type"
-                    variant="outlined"
-                  />
-                )}
+                renderInput={(params) => <TextField {...params} label="Type" variant="outlined" />}
               />
-            </div>
+            </div> */}
 
             {/* Description */}
-            <div className="col-md-3 mb-3">
+            <div className="col-md-6 mb-3">
               <TextField
                 label="Description"
                 variant="outlined"
@@ -478,21 +493,111 @@ export const Product = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-              // multiline
-              // rows={2}
+                multiline
+                // rows={2}
               />
             </div>
-
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Length(mm)"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="lengthMM"
+                value={formData.lengthMM}
+                onChange={handleInputChange}
+                error={!!fieldErrors.lengthMM}
+                helperText={fieldErrors.lengthMM}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Diameter(mm)"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="diameter"
+                value={formData.diameter}
+                onChange={handleInputChange}
+                error={!!fieldErrors.diameter}
+                helperText={fieldErrors.diameter}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Weight Per Meter(KG)"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="weightPerMeter"
+                value={formData.weightPerMeter}
+                onChange={handleInputChange}
+                error={!!fieldErrors.weightPerMeter}
+                helperText={fieldErrors.weightPerMeter}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Yield Strength(MPa)"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="yieldStrength"
+                value={formData.yieldStrength}
+                onChange={handleInputChange}
+                error={!!fieldErrors.yieldStrength}
+                helperText={fieldErrors.yieldStrength}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Tensile Strength (MPa)"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="tensileStrength"
+                value={formData.tensileStrength}
+                onChange={handleInputChange}
+                error={!!fieldErrors.tensileStrength}
+                helperText={fieldErrors.tensileStrength}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Elongation %"
+                variant="outlined"
+                size="small"
+                fullWidth
+                type="number"
+                name="elongation"
+                value={formData.elongation}
+                onChange={handleInputChange}
+                error={!!fieldErrors.elongation}
+                helperText={fieldErrors.elongation}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="Standard"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="standard"
+                value={formData.standard}
+                onChange={handleInputChange}
+                error={!!fieldErrors.standard}
+                helperText={fieldErrors.standard}
+              />
+            </div>
             {/* Active Checkbox */}
             <div className="col-md-3 mb-3 d-flex align-items-center">
               <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.active}
-                    onChange={handleInputChange}
-                    name="active"
-                  />
-                }
+                control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                 label="Active"
               />
             </div>

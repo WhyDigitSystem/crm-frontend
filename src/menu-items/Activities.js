@@ -17,7 +17,7 @@ const hasScreenAccess = (screenId) => {
 const activityChildren = [
   hasScreenAccess('AC') && {
     id: 'Active',
-    title: 'Active',
+    title: 'Activity',
     type: 'item',
     url: '/Activities/Active',
     icon: IconPhoneCall

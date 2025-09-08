@@ -1,11 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {
-  Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, TextField, Autocomplete, Box, FormControl, InputLabel, Tabs, Tab, MenuItem, Select,
+  Avatar,
+  Typography,
+  FormHelperText,
+  Button,
+  Dialog,
+  DialogContent,
+  TextField,
+  Autocomplete,
+  Box,
+  FormControl,
+  InputLabel,
+  Tabs,
+  Tab,
+  MenuItem,
+  Select
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import IconButton from '@mui/material/IconButton';
@@ -51,53 +66,61 @@ export const CustomerDetails = () => {
     state: '',
     country: '',
     pinCode: '',
-    address: '',
+    address: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     clientName: '',
     city: '',
     state: '',
-    country: '',
+    country: ''
   });
 
-  const [branchDetails, setBranchDetails] = useState([{
-    branchCode: '',
-    branchName: '',
-    gstNo: '',
-    city: '',
-    state: '',
-    country: '',
-    address: '',
-  }]);
+  const [branchDetails, setBranchDetails] = useState([
+    {
+      branchCode: '',
+      branchName: '',
+      gstNo: '',
+      city: '',
+      state: '',
+      country: '',
+      address: ''
+    }
+  ]);
 
-  const [branchDetailsErrors, setBranchDetailsErrors] = useState([{
-    branch: '',
-    address: '',
-    city: '',
-    country: '',
-    state: '',
-    gstNo: ''
-  }]);
+  const [branchDetailsErrors, setBranchDetailsErrors] = useState([
+    {
+      branch: '',
+      address: '',
+      city: '',
+      country: '',
+      state: '',
+      gstNo: ''
+    }
+  ]);
 
-  const [contactDetails, setContactDetails] = useState([{
-    referedContact: '',
-    name: '',
-    branchName: '',
-    mobileNo: '',
-    email: '',
-    designation: '',
-    dob: '',
-    anniversaryDate: '',
-    workAnniversaryDate: '',
-  }]);
+  const [contactDetails, setContactDetails] = useState([
+    {
+      referedContact: '',
+      name: '',
+      branchName: '',
+      mobileNo: '',
+      email: '',
+      designation: '',
+      dob: '',
+      anniversaryDate: '',
+      workAnniversaryDate: ''
+    }
+  ]);
 
-  const [contactErrors, setContactErrors] = useState([{
-    name: '',
-    mobileNo: '',
-    email: '',
-    designation: ''
-  }]);
+  const [contactErrors, setContactErrors] = useState([
+    {
+      name: '',
+      mobileNo: '',
+      email: '',
+      designation: ''
+    }
+  ]);
   useEffect(() => {
     getCustomerDetailsDocId();
     getAllCustomerDetails();
@@ -129,7 +152,7 @@ export const CustomerDetails = () => {
       );
 
       if (response.status === true && response.paramObjectsMap.customerDetailsDocId) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           docId: response.paramObjectsMap.customerDetailsDocId
         }));
@@ -149,7 +172,7 @@ export const CustomerDetails = () => {
         const customerDetails = response.paramObjectsMap.customerDetailsVO;
         setEditId(id);
         setListView(false);
-        setImg(response.paramObjectsMap.customerDetailsVO.photo)
+        setImg(response.paramObjectsMap.customerDetailsVO.photo);
         setFormData({
           docId: customerDetails.docId,
           docDate: customerDetails.docDate,
@@ -167,7 +190,7 @@ export const CustomerDetails = () => {
           finYear: finYear,
           branch: branch,
           branchCode: branchCode,
-          orgId: orgId,
+          orgId: orgId
         });
         setBranchDetails(
           customerDetails.branchDetailsVO.map((row) => ({
@@ -192,7 +215,7 @@ export const CustomerDetails = () => {
             branchName: row.branchName,
             workAnniversaryDate: row.workAnniversary,
             anniversaryDate: row.anniversaryDate,
-            dob: row.dateOfBirth,
+            dob: row.dateOfBirth
           }))
         );
       } else {
@@ -229,13 +252,13 @@ export const CustomerDetails = () => {
     }
 
     if (errorMessage) {
-      setFieldErrors(prev => ({ ...prev, [name]: errorMessage }));
+      setFieldErrors((prev) => ({ ...prev, [name]: errorMessage }));
     } else {
-      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
 
     // Update form data
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
@@ -256,28 +279,32 @@ export const CustomerDetails = () => {
       state: '',
       country: '',
       pinCode: '',
-      address: '',
+      address: ''
     });
-    setBranchDetails([{
-      branchCode: '',
-      branchName: '',
-      gstNo: '',
-      city: '',
-      state: '',
-      country: '',
-      address: '',
-    }]);
-    setContactDetails([{
-      referedContact: '',
-      name: '',
-      branchName: '',
-      mobileNo: '',
-      email: '',
-      designation: '',
-      dob: '',
-      anniversaryDate: '',
-      workAnniversaryDate: '',
-    }]);
+    setBranchDetails([
+      {
+        branchCode: '',
+        branchName: '',
+        gstNo: '',
+        city: '',
+        state: '',
+        country: '',
+        address: ''
+      }
+    ]);
+    setContactDetails([
+      {
+        referedContact: '',
+        name: '',
+        branchName: '',
+        mobileNo: '',
+        email: '',
+        designation: '',
+        dob: '',
+        anniversaryDate: '',
+        workAnniversaryDate: ''
+      }
+    ]);
     setEditId('');
     setFieldErrors({});
   };
@@ -339,7 +366,7 @@ export const CustomerDetails = () => {
       clientType: formData.clientType,
       address: formData.address,
       branchDetailsDTO: branchTable,
-      contactDetailsDTO: contactTable,
+      contactDetailsDTO: contactTable
     };
     try {
       const response = await apiCalls('put', '/transaction/updateCreateCustomerDetails', saveFormData);
@@ -405,6 +432,7 @@ export const CustomerDetails = () => {
   const handleRemoveImg = () => setImg(null);
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   const handleChangeTab = (event, newValue) => {
@@ -419,7 +447,7 @@ export const CustomerDetails = () => {
       city: '',
       state: '',
       country: '',
-      address: '',
+      address: ''
     };
     setBranchDetails([...branchDetails, newRow]);
     setBranchDetailsErrors([
@@ -430,7 +458,7 @@ export const CustomerDetails = () => {
         city: '',
         state: '',
         country: '',
-        address: '',
+        address: ''
       }
     ]);
   };
@@ -445,7 +473,7 @@ export const CustomerDetails = () => {
       designation: '',
       dob: '',
       anniversaryDate: '',
-      workAnniversaryDate: '',
+      workAnniversaryDate: ''
     };
     setContactDetails([...contactDetails, newRow]);
     setContactErrors([
@@ -479,7 +507,7 @@ export const CustomerDetails = () => {
   };
   const handleDeleteRow = (id, data, setData, errors, setErrors) => {
     if (data.length <= 1) return;
-    const index = data.findIndex(item => item.id === id);
+    const index = data.findIndex((item) => item.id === id);
     const newData = [...data];
     newData.splice(index, 1);
     setData(newData);
@@ -490,7 +518,7 @@ export const CustomerDetails = () => {
   };
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
-    setFormData(prev => ({ ...prev, [field]: formattedDate }));
+    setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
 
   const listViewColumns = [
@@ -502,22 +530,21 @@ export const CustomerDetails = () => {
     { accessorKey: 'email', header: 'Email', size: 200 },
     { accessorKey: 'industry', header: 'Type', size: 120 },
     { accessorKey: 'website', header: 'Industry', size: 150 },
-    { accessorKey: 'pincode', header: 'Source', size: 130 },
+    { accessorKey: 'pincode', header: 'Source', size: 130 }
   ];
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton
-              title="Save"
-              icon={SaveIcon}
-              isLoading={isLoading}
-              onClick={handleSave}
-              margin="0 10px 0 10px"
-            />
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
         </div>
 
@@ -540,7 +567,7 @@ export const CustomerDetails = () => {
                 fullWidth
                 disabled
                 name="docId"
-                value={isDocIdLoading ? "Generating..." : formData.docId || ''}
+                value={isDocIdLoading ? 'Generating...' : formData.docId || ''}
                 InputProps={{
                   style: { backgroundColor: '#f5f5f5' }
                 }}
@@ -555,7 +582,7 @@ export const CustomerDetails = () => {
                     onChange={(date) => handleDateChange('docDate', date)}
                     slotProps={{
                       textField: {
-                        size: 'small',
+                        size: 'small'
                       }
                     }}
                     format="DD-MM-YYYY"
@@ -644,19 +671,15 @@ export const CustomerDetails = () => {
             <div className="col-md-3 mb-3">
               <Autocomplete
                 options={cityList}
-                getOptionLabel={(option) =>
-                  option?.city ? `${option.city}` : ''
-                }
-                value={
-                  cityList.find((item) => item.city === formData.city) || null
-                }
+                getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
+                value={cityList.find((item) => item.city === formData.city) || null}
                 onChange={(event, newValue) => {
                   if (newValue) {
                     setFormData((prev) => ({
                       ...prev,
                       city: newValue.city,
                       state: newValue.state,
-                      country: newValue.country || '',
+                      country: newValue.country || ''
                     }));
                   } else {
                     setFormData((prev) => ({
@@ -749,7 +772,7 @@ export const CustomerDetails = () => {
                     borderRadius: '12px',
                     '&:hover': {
                       borderColor: '#c156ff',
-                      backgroundColor: 'rgba(193, 86, 255, 0.08)', // light hover effect
+                      backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
                     }
                   }}
                 >
@@ -759,12 +782,14 @@ export const CustomerDetails = () => {
                 </Button>
 
                 {supportingImg && (
-                  <IconButton variant="contained"
+                  <IconButton
+                    variant="contained"
                     sx={{
                       whiteSpace: 'nowrap',
                       color: '#c156ff'
                     }}
-                    onClick={handleOpen}>
+                    onClick={handleOpen}
+                  >
                     <ControlCameraIcon />
                   </IconButton>
                 )}
@@ -777,7 +802,9 @@ export const CustomerDetails = () => {
                   {supportingImg ? (
                     <Box>
                       <Avatar
-                        src={typeof supportingImg === 'object' ? URL.createObjectURL(supportingImg) : `data:image/jpeg;base64,${supportingImg}`}
+                        src={
+                          typeof supportingImg === 'object' ? URL.createObjectURL(supportingImg) : `data:image/jpeg;base64,${supportingImg}`
+                        }
                         alt="Attachment"
                         sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
                       />
@@ -836,8 +863,12 @@ export const CustomerDetails = () => {
                           <table className="table table-bordered">
                             <thead>
                               <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                  Action
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  #
+                                </th>
                                 <th className="px-2 py-2 text-white text-center">Branch Code *</th>
                                 <th className="px-2 py-2 text-white text-center">Branch Name *</th>
                                 <th className="px-2 py-2 text-white text-center">Reg No *</th>
@@ -883,7 +914,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={branch.branchName}
                                       onChange={(e) => handleBranchChange(index, 'branchName', e.target.value)}
-                                    // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
+                                      // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
                                     />
                                   </td>
                                   <td>
@@ -901,12 +932,8 @@ export const CustomerDetails = () => {
                                     <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                       <Autocomplete
                                         options={cityList}
-                                        getOptionLabel={(option) =>
-                                          option?.city ? `${option.city}` : ''
-                                        }
-                                        value={
-                                          cityList.find((item) => item.city === branch.city) || null
-                                        }
+                                        getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
+                                        value={cityList.find((item) => item.city === branch.city) || null}
                                         onChange={(event, newValue) => {
                                           const updatedBranches = [...branchDetails];
                                           if (newValue) {
@@ -914,25 +941,19 @@ export const CustomerDetails = () => {
                                               ...updatedBranches[index],
                                               city: newValue.city,
                                               state: newValue.state,
-                                              country: newValue.country || '',
+                                              country: newValue.country || ''
                                             };
                                           } else {
                                             updatedBranches[index] = {
                                               ...updatedBranches[index],
                                               city: '',
                                               state: '',
-                                              country: '',
+                                              country: ''
                                             };
                                           }
                                           setBranchDetails(updatedBranches);
                                         }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            size="small"
-                                            fullWidth
-                                          />
-                                        )}
+                                        renderInput={(params) => <TextField {...params} size="small" fullWidth />}
                                       />
                                     </Box>
                                   </td>
@@ -995,14 +1016,30 @@ export const CustomerDetails = () => {
                           <table className="table table-bordered">
                             <thead>
                               <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>Action</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>#</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Referred Contact</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Name *</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Branch Name *</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Mobile No *</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Email *</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>Designation *</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                  Action
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  #
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Referred Contact
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Name *
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Branch Name *
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Mobile No *
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Email *
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                  Designation *
+                                </th>
                                 <th className="px-2 py-2 text-white text-center">Date of Birth</th>
                                 <th className="px-2 py-2 text-white text-center">Anniversary Date</th>
                                 <th className="px-2 py-2 text-white text-center">Work Anniversary Date</th>
@@ -1034,7 +1071,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={contact.referedContact}
                                       onChange={(e) => handleContactChange(index, 'referedContact', e.target.value)}
-                                    // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                      // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
                                     />
                                   </td>
                                   <td>
@@ -1056,7 +1093,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={contact.branchName}
                                       onChange={(e) => handleContactChange(index, 'branchName', e.target.value)}
-                                    // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                      // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
                                     />
                                   </td>
 

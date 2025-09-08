@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import UnAssignedLeads from 'views/Reports/UnAssignedLeads';
+// import LiveStaffTracker from 'views/Tracking/LiveStaffTracker';
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
 //Report
@@ -71,13 +72,14 @@ const CustomerDetails = Loadable(lazy(() => import('views/Transaction/CustomerDe
 //Rate Management
 const Rate = Loadable(lazy(() => import('views/RateManagement/Rate')));
 
-
 // Dealer
 const Dealer = Loadable(lazy(() => import('views/Dealers/Dealers')));
 
+//Location Tracking
+const LiveStaffTracker = Loadable(lazy(() => import("views/Tracking/LiveStaffTracker")));
+
 // NominationEnquiries
 const NominationEnquiries = Loadable(lazy(() => import('views/NominationEnquiries/AllNominationEnquiries')));
-
 
 // login option 3 routing
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
@@ -291,6 +293,10 @@ const FinanceRoute = {
     {
       path: '/Crm/BulkEmail',
       element: <BulkEmail />
+    },
+    {
+      path: '/Tracking/LiveStaffTracker',
+      element: <LiveStaffTracker />
     },
   ]
 };

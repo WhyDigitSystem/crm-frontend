@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import Box from '@mui/material/Box';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AddIcon from "@mui/icons-material/Add";
 import { Avatar, Typography, Button, Dialog, DialogContent, Checkbox, FormControlLabel, FormControl, Autocomplete } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -95,9 +96,11 @@ const Schedule = ({ selectedRow }) => {
     { accessorKey: 'status', header: 'Status', size: 120 },
     { accessorKey: 'assignedName', header: 'Assigned To', size: 150 },
     {
-      accessorKey: 'active', header: 'Active', size: 100,
-      Cell: ({ cell }) => cell.getValue() === "Active" || cell.getValue() === true ? 'Active' : 'Inactive'
-    },
+      accessorKey: 'active',
+      header: 'Active',
+      size: 100,
+      Cell: ({ cell }) => (cell.getValue() === 'Active' || cell.getValue() === true ? 'Active' : 'Inactive')
+    }
   ];
 
   useEffect(() => {
@@ -116,9 +119,9 @@ const Schedule = ({ selectedRow }) => {
   useEffect(() => {
     if (formData.startTime && formData.endTime) {
       const duration = calculateDuration(formData.startTime, formData.endTime);
-      setFormData(prev => ({ ...prev, duration }));
+      setFormData((prev) => ({ ...prev, duration }));
     } else if (!formData.startTime || !formData.endTime) {
-      setFormData(prev => ({ ...prev, duration: '' }));
+      setFormData((prev) => ({ ...prev, duration: '' }));
     }
   }, [formData.startTime, formData.endTime]);
 
@@ -135,10 +138,7 @@ const Schedule = ({ selectedRow }) => {
   // Fetch client names from API
   const fetchClientOptions = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/activities/getClientNameFromLead?orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/activities/getClientNameFromLead?orgId=${orgId}`);
 
       if (response.status === true && response.paramObjectsMap.clientName) {
         setClientOptions(response.paramObjectsMap.clientName);
@@ -152,10 +152,7 @@ const Schedule = ({ selectedRow }) => {
   // Fetch branches based on client selection
   const fetchBranchOptions = async (clientName) => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/activities/getBranchNameFromLeadFillGrid?clientName=${clientName}&orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/activities/getBranchNameFromLeadFillGrid?clientName=${clientName}&orgId=${orgId}`);
 
       if (response.status === true && response.paramObjectsMap.branchName) {
         setBranchOptions(response.paramObjectsMap.branchName);
@@ -169,10 +166,7 @@ const Schedule = ({ selectedRow }) => {
   // Fetch customers based on client selection
   const fetchCustomerOptions = async (clientName) => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/activities/getCustomerNameFromLead?clientName=${clientName}&orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/activities/getCustomerNameFromLead?clientName=${clientName}&orgId=${orgId}`);
 
       if (response.status === true && response.paramObjectsMap.customerName) {
         setCustomerOptions(response.paramObjectsMap.customerName);
@@ -186,16 +180,15 @@ const Schedule = ({ selectedRow }) => {
   // Fetch assigned users from API
   const fetchAssignedToOptions = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/activities/getAssignedUserName?orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/activities/getAssignedUserName?orgId=${orgId}`);
 
       if (response.status === true && response.paramObjectsMap.assginedUserName) {
-        setAssignedToOptions(response.paramObjectsMap.assginedUserName.map(user => ({
-          assignedTo: user.assignedTo,
-          assignedUser: user.assignedUser
-        })));
+        setAssignedToOptions(
+          response.paramObjectsMap.assginedUserName.map((user) => ({
+            assignedTo: user.assignedTo,
+            assignedUser: user.assignedUser
+          }))
+        );
       }
     } catch (error) {
       console.error('Error fetching assigned users:', error);
@@ -221,10 +214,10 @@ const Schedule = ({ selectedRow }) => {
       );
 
       if (response.status === true) {
-        const formattedData = response.paramObjectsMap.scheduleVO.map(task => ({
+        const formattedData = response.paramObjectsMap.scheduleVO.map((task) => ({
           ...task,
           id: task.id, // Ensure id is included for editing
-          active: task.active === "Active" || task.active === true
+          active: task.active === 'Active' || task.active === true
         }));
         setListViewData(formattedData);
       } else {
@@ -246,7 +239,7 @@ const Schedule = ({ selectedRow }) => {
       );
 
       if (response.status === true && response.paramObjectsMap.scheduleDocId) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           taskId: response.paramObjectsMap.scheduleDocId
         }));
@@ -262,10 +255,7 @@ const Schedule = ({ selectedRow }) => {
   const getTaskById = async (row) => {
     try {
       setEditId(row.original.id);
-      const response = await apiCalls(
-        'get',
-        `/activities/getScheduleById?id=${row.original.id}`
-      );
+      const response = await apiCalls('get', `/activities/getScheduleById?id=${row.original.id}`);
 
       if (response.status === true) {
         const task = response.paramObjectsMap.scheduleVO;
@@ -291,7 +281,7 @@ const Schedule = ({ selectedRow }) => {
           assignedTo: task.assignedTo || '',
           assignedName: task.assignedName || task.assignedTo || '',
           description: task.description || '',
-          active: task.active === "Active" || task.active === true,
+          active: task.active === 'Active' || task.active === true,
           finYear: finYear,
           orgId: orgId,
           createdBy: loginUserName
@@ -344,13 +334,13 @@ const Schedule = ({ selectedRow }) => {
     }
 
     if (errorMessage) {
-      setFieldErrors(prev => ({ ...prev, [name]: errorMessage }));
+      setFieldErrors((prev) => ({ ...prev, [name]: errorMessage }));
     } else {
-      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
 
     // Update form data
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
@@ -358,15 +348,15 @@ const Schedule = ({ selectedRow }) => {
 
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
-    setFormData(prev => ({ ...prev, [field]: formattedDate }));
+    setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
 
   const handleBranchChange = (e) => {
     const branchName = e.target.value;
-    const selectedBranch = branchList.find(b => b.branch === branchName);
+    const selectedBranch = branchList.find((b) => b.branch === branchName);
 
     if (selectedBranch) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         branch: branchName,
         branchCode: selectedBranch.branchCode
@@ -461,11 +451,7 @@ const Schedule = ({ selectedRow }) => {
     };
 
     try {
-      const response = await apiCalls(
-        'put',
-        '/activities/createUpdateSchedule',
-        payload
-      );
+      const response = await apiCalls('put', '/activities/createUpdateSchedule', payload);
 
       if (response.status === true) {
         showToast('success', editId ? 'Task Updated Successfully' : 'Task Created Successfully');
@@ -540,23 +526,22 @@ const Schedule = ({ selectedRow }) => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+        <div className="d-flex justify-content-between mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap">
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
         </div>
 
         {listView ? (
           <div className="mt-0">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              blockEdit={true}
-              toEdit={getTaskById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing={true} blockEdit={true} toEdit={getTaskById} />
           </div>
         ) : (
           <>
@@ -570,7 +555,7 @@ const Schedule = ({ selectedRow }) => {
                   fullWidth
                   disabled
                   name="taskId"
-                  value={isDocIdLoading ? "Generating..." : formData.taskId}
+                  value={isDocIdLoading ? 'Generating...' : formData.taskId}
                   InputProps={{
                     style: { backgroundColor: '#f5f5f5' }
                   }}
@@ -606,22 +591,16 @@ const Schedule = ({ selectedRow }) => {
                   fullWidth
                   options={clientOptions}
                   getOptionLabel={(option) => option.clientName || ''}
-                  value={clientOptions.find(opt => opt.clientName === formData.clientName) || null}
+                  value={clientOptions.find((opt) => opt.clientName === formData.clientName) || null}
                   onChange={(event, newValue) => {
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                       ...prev,
                       clientName: newValue ? newValue.clientName : '',
                       branch: branch,
                       customerName: ''
                     }));
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Client Name"
-                      variant="outlined"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} label="Client Name" variant="outlined" />}
                 />
               </div>
 
@@ -632,12 +611,12 @@ const Schedule = ({ selectedRow }) => {
                   fullWidth
                   options={branchOptions}
                   getOptionLabel={(option) => option.branch || ''}
-                  value={branchOptions.find(opt => opt.branch === formData.branch) || null}
+                  value={branchOptions.find((opt) => opt.branch === formData.branch) || null}
                   onChange={(event, newValue) => {
                     const branchName = newValue ? newValue.branch : branch;
-                    const selectedBranch = branchList.find(b => b.branch === branchName);
+                    const selectedBranch = branchList.find((b) => b.branch === branchName);
 
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                       ...prev,
                       branch: branchName,
                       branchCode: selectedBranch ? selectedBranch.branchCode : branchCode,
@@ -668,21 +647,15 @@ const Schedule = ({ selectedRow }) => {
                   fullWidth
                   options={customerOptions}
                   getOptionLabel={(option) => option.customerName || ''}
-                  value={customerOptions.find(opt => opt.customerName === formData.customerName) || null}
+                  value={customerOptions.find((opt) => opt.customerName === formData.customerName) || null}
                   onChange={(event, newValue) => {
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                       ...prev,
                       customerName: newValue ? newValue.customerName : ''
                     }));
                   }}
                   disabled={!formData.clientName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Customer Name"
-                      variant="outlined"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} label="Customer Name" variant="outlined" />}
                 />
               </div>
 
@@ -720,13 +693,7 @@ const Schedule = ({ selectedRow }) => {
                       }
                     });
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Task Type"
-                      variant="outlined"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} label="Task Type" variant="outlined" />}
                 />
               </div>
 
@@ -817,10 +784,10 @@ const Schedule = ({ selectedRow }) => {
                   value={formData.startTime}
                   onChange={handleInputChange}
                   InputLabelProps={{
-                    shrink: true,
+                    shrink: true
                   }}
                   inputProps={{
-                    step: 300,
+                    step: 300
                   }}
                   error={!!fieldErrors.startTime}
                   helperText={fieldErrors.startTime}
@@ -839,10 +806,10 @@ const Schedule = ({ selectedRow }) => {
                   value={formData.endTime}
                   onChange={handleInputChange}
                   InputLabelProps={{
-                    shrink: true,
+                    shrink: true
                   }}
                   inputProps={{
-                    step: 300,
+                    step: 300
                   }}
                   error={!!fieldErrors.endTime}
                   helperText={fieldErrors.endTime}
@@ -880,13 +847,7 @@ const Schedule = ({ selectedRow }) => {
                       }
                     });
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Priority"
-                      variant="outlined"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} label="Priority" variant="outlined" />}
                 />
               </div>
 
@@ -910,16 +871,16 @@ const Schedule = ({ selectedRow }) => {
                   fullWidth
                   options={assignedToOptions}
                   getOptionLabel={(option) => option.assignedUser || ''}
-                  value={assignedToOptions.find(opt => opt.assignedTo === formData.assignedTo) || null}
+                  value={assignedToOptions.find((opt) => opt.assignedTo === formData.assignedTo) || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
                         assignedTo: newValue.assignedTo,
                         assignedName: newValue.assignedUser
                       }));
                     } else {
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
                         assignedTo: '',
                         assignedName: ''
@@ -968,7 +929,11 @@ const Schedule = ({ selectedRow }) => {
                     startIcon={<CloudUploadIcon />}
                     sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
                   >
-                    {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : 'Image Uploaded') : 'Upload Img'}
+                    {supportingImg
+                      ? typeof supportingImg === 'object' && supportingImg.name
+                        ? supportingImg.name
+                        : 'Image Uploaded'
+                      : 'Upload Img'}
                     <input type="file" hidden accept="image/png, image/jpeg" onChange={handleImgChange} />
                   </Button>
 
@@ -986,7 +951,11 @@ const Schedule = ({ selectedRow }) => {
                     {supportingImg ? (
                       <Box>
                         <Avatar
-                          src={typeof supportingImg === 'object' ? URL.createObjectURL(supportingImg) : `data:image/jpeg;base64,${supportingImg}`}
+                          src={
+                            typeof supportingImg === 'object'
+                              ? URL.createObjectURL(supportingImg)
+                              : `data:image/jpeg;base64,${supportingImg}`
+                          }
                           alt="Attachment"
                           sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
                         />
@@ -1030,14 +999,7 @@ const Schedule = ({ selectedRow }) => {
               {/* Active */}
               <div className="col-md-3 mb-3">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.active}
-                      onChange={handleInputChange}
-                      name="active"
-                      color="primary"
-                    />
-                  }
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
                   label="Active"
                 />
               </div>

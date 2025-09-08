@@ -593,6 +593,7 @@ const UserCreation = () => {
   };
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   const handleChange = (event, newValue) => {
@@ -607,9 +608,14 @@ const UserCreation = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
 
           {!listView ? (
@@ -723,13 +729,7 @@ const UserCreation = () => {
                 <div className="col-md-3 mb-3">
                   <FormGroup>
                     <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={formData.active}
-                          onChange={handleInputChange}
-                          name="active"
-                        />
-                      }
+                      control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                       label="Active"
                     />
                   </FormGroup>

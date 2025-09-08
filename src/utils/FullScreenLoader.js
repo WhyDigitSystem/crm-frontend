@@ -14,10 +14,10 @@ const FullScreenLoader = () => (
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: '#12162e'
+        background: '#ebd6fb'
         // backgroundColor: 'transparent'
     }}>
-        <img src={Logo} alt="BIN BEE Logo" width={100} />
+        <img src={Logo} alt="Why Digit System" width={100} />
         <p style={{ marginTop: 20, fontSize: '1.2rem', color: '#673ab7' }}>
             Hang tight! We're getting your data ready...
         </p>

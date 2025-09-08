@@ -1,7 +1,22 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Autocomplete, Select, Button, Chip, Stack, Avatar, Typography, Dialog, DialogContent } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Autocomplete,
+  Select,
+  Button,
+  Chip,
+  Stack,
+  Avatar,
+  Typography,
+  Dialog,
+  DialogContent
+} from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -64,7 +79,7 @@ const Dealer = ({ selectedRow }) => {
     status: '',
     place: '',
     address: '',
-    pinCode: '',
+    pinCode: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -76,7 +91,7 @@ const Dealer = ({ selectedRow }) => {
     district: '',
     contactPerson1: '',
     mobileNo1: '',
-    status: '',
+    status: ''
   });
 
   const listViewColumns = [
@@ -84,7 +99,7 @@ const Dealer = ({ selectedRow }) => {
     { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
     { accessorKey: 'anniversaryDate', header: 'Anniversary Date', size: 140 },
     { accessorKey: 'place', header: 'Place/Town', size: 140 },
-    { accessorKey: 'manager', header: 'Manager', size: 140 },
+    { accessorKey: 'manager', header: 'Manager', size: 140 }
   ];
   const getAllStates = async () => {
     try {
@@ -175,7 +190,7 @@ const Dealer = ({ selectedRow }) => {
           latitude: DealerVO.latitude || '',
           longitude: DealerVO.longitude || '',
           gstNo: DealerVO.gst || '',
-          otherInfo: DealerVO.otherInfo || '',
+          otherInfo: DealerVO.otherInfo || ''
         });
 
         setLoading(false);
@@ -238,7 +253,7 @@ const Dealer = ({ selectedRow }) => {
       status: '',
       place: '',
       address: '',
-      pinCode: '',
+      pinCode: ''
     });
     setFieldErrors({});
     setEditId('');
@@ -363,9 +378,9 @@ const Dealer = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex justify-content-between align-items-center mb-4" style={{ width: '100%' }}>
-            {!selectedRow &&
+            {!selectedRow && (
               <div className="d-flex">
-                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                {!showForm && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
                 <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
                 {uploadOpen && (
                   <CommonBulkUpload
@@ -388,27 +403,19 @@ const Dealer = ({ selectedRow }) => {
                 )}
                 {showForm && (
                   <>
+                    <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
                     <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                     <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                   </>
                 )}
               </div>
-            }
+            )}
           </div>
           {showForm ? (
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="docId"
-                    label="Doc No"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="docId"
-                    value={docId}
-                    disabled
-                  />
+                  <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -428,7 +435,9 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.dealerType}>
-                    <InputLabel id="dealerType-label">Dealer Type <span className="asterisk">*</span></InputLabel>
+                    <InputLabel id="dealerType-label">
+                      Dealer Type <span className="asterisk">*</span>
+                    </InputLabel>
                     <Select
                       labelId="dealerType-label"
                       label="Dealer Type"
@@ -446,19 +455,13 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={managerList}
-                    getOptionLabel={(option) =>
-                      option?.manager
-                        ? `${option.manager}`
-                        : ''
-                    }
-                    value={
-                      managerList.find((item) => item.manager === formData.manager) || null
-                    }
+                    getOptionLabel={(option) => (option?.manager ? `${option.manager}` : '')}
+                    value={managerList.find((item) => item.manager === formData.manager) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          manager: newValue.manager,
+                          manager: newValue.manager
                         }));
                         setFieldErrors((prev) => ({ ...prev, manager: '' }));
                       } else {
@@ -485,19 +488,13 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={salesRepList}
-                    getOptionLabel={(option) =>
-                      option?.salesRep
-                        ? `${option.salesRep}`
-                        : ''
-                    }
-                    value={
-                      salesRepList.find((item) => item.salesRep === formData.salesRep) || null
-                    }
+                    getOptionLabel={(option) => (option?.salesRep ? `${option.salesRep}` : '')}
+                    value={salesRepList.find((item) => item.salesRep === formData.salesRep) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          salesRep: newValue.salesRep,
+                          salesRep: newValue.salesRep
                         }));
                         setFieldErrors((prev) => ({ ...prev, salesRep: '' }));
                       } else {
@@ -541,7 +538,7 @@ const Dealer = ({ selectedRow }) => {
                       onChange={(date) => {
                         setFormData((prev) => ({
                           ...prev,
-                          dealerDOB: date,
+                          dealerDOB: date
                         }));
                       }}
                       format="DD-MM-YYYY"
@@ -557,7 +554,7 @@ const Dealer = ({ selectedRow }) => {
                       onChange={(date) => {
                         setFormData((prev) => ({
                           ...prev,
-                          fromDate: date,
+                          fromDate: date
                         }));
                       }}
                       format="DD-MM-YYYY"
@@ -572,7 +569,7 @@ const Dealer = ({ selectedRow }) => {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    type='number'
+                    type="number"
                     name="creditLimit"
                     value={formData.creditLimit}
                     onChange={handleInputChange}
@@ -597,27 +594,23 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={stateList}
-                    getOptionLabel={(option) =>
-                      option?.stateName ? `${option.stateName}` : ''
-                    }
-                    value={
-                      stateList.find((item) => item.stateName === formData.state) || null
-                    }
+                    getOptionLabel={(option) => (option?.stateName ? `${option.stateName}` : '')}
+                    value={stateList.find((item) => item.stateName === formData.state) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          state: newValue.stateName,
+                          state: newValue.stateName
                         }));
                         setFieldErrors((prev) => ({
                           ...prev,
-                          state: '',
+                          state: ''
                         }));
-                        getCityByState(newValue.stateName)
+                        getCityByState(newValue.stateName);
                       } else {
                         setFormData((prev) => ({
                           ...prev,
-                          state: '',
+                          state: ''
                         }));
                       }
                     }}
@@ -640,28 +633,22 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={districtList}
-                    getOptionLabel={(option) =>
-                      option?.city ? `${option.city}` : ''
-                    }
-                    value={
-                      districtList.find((item) => item.city === formData.district) || null
-                    }
+                    getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
+                    value={districtList.find((item) => item.city === formData.district) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          district: newValue.city,
+                          district: newValue.city
                         }));
                         setFieldErrors((prev) => ({
                           ...prev,
-                          district: '',
-
+                          district: ''
                         }));
                       } else {
                         setFormData((prev) => ({
                           ...prev,
-                          district: '',
-
+                          district: ''
                         }));
                       }
                     }}
@@ -683,54 +670,39 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Place
-                      </span>
-                    }
+                    label={<span>Place</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="place"
                     value={formData.place}
                     onChange={handleInputChange}
-
                     error={!!fieldErrors.place}
                     helperText={fieldErrors.place}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Address
-                      </span>
-                    }
+                    label={<span>Address</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-
                     error={!!fieldErrors.address}
                     helperText={fieldErrors.address}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Pin Code
-                      </span>
-                    }
+                    label={<span>Pin Code</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="pinCode"
                     value={formData.pinCode}
                     onChange={handleInputChange}
-
                     error={!!fieldErrors.pinCode}
                     helperText={fieldErrors.pinCode}
                   />
@@ -748,7 +720,6 @@ const Dealer = ({ selectedRow }) => {
                     name="contactPerson1"
                     value={formData.contactPerson1}
                     onChange={handleInputChange}
-
                     error={!!fieldErrors.contactPerson1}
                     helperText={fieldErrors.contactPerson1}
                   />
@@ -766,18 +737,13 @@ const Dealer = ({ selectedRow }) => {
                     name="mobileNo1"
                     value={formData.mobileNo1}
                     onChange={handleInputChange}
-
                     error={!!fieldErrors.mobileNo1}
                     helperText={fieldErrors.mobileNo1}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Contact Person 2
-                      </span>
-                    }
+                    label={<span>Contact Person 2</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -788,11 +754,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Mobile No 2
-                      </span>
-                    }
+                    label={<span>Mobile No 2</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -803,11 +765,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Latitude
-                      </span>
-                    }
+                    label={<span>Latitude</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -818,11 +776,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Longitude
-                      </span>
-                    }
+                    label={<span>Longitude</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -833,11 +787,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Reg No
-                      </span>
-                    }
+                    label={<span>Reg No</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -848,11 +798,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={
-                      <span>
-                        Other Info
-                      </span>
-                    }
+                    label={<span>Other Info</span>}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -863,14 +809,10 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                    <InputLabel id="status-label">Status <span className="asterisk">*</span></InputLabel>
-                    <Select
-                      labelId="status-label"
-                      label="Status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      name="status"
-                    >
+                    <InputLabel id="status-label">
+                      Status <span className="asterisk">*</span>
+                    </InputLabel>
+                    <Select labelId="status-label" label="Status" value={formData.status} onChange={handleInputChange} name="status">
                       <MenuItem value="Active">Active</MenuItem>
                       <MenuItem value="In-Active">In-Active</MenuItem>
                     </Select>
@@ -882,8 +824,8 @@ const Dealer = ({ selectedRow }) => {
           ) : (
             <CommonListViewTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getDealersById} />
           )}
-        </div >
-      </div >
+        </div>
+      </div>
     </>
   );
 };

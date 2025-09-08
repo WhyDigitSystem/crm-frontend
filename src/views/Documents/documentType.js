@@ -10,6 +10,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
+import AddIcon from '@mui/icons-material/Add';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 export const DocumentType = () => {
@@ -284,6 +285,7 @@ export const DocumentType = () => {
 
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   return (
@@ -291,9 +293,14 @@ export const DocumentType = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+            {!listView && (
+              <>
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              </>
+            )}
           </div>
         </div>
         {listView ? (
@@ -326,9 +333,7 @@ export const DocumentType = () => {
                 <Autocomplete
                   options={screenList}
                   getOptionLabel={(option) => option?.screenCode || ''}
-                  value={
-                    screenList.find((item) => item.screenCode === formData.screenCode) || null
-                  }
+                  value={screenList.find((item) => item.screenCode === formData.screenCode) || null}
                   onChange={handleScreenCodeChange} // ✅ fixed
                   renderInput={(params) => (
                     <TextField

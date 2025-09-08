@@ -207,8 +207,6 @@ function UnAssignedLeads() {
       size: 300,
       Cell: ({ row }) => {
         const lead = row.original;
-        // console.log("Lead Details",row.original.leadBranchVO);
-        console.log("Lead Details", row.original);
 
         const [selectedAssignee, setSelectedAssignee] = useState(null);
 
@@ -312,10 +310,7 @@ function UnAssignedLeads() {
           );
         }
         if (response.status === true) {
-          console.log('Response:', response);
           setRowData(response.paramObjectsMap.unAssignedReport || []);
-          setEditId(response.paramObjectsMap.unAssignedReport.id);
-          console.log(response.paramObjectsMap.unAssignedReport.id);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -341,8 +336,6 @@ function UnAssignedLeads() {
 
     try {
       const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
-      console.log("data to save", payload);
-
       if (response.status) {
         showToast('success', editId ? 'Assigned Successfully' : 'Assigned Successfully');
       } else {
@@ -376,7 +369,6 @@ function UnAssignedLeads() {
   const getCompanyDetails = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-      console.log('API Response:', response);
       setListViewData(response.paramObjectsMap.companyVO.reverse());
     } catch (error) {
       console.error('Error fetching data:', error);

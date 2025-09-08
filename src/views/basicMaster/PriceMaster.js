@@ -1,7 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import {
   FormHelperText,
   TextField,
@@ -130,7 +130,7 @@ export const PriceMaster = () => {
     const updatedValue = name === 'active' ? checked : value;
     const updatedFormData = {
       ...formData,
-      [name]: updatedValue,
+      [name]: updatedValue
     };
     const price = parseFloat(updatedFormData.price) || 0;
     const discount = parseFloat(updatedFormData.discount) || 0;
@@ -206,7 +206,10 @@ export const PriceMaster = () => {
     }
   };
 
-  const handleView = () => setListView(!listView);
+  const handleView = () => {
+    setListView(!listView);
+    handleClear();
+  };
 
   const listViewColumns = [
     { accessorKey: 'productName', header: 'Product' },
@@ -224,11 +227,15 @@ export const PriceMaster = () => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
-          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => { }} /> */}
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px" />
+        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+          {!listView && (
+            <>
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </>
+          )}
         </div>
 
         {listView ? (
@@ -257,12 +264,8 @@ export const PriceMaster = () => {
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={productList}
-                  getOptionLabel={(option) =>
-                    option?.productName ? `${option.productName} - ${option.brand}` : ''
-                  }
-                  value={
-                    productList.find((item) => item.productName === formData.productName) || null
-                  }
+                  getOptionLabel={(option) => (option?.productName ? `${option.productName} - ${option.brand}` : '')}
+                  value={productList.find((item) => item.productName === formData.productName) || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setFormData((prev) => ({
@@ -270,7 +273,7 @@ export const PriceMaster = () => {
                         productName: newValue.productName || '',
                         brand: newValue.brand || '',
                         category: newValue.category || '',
-                        subCategory: newValue.subCategory || '',
+                        subCategory: newValue.subCategory || ''
                       }));
                       setFieldErrors((prev) => ({
                         ...prev,
@@ -306,25 +309,78 @@ export const PriceMaster = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <DatePicker label="From Date" value={formData.fromDate} onChange={(value) => setFormData({ ...formData, fromDate: value })} format="DD-MM-YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
+                <DatePicker
+                  label="From Date"
+                  value={formData.fromDate}
+                  onChange={(value) => setFormData({ ...formData, fromDate: value })}
+                  format="DD-MM-YYYY"
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <DatePicker label="To Date" value={formData.toDate} onChange={(value) => setFormData({ ...formData, toDate: value })} format="DD-MM-YYYY" slotProps={{ textField: { size: 'small', fullWidth: true } }} />
+                <DatePicker
+                  label="To Date"
+                  value={formData.toDate}
+                  onChange={(value) => setFormData({ ...formData, toDate: value })}
+                  format="DD-MM-YYYY"
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Price" type='number' name="price" value={formData.price} onChange={handleInputChange} size="small" fullWidth />
+                <TextField
+                  label="Price"
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Discount %" type='number' name="discount" value={formData.discount} onChange={handleInputChange} size="small" fullWidth />
+                <TextField
+                  label="Discount %"
+                  type="number"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Selling Price" type='number' disabled name="sellingPrice" value={formData.sellingPrice} onChange={handleInputChange} size="small" fullWidth />
+                <TextField
+                  label="Selling Price"
+                  type="number"
+                  disabled
+                  name="sellingPrice"
+                  value={formData.sellingPrice}
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Category" name="category" value={formData.category} disabled onChange={handleInputChange} size="small" fullWidth />
+                <TextField
+                  label="Category"
+                  name="category"
+                  value={formData.category}
+                  disabled
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField label="Sub Category" name="subCategory" value={formData.subCategory} disabled onChange={handleInputChange} size="small" fullWidth />
+                <TextField
+                  label="Sub Category"
+                  name="subCategory"
+                  value={formData.subCategory}
+                  disabled
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                />
               </div>
               {/* <div className="col-md-3 mb-3">
                 <TextField label={
@@ -337,7 +393,9 @@ export const PriceMaster = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" fullWidth error={!!fieldErrors.gstApplicable}>
                   {/* <InputLabel>GST Applicable</InputLabel> */}
-                  <InputLabel>GST Applicable<span className="asterisk">*</span></InputLabel>
+                  <InputLabel>
+                    GST Applicable<span className="asterisk">*</span>
+                  </InputLabel>
                   <Select name="gstApplicable" value={formData.gstApplicable} onChange={handleInputChange} label="GST Applicable">
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>
@@ -349,7 +407,10 @@ export const PriceMaster = () => {
                 <TextField label="HSN/SAC Code" name="hsn" value={formData.hsn} onChange={handleInputChange} size="small" fullWidth />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />} label="Active" />
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
               </div>
             </div>
           </LocalizationProvider>

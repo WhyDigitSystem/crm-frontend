@@ -1,7 +1,6 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,7 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
-
+import AddIcon from '@mui/icons-material/Add';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
@@ -130,6 +129,7 @@ const FinYear = () => {
 
   const handleList = () => {
     setShowFields(!showFields);
+    handleClear();
   };
 
   const getFinYear = async () => {
@@ -266,11 +266,15 @@ const FinYear = () => {
         <ToastContainer />
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-          <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} margin="0 10px 0 10px" />
+        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          {!showFields && <ActionButton title="New Entry" icon={AddIcon} onClick={handleList} />}
+          {showFields && (
+            <>
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} />
+            </>
+          )}
         </div>
         {showFields ? (
           <div className="row d-flex">
@@ -376,14 +380,7 @@ const FinYear = () => {
             <div className="col-md-3 mb-3 ml-4">
               <FormGroup>
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.closed}
-                      onChange={handleInputChange}
-                      name="closed"
-                      
-                    />
-                  }
+                  control={<Checkbox checked={formData.closed} onChange={handleInputChange} name="closed" />}
                   label="Closed"
                 />
               </FormGroup>
@@ -391,14 +388,7 @@ const FinYear = () => {
             <div className="col-md-3 mb-3 ml-4">
               <FormGroup>
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.active}
-                      onChange={handleInputChange}
-                      name="active"
-                      
-                    />
-                  }
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                   label="Active"
                 />
               </FormGroup>
