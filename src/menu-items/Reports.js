@@ -7,6 +7,9 @@ import {
     IconShoppingCart,
     IconPhoneCall,
     IconMap, 
+    IconUsers,
+    IconClipboardText,
+    IconTimeline,
     IconUserExclamation
 } from '@tabler/icons-react';
 
@@ -59,21 +62,28 @@ const reportChildren = [
         title: 'Active Report',
         type: 'item',
         url: '/Report/ActiveReport',
-        icon: IconPhoneCall
+        icon: IconUsers
     },
     hasScreenAccess('SDR') && {
         id: 'ScheduleReport',
         title: 'Schedule Report',
         type: 'item',
         url: '/Report/ScheduleReport',
-        icon: IconMap
+        icon: IconClipboardText
     },
     hasScreenAccess('DLR') && {
         id: 'DealerReport',
         title: 'Dealer Report',
         type: 'item',
         url: '/Report/DealerReport',
-        icon: IconMap
+        icon: IconWorld
+    },
+    hasScreenAccess('LJ') && {
+        id: 'LeadJourney',
+        title: 'Lead Journey',
+        type: 'item',
+        url: '/Report/LeadJourney',
+        icon: IconTimeline
     },
 ].filter(Boolean);
 

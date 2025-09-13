@@ -48,7 +48,7 @@ const Lead = ({ selectedRow }) => {
   const [assignToList, setAssignToList] = useState([]);
   const [sources] = useState(['Call', 'Email', 'Existing Customer', 'Partner', 'Public Relations', 'Campaign', 'Website', 'Other']);
   const [clientTypes] = useState(['Company', 'Individual']);
-  const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'Manufacturing', 'Construction']);
+  const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'CFO Services', 'Manufacturing', 'Construction']);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
@@ -211,7 +211,6 @@ const Lead = ({ selectedRow }) => {
         }));
       } else {
         setListViewData([]);
-        showToast('info', 'No leads found');
       }
       setIsLoading(false);
     } catch (error) {

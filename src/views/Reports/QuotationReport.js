@@ -45,10 +45,12 @@ function QuotationReport() {
   const [clientNameList, setClientNameList] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [countOpen, setCountOpen] = useState(false);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [productList, setProductList] = useState([]);
+  const [countData, setCountData] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     clientName: false,
@@ -115,7 +117,10 @@ function QuotationReport() {
   };
   const getBranch = async (clientName) => {
     try {
-      const response = await apiCalls('get', `/transaction/getAllBranchesFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `/transaction/getAllBranchesFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+      );
       setBranchList(response.paramObjectsMap.branches);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -130,38 +135,75 @@ function QuotationReport() {
     }
   };
   const reportColumns = [
-    {
-      accessorKey: 'docId',
-      header: 'Doc Id',
-      size: 100,
-      Cell: ({ row }) => {
-        const docId = row.original.docId;
-        const screenCode = row.original.screenCode;
-        return (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleDocClick(docId, screenCode);
-            }}
-            style={{
-              color: '#f59e0b',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.2s, text-shadow 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.color = '#fbbf24';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.color = '#f59e0b';
-            }}
-          >
-            {docId}
-          </a>
-        );
-      }
-    },
+    countOpen
+      ? { accessorKey: 'docId', header: 'Doc Id', size: 80 }
+      : {
+          accessorKey: 'docId',
+          header: 'Doc Id',
+          size: 100,
+          Cell: ({ row }) => {
+            const docId = row.original.docId;
+            const screenCode = row.original.screenCode;
+            return (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDocClick(docId, screenCode);
+                }}
+                style={{
+                  color: '#f59e0b',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s, text-shadow 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#fbbf24';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#f59e0b';
+                }}
+              >
+                {docId}
+              </a>
+            );
+          }
+        },
+    countOpen
+      ? { accessorKey: 'iterations', header: 'Iterations', size: 80 }
+      : {
+          accessorKey: 'count',
+          header: 'No. of Iterations',
+          size: 100,
+          Cell: ({ row }) => {
+            const docId = row.original.docId;
+            const count = row.original.count;
+            return (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCountClick(docId);
+                }}
+                style={{
+                  color: '#f59e0b',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s, text-shadow 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#fbbf24';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = '#f59e0b';
+                }}
+              >
+                {count}
+              </a>
+            );
+          }
+        },
+
     { accessorKey: 'docDate', header: 'Date', size: 80 },
     { accessorKey: 'subCategory', header: 'Sub Category', size: 80 },
     { accessorKey: 'category', header: 'Category', size: 80 },
@@ -182,14 +224,6 @@ function QuotationReport() {
         <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
-    // {
-    //   accessorKey: 'discount',
-    //   header: '% Off',
-    //   size: 50,
-    //   Cell: ({ cell }) => (
-    //     <div style={{ textAlign: 'center', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    //   )
-    // },
     {
       accessorKey: 'amount',
       header: 'Amt',
@@ -200,10 +234,8 @@ function QuotationReport() {
     },
     { accessorKey: 'clientName', header: 'Client Name', size: 80 },
     { accessorKey: 'contactName', header: 'Contact Name', size: 70 },
-    // { accessorKey: 'mobileNo', header: 'Mob No', size: 80 },
     { accessorKey: 'email', header: 'Email', size: 100 },
-    // { accessorKey: 'branchName', header: 'Branch', size: 80 },
-    { accessorKey: 'status', header: 'Status', size: 80 },
+    { accessorKey: 'status', header: 'Status', size: 80 }
   ];
 
   const handleGo = async () => {
@@ -251,6 +283,19 @@ function QuotationReport() {
       const response = await apiCalls('get', `/transaction/getQuotationByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`);
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.quotationVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleCountClick = async (docId) => {
+    setCountOpen(true);
+    try {
+      const response = await apiCalls('get', `/transaction/getCountQuoteRevision?docId=${docId}&orgId=${orgId}`);
+      if (response.status === true) {
+        setCountData(response.paramObjectsMap.quoteRevisionVO);
       } else {
         console.error('API Error:', response);
       }
@@ -437,7 +482,6 @@ function QuotationReport() {
       metadata.push({ label: 'Generated By', value: localStorage.getItem('userName') || 'System' });
       metadata.push({ label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') });
 
-
       metadata.forEach((meta, index) => {
         const rowIndex = (index % 4) + 2;
         const colGroup = Math.floor(index / 4);
@@ -543,58 +587,30 @@ function QuotationReport() {
             <div className="row">
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedSections.date}
-                      onChange={handleCheckboxChange}
-                      name="date"
-                      color="secondary"
-                    />
-                  }
+                  control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
-                  
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
-                    <Checkbox
-                      checked={selectedSections.clientName}
-                      onChange={handleCheckboxChange}
-                      name="clientName"
-                      color="secondary"
-                    />
+                    <Checkbox checked={selectedSections.clientName} onChange={handleCheckboxChange} name="clientName" color="secondary" />
                   }
                   label="Client Name"
-                  
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedSections.branch}
-                      onChange={handleCheckboxChange}
-                      name="branch"
-                      color="secondary"
-                    />
-                  }
+                  control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
                   label="Branch"
-                  
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
-                    <Checkbox
-                      checked={selectedSections.productName}
-                      onChange={handleCheckboxChange}
-                      name="productName"
-                      color="secondary"
-                    />
+                    <Checkbox checked={selectedSections.productName} onChange={handleCheckboxChange} name="productName" color="secondary" />
                   }
                   label="Product Name"
-                  
                 />
               </div>
             </div>
@@ -676,7 +692,7 @@ function QuotationReport() {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        branch: newValue,
+                        branch: newValue
                       }));
                       setFieldErrors((prev) => ({ ...prev, branch: '' }));
                     } else {
@@ -710,7 +726,7 @@ function QuotationReport() {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        productName: newValue,
+                        productName: newValue
                       }));
                       setFieldErrors((prev) => ({ ...prev, productName: '' }));
                     } else {
@@ -758,10 +774,7 @@ function QuotationReport() {
             sx: { p: 0, m: 0, borderRadius: 1 }
           }}
         >
-          <DialogTitle
-            style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }}
-            id="draggable-dialog-title"
-          >
+          <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
             Quotation Report
             <IconButton
               onClick={() => setListView(false)}
@@ -819,14 +832,30 @@ function QuotationReport() {
               </Box>
             </DialogTitle>
             <DialogContent>
-              {fillGridData && (
-                <>
-                  {isLoading ? (
-                    <FullScreenLoader open={true} />
-                  ) : (
-                    <Quotation selectedRow={fillGridData} />
-                  )}
-                </>
+              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <Quotation selectedRow={fillGridData} />}</>}
+            </DialogContent>
+          </Dialog>
+        </>
+        <>
+          <Dialog
+            open={countOpen}
+            maxWidth={'xl'}
+            fullWidth={true}
+            onClose={() => setCountOpen(false)}
+            PaperComponent={PaperComponent}
+            aria-labelledby="draggable-dialog-title"
+          >
+            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <h6 style={{ margin: 0, textAlign: 'center' }}>Report Details</h6>
+                <IconButton onClick={() => setCountOpen(false)} color="error">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DialogTitle>
+            <DialogContent>
+              {countData && (
+                <>{isLoading ? <FullScreenLoader open={true} /> : <CommonReportTable data={countData} columns={reportColumns} />}</>
               )}
             </DialogContent>
           </Dialog>

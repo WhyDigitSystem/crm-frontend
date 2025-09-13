@@ -1,219 +1,311 @@
-import { Button, Drawer, Fab, Grid, IconButton, TextField, Tooltip, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { IconHelp } from '@tabler/icons-react';
+import { Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { IconCheck, IconClock, IconHelp, IconListCheck, IconPlus, IconUser } from '@tabler/icons-react';
+import apiCalls from 'apicall';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import { useDispatch, useSelector } from 'react-redux';
-import 'react-toastify/dist/ReactToastify.css';
-import { SET_BORDER_RADIUS, SET_FONT_FAMILY } from 'store/actions';
-import { gridSpacing } from 'store/constant';
-import SubCard from 'ui-component/cards/SubCard';
-import AnimateButton from 'ui-component/extended/AnimateButton';
+import { showToast } from 'utils/toast-component';
+import AllTicketsTab from './AllTicketsTab';
+import RaiseTicketTab from './SupportTickets';
 
-function valueText(value) {
-  return `${value}px`;
-}
+const getStatusChip = (status) => {
+  switch (status) {
+    case 'Open':
+      return <Chip label="Open" icon={<IconClock size={18} />} color="warning" variant="outlined" />;
+    case 'Closed':
+      return <Chip label="Closed" icon={<IconCheck size={18} />} color="success" variant="outlined" />;
+    case 'In Progress':
+      return <Chip label="In Progress" icon={<IconUser size={18} />} color="info" variant="outlined" />;
+    default:
+      return <Chip label="Unknown" variant="outlined" />;
+  }
+};
+
+const employees = ['Alice', 'Bob', 'Charlie', 'David'];
 
 const Customization = () => {
-  const theme = useTheme();
-  const dispatch = useDispatch();
-  const customization = useSelector((state) => state.customization);
-
   const [open, setOpen] = useState(false);
-  const handleToggle = () => {
-    setOpen(!open);
-  };
-
-  const [borderRadius, setBorderRadius] = useState(customization.borderRadius);
-  const handleBorderRadius = (event, newValue) => {
-    setBorderRadius(newValue);
-  };
-
-  const [fileName, setFileName] = useState('');
-
-  useEffect(() => {
-    dispatch({ type: SET_BORDER_RADIUS, borderRadius });
-  }, [dispatch, borderRadius]);
-
-  let initialFont;
-  switch (customization.fontFamily) {
-    case `'Inter', sans-serif`:
-      initialFont = 'Inter';
-      break;
-    case `'Roboto', sans-serif`:
-      initialFont = 'Roboto';
-      break;
-    case `' Poppins', sans-serif`:
-    default:
-      initialFont = 'Poppins';
-      break;
-  }
-
-  const [fontFamily, setFontFamily] = useState(initialFont);
-  useEffect(() => {
-    let newFont;
-    switch (fontFamily) {
-      case 'Inter':
-        newFont = `'Inter', sans-serif`;
-        break;
-      case 'Poppins':
-        newFont = `'Poppins', sans-serif`;
-        break;
-      case 'Roboto':
-      default:
-        newFont = `'Roboto', sans-serif`;
-        break;
+  const [tab, setTab] = useState(0);
+  const [ticket, setTicket] = useState({
+    subject: '',
+    description: '',
+    status: 'Open',
+    image: null,
+    errors: {
+      subject: false,
+      description: false
     }
-    dispatch({ type: SET_FONT_FAMILY, fontFamily: newFont });
-  }, [dispatch, fontFamily]);
-
-  // Help form state variables
-  const [helpFormData, setHelpFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-    attachments: null
   });
 
-  const handleHelpInputChange = (event) => {
-    const { name, value, files } = event.target;
-    const file = event.target.files[0];
-    if (file) {
-      setFileName(file.name);
-    } else {
-      setHelpFormData({
-        ...helpFormData,
-        [name]: value
-      });
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('userName'));
+  const [isLoading, setIsLoading] = useState(false);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [detailDialog, setDetailDialog] = useState(false);
+  const [tickets, setTickets] = useState([]);
+
+  const [adminTickets, setAdminTickets] = useState([]);
+
+  useEffect(() => {
+    getTicketsByUser();
+    getTicketsByOrgId();
+  }, []);
+
+  const handleToggle = () => setOpen(!open);
+  const handleTabChange = (_, newTab) => setTab(newTab);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+
+    setTicket((prev) => ({
+      ...prev,
+      [name]: name === 'image' ? (files ? files[0] : null) : value,
+      errors: {
+        ...prev.errors,
+        [name]: false // clear the error on change
+      }
+    }));
+  };
+
+  const handleRowClick = (params) => {
+    setSelectedTicket(params.row);
+    setDetailDialog(true);
+  };
+
+  const handleAssign = (id, assignedTo) => {
+    setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, assignedTo } : t)));
+  };
+
+  const handleStatusChange = (id, status) => {
+    setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+  };
+
+  const getTicketsByUser = async () => {
+    try {
+      const response = await apiCalls('get', `ticketcontroller/getTicketByUserName?userName=${loginUserName}&orgId=${orgId}`);
+
+      if (response.status === true) {
+        setTickets(response.paramObjectsMap.ticketVO);
+        return response.paramObjectsMap?.ticketVO || [];
+      } else {
+        showToast('error', response.paramObjectsMap?.ticketVO.errorMessage || 'Failed to fetch tickets');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      // showToast('error', 'Something went wrong while fetching tickets');
+      return [];
     }
   };
 
-  const handleHelpSubmit = async (event) => {
-    // event.preventDefault();
-    // try {
-    //   const formData = new FormData();
-    //   Object.keys(helpFormData).forEach((key) => {
-    //     formData.append(key, helpFormData[key]);
-    //   });
-    //   await apiCalls('post', 'path/to/help/api', formData);
-    //   toast.success('Help request sent successfully!', {
-    //     autoClose: 2000,
-    //     theme: 'colored'
-    //   });
-    // } catch (error) {
-    //   toast.error(`Error: ${error.message}`, {
-    //     autoClose: 2000,
-    //     theme: 'colored'
-    //   });
-    // }
+  const getTicketsByOrgId = async () => {
+    try {
+      const response = await apiCalls('get', `ticketcontroller/getTicketByOrgId?orgId=${orgId}`);
+
+      if (response.status === true) {
+        setAdminTickets(response.paramObjectsMap.ticketVO);
+        return response.paramObjectsMap?.ticketVO || [];
+      } else {
+        showToast('error', response.paramObjectsMap?.ticketVO.errorMessage || 'Failed to fetch tickets');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      // showToast('error', 'Something went wrong while fetching tickets');
+      return [];
+    }
   };
+
+  const handleSubmit = async () => {
+    console.log('Testing', ticket);
+
+    const errors = {
+      subject: !ticket.subject.trim(),
+      description: !ticket.description.trim()
+    };
+
+    if (errors.subject || errors.description) {
+      setTicket((prev) => ({
+        ...prev,
+        errors
+      }));
+      return;
+    }
+
+    const payload = {
+      subject: ticket.subject,
+      description: ticket.description,
+      status: ticket.status,
+      userName: loginUserName,
+      orgId: orgId,
+      createdBy: loginUserName
+    };
+
+    try {
+      setIsLoading(true);
+
+      const response = await apiCalls('put', 'ticketcontroller/createUpdateTicket', payload);
+
+      if (response.status === true && response.paramObjectsMap?.ticketVO?.id) {
+        const ticketId = response.paramObjectsMap.ticketVO.id;
+        showToast('success', 'Ticket created successfully');
+        getTicketsByUser();
+        getTicketsByOrgId();
+
+        // Upload image if available
+        // Upload image if available
+        if (ticket.image) {
+          const formData = new FormData();
+          formData.append('file', ticket.image);
+
+          const uploadUrl = `${process.env.REACT_APP_API_URL}/api/ticketcontroller/uploadTicketScreenShotInBloob?id=${ticketId}`;
+
+          const uploadResponse = await axios.post(uploadUrl, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+
+          if (uploadResponse.data.status === true) {
+          } else {
+            showToast('error', uploadResponse.data.paramObjectsMap?.errorMessage || 'Image upload failed');
+          }
+        }
+
+        // Clear form
+        setTicket({
+          subject: '',
+          description: '',
+          image: null,
+          errors: {
+            subject: false,
+            description: false
+          }
+        });
+
+        // Optional: refresh list
+        // getAllTickets?.();
+      } else {
+        showToast('error', response.paramObjectsMap?.errorMessage || 'Ticket save failed');
+      }
+    } catch (error) {
+      console.error('API Error:', error);
+      // showToast('error', 'Something went wrong while saving the ticket');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const userTabs = [
+    {
+      label: 'Raise Ticket',
+      icon: <IconPlus size={18} /> // Green color
+    },
+    {
+      label: 'All Tickets',
+      icon: <IconListCheck size={18} /> // Blue color
+    }
+  ];
+
+  // const adminTab = {
+  //   label: 'IT Admin',
+  //   icon: <IconSettings size={18} /> // Orange color
+  // };
+
+  const tabs = userTabs;
 
   return (
     <>
-      <Tooltip title="Live Customize">
+      <Tooltip title="Need help? Raise a support ticket">
         <Fab
-          component="div"
-          onClick={handleToggle}
-          size="medium"
-          variant="circular"
           color="secondary"
+          onClick={handleToggle}
           sx={{
-            borderRadius: 0,
-            borderTopLeftRadius: '50%',
-            borderBottomLeftRadius: '50%',
-            borderTopRightRadius: '50%',
-            borderBottomRightRadius: '4px',
-            bottom: '2%',
             position: 'fixed',
-            right: 10,
-            zIndex: theme.zIndex.speedDial
+            bottom: 16,
+            right: 16,
+            zIndex: 1500,
+            backgroundColor: '#FF421B',
+            '&:hover': { backgroundColor: '#E03B16' }
           }}
         >
-          {/* <AnimateButton type="rotate"> */}
-          <IconButton color="inherit" size="large" disableRipple>
-            <IconHelp stroke={2} />
-          </IconButton>
-          {/* </AnimateButton> */}
+          <IconHelp stroke={2} />
         </Fab>
       </Tooltip>
 
-      <Drawer
-        anchor="right"
-        onClose={handleToggle}
-        open={open}
-        PaperProps={{
-          sx: {
-            width: 300
-          }
-        }}
-      >
-        <PerfectScrollbar component="div">
-          <Grid container spacing={gridSpacing} sx={{ p: 1 }}>
-            <Grid item xs={12}>
-              <SubCard title="Leave us a message">
-                <form onSubmit={handleHelpSubmit}>
-                  <Grid container spacing={gridSpacing}>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="Name"
-                        name="name"
-                        size="small"
-                        value={helpFormData.name}
-                        onChange={handleHelpInputChange}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="Email ID"
-                        name="email"
-                        size="small"
-                        value={helpFormData.email}
-                        onChange={handleHelpInputChange}
-                        type="email"
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="How can I help you?"
-                        name="message"
-                        size="small"
-                        value={helpFormData.message}
-                        onChange={handleHelpInputChange}
-                        multiline
-                        rows={4}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button variant="contained" component="label" fullWidth sx={{ textTransform: 'none' }}>
-                        Attach File
-                        <input type="file" hidden name="attachments" onChange={handleHelpInputChange} />
-                      </Button>
-                    </Grid>
-                    {fileName && (
-                      <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          File: {fileName}
-                        </Typography>
-                      </Grid>
-                    )}
-                    <Grid item xs={12}>
-                      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ textTransform: 'none' }}>
-                        Send
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </form>
-              </SubCard>
-            </Grid>
-          </Grid>
-        </PerfectScrollbar>
-      </Drawer>
+      <Dialog open={open} onClose={handleToggle} maxWidth="md" fullWidth>
+        <DialogTitle
+          sx={{
+            background: 'black',
+            color: '#fff',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: '1.6rem',
+            paddingY: 2,
+            borderTopLeftRadius: '6px', // More rounded corners
+            borderTopRightRadius: '6px',
+            boxShadow: '0 6px 15px rgba(0,0,0,0.3)' // Deeper shadow for better depth
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: '#fff',
+              fontWeight: 600,
+              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              letterSpacing: 1.2,
+              gap: 1.5 // Slightly bigger gap between icon and text
+            }}
+          >
+            <IconHelp size={24} color="#fff" />
+            Support Center
+          </Typography>
+        </DialogTitle>
+
+        <Tabs value={tab} onChange={(e, newVal) => setTab(newVal)} variant="scrollable" scrollButtons="auto">
+          {tabs.map((t, index) => (
+            <Tab key={t.label} icon={t.icon} label={t.label} iconPosition="start" sx={{ minHeight: 48, minWidth: 120, font: 'bold' }} />
+          ))}
+        </Tabs>
+        <DialogContent>
+          {/* Raise Ticket Tab */}
+          {tab === 0 && <RaiseTicketTab ticket={ticket} handleChange={handleChange} handleSubmit={handleSubmit} />}
+          {tab === 1 && (
+            <AllTicketsTab
+              tickets={loginUserName === 'ADMIN' ? adminTickets : tickets}
+              onRowClick={handleRowClick}
+              getAllTickets={getTicketsByOrgId}
+            />
+          )}
+          {/* {isAdmin && tab === 2 && (
+            <AdminTicketsTab
+              tickets={adminTickets}
+              employees={employees}
+              handleAssign={handleAssign}
+              handleStatusChange={handleStatusChange}
+              handleRowClick={handleRowClick}
+            />
+          )} */}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          {tab === 0 ? (
+            // <Button variant="contained" onClick={handleSubmit}>
+            //   Submit Ticket
+            // </Button>
+            ''
+          ) : (
+            <Button variant="outlined" onClick={handleToggle}>
+              Close
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Ticket Details Dialog */}
     </>
   );
 };

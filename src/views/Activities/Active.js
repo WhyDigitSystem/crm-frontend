@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import AddIcon from "@mui/icons-material/Add";
+import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import {
   TextField,
@@ -598,31 +598,33 @@ const Active = ({ selectedRow }) => {
                 </>
               )}
             </div>
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={() => handleMyLeads(activeTab)}
-                startIcon={<PersonPinCircleIcon />}
-                sx={{
-                  fontWeight: 'bold',
-                  px: 1,
-                  py: 0.5,
-                  fontSize: '14px',
-                  borderRadius: '30px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: loading ? 'none' : 'scale(1.08)',
-                    boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)'
-                  }
-                }}
-              >
-                {loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'My Leads'}
-              </Button>
-            </div>
+            {!listView && (
+              <div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={() => handleMyLeads(activeTab)}
+                  startIcon={<PersonPinCircleIcon />}
+                  sx={{
+                    fontWeight: 'bold',
+                    px: 1,
+                    py: 0.5,
+                    fontSize: '14px',
+                    borderRadius: '30px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: loading ? 'none' : 'scale(1.08)',
+                      boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)'
+                    }
+                  }}
+                >
+                  {loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'My Leads'}
+                </Button>
+              </div>
+            )}
           </div>
         )}
         {listView ? (

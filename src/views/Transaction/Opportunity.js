@@ -702,12 +702,31 @@ const Opportunity = ({ selectedRow }) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
-  const handleMyLeads = () => {
+  // const handleMyLeads = () => {
+  //   setLoading(true);
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //     setMyOpportunities(!myOpportunities);
+  //   }, 300);
+  // };
+  const handleMyOpportunities = async (tab) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      let response = await apiCalls(
+        'get',
+        `/transaction/getMyOpportunity?assginedName=${createdBy}&branchCode=${branchCode}&orgId=${orgId}`
+      );
+      if (response) {
+        setMyOpportunities(!myOpportunities);
+        setRowData(response?.paramObjectsMap?.myOpportunity || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setRowData([]);
+      showToast('error', 'Report Fetch failed');
+    } finally {
       setLoading(false);
-      setMyOpportunities(!myOpportunities);
-    }, 300);
+    }
   };
   const handleClose = () => setMyOpportunities(false);
   const myOppColumns = [
@@ -718,13 +737,25 @@ const Opportunity = ({ selectedRow }) => {
       size: 100,
       Cell: ({ row }) => {
         const docId = row.original.docId;
-        const screenCode = row.original.screenCode;
         return (
           <a
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              // handleDocClick(docId, screenCode);
+              setMyOpportunities(false);
+              getBranch(row.original.clientName);
+              getContactName(row.original.branchName, row.original.clientName);
+              setFormData((prev) => ({
+                ...prev,
+                clientName: row.original.clientName || '',
+                branchName: row.original.branchName || '',
+                gstNo: row.original.gstNo || '',
+                address: row.original.address || '',
+                contactName: row.original.contactName || '',
+                designation: row.original.designation || '',
+                mobileNo: row.original.mobileNo || '',
+                email: row.original.email || ''
+              }));
             }}
             style={{
               color: '#f59e0b', // Amber
@@ -744,15 +775,15 @@ const Opportunity = ({ selectedRow }) => {
         );
       }
     },
-    { accessorKey: 'clienttype', header: 'Client Type', size: 100 },
+    { accessorKey: 'docDate', header: 'Date', size: 100 },
     { accessorKey: 'clientName', header: 'Client Name', size: 100 },
-    { accessorKey: 'name', header: 'Name', size: 100 },
-    { accessorKey: 'industry', header: 'Industry', size: 100 },
-    { accessorKey: 'source', header: 'Source', size: 100 },
+    { accessorKey: 'gstNo', header: 'Reg No', size: 100 },
+    { accessorKey: 'contactName', header: 'Name', size: 100 },
+    { accessorKey: 'designation', header: 'Designation', size: 100 },
     { accessorKey: 'mobileNo', header: 'Mobile No', size: 100 },
-    { accessorKey: 'branch', header: 'Branch', size: 100 },
+    { accessorKey: 'branchName', header: 'Branch', size: 100 },
     { accessorKey: 'email', header: 'Email', size: 100 },
-    { accessorKey: 'customer', header: 'Existing Cust', size: 80 }
+    { accessorKey: 'address', header: 'Address', size: 80 }
   ];
   return (
     <>
@@ -776,31 +807,33 @@ const Opportunity = ({ selectedRow }) => {
                   </>
                 )}
               </div>
-              <div>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={handleMyLeads}
-                  startIcon={<PersonPinCircleIcon />}
-                  sx={{
-                    fontWeight: 'bold',
-                    px: 1,
-                    py: 0.5,
-                    fontSize: '14px',
-                    borderRadius: '30px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: loading ? 'none' : 'scale(1.08)',
-                      boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)'
-                    }
-                  }}
-                >
-                  {loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'My Opportunities'}
-                </Button>
-              </div>
+              {!listView && (
+                <div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    onClick={handleMyOpportunities}
+                    startIcon={<PersonPinCircleIcon />}
+                    sx={{
+                      fontWeight: 'bold',
+                      px: 1,
+                      py: 0.5,
+                      fontSize: '14px',
+                      borderRadius: '30px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: loading ? 'none' : 'scale(1.08)',
+                        boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)'
+                      }
+                    }}
+                  >
+                    {loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : 'My Opportunities'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           {listView && !isLoading ? (
@@ -1134,8 +1167,8 @@ const Opportunity = ({ selectedRow }) => {
                                             if (newValue) {
                                               updatedOpportunities[index] = {
                                                 ...updatedOpportunities[index],
-                                                productName: newValue.productName,
-                                                category: newValue.category,
+                                                productName: newValue.productName || '',
+                                                category: newValue.category || '',
                                                 subCategory: newValue.subCategory || ''
                                               };
                                               updatedOpportunitiesErrors[index] = {

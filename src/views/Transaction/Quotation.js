@@ -78,7 +78,7 @@ export const Quotation = ({ selectedRow }) => {
     quoteDate: dayjs(),
     clientName: '',
     branchName: '',
-    oppurtunityName: '',
+    // oppurtunityName: '',
     oppurtunityId: '',
     contactName: '',
     mobileNumber: '',
@@ -114,7 +114,7 @@ export const Quotation = ({ selectedRow }) => {
     status: '',
     address: '',
     iterations: '',
-    oppurtunityName: ''
+    // oppurtunityName: ''
   });
   const [quotationPriceErrors, setQuotationPriceErrors] = useState([
     {
@@ -289,7 +289,7 @@ export const Quotation = ({ selectedRow }) => {
           clientName: lead.clientName,
           branchName: lead.branchName,
           contactName: lead.contactName,
-          oppurtunityName: lead.oppurtunityName,
+          // oppurtunityName: lead.oppurtunityName,
           oppurtunityId: lead.oppurtunityId,
           emailId: lead.email,
           mobileNumber: lead.mobileNumber,
@@ -311,7 +311,7 @@ export const Quotation = ({ selectedRow }) => {
         setQuotationPrice(
           lead.quotationDetailsVO.map((row) => ({
             id: row.id,
-            productName: row.produtName,
+            productName: row.productName,
             category: row.category,
             subCategory: row.subCategory,
             sellingPrice: row.sellingPrice,
@@ -341,7 +341,7 @@ export const Quotation = ({ selectedRow }) => {
     if (!formData.branchName) errors.branchName = 'Branch is required';
     if (!formData.iterations) errors.iterations = 'Iterations is required';
     if (!formData.status) errors.status = 'Status is required';
-    if (!formData.oppurtunityName) errors.oppurtunityName = 'Opportunity Name is required';
+    // if (!formData.oppurtunityName) errors.oppurtunityName = 'Opportunity Name is required';
 
     // Sub-table validation
     let detailTableDataValid = true;
@@ -383,7 +383,7 @@ export const Quotation = ({ selectedRow }) => {
       ...(editId && { id: row.id }),
       category: row.category,
       discount: parseFloat(row.discountPer) || 0,
-      produtName: row.productName,
+      productName: row.productName,
       qty: parseFloat(row.qty) || 0,
       sellingPrice: parseFloat(row.sellingPrice) || 0,
       subCategory: row.subCategory
@@ -406,7 +406,7 @@ export const Quotation = ({ selectedRow }) => {
       mobileNumber: parseInt(formData.mobileNumber),
       narration: formData.narration,
       oppurtunityId: formData.oppurtunityId,
-      oppurtunityName: formData.oppurtunityName,
+      // oppurtunityName: formData.oppurtunityName,
       orgId: orgId,
       status: formData.status,
       quotationDetailsDTO: subTableData
@@ -446,7 +446,7 @@ export const Quotation = ({ selectedRow }) => {
     try {
       const response = await apiCalls(
         'get',
-        `/transaction/getBranchNameFromOpportunity?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+        `/transaction/getBranchNameFromLeadBranch?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
       );
       if (response.status === true) {
         setBranchList(response.paramObjectsMap.branchName || []);
@@ -550,7 +550,7 @@ export const Quotation = ({ selectedRow }) => {
       quoteDate: dayjs(),
       clientName: '',
       branchName: '',
-      oppurtunityName: '',
+      // oppurtunityName: '',
       oppurtunityId: '',
       contactName: '',
       mobileNumber: '',
@@ -799,18 +799,20 @@ export const Quotation = ({ selectedRow }) => {
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={branchList}
-                  getOptionLabel={(option) => (option?.branchName ? `${option.branchName}` : '')}
-                  value={branchList.find((item) => item.branchName === formData.branchName) || null}
+                  getOptionLabel={(option) => (option?.branch ? `${option.branch}` : '')}
+                  value={branchList.find((item) => item.branch === formData.branchName) || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        branchName: newValue.branchName,
+                        branchName: newValue.branch,
                         gstNo: newValue.gstNo,
                         address: newValue.address
                       }));
-                      getOpportunityName(newValue.branchName, formData.clientName);
-                      getIterationId(newValue.branchName, formData.clientName);
+                      // setFieldErrors((prev) => ({ ...prev, branch: '', address: '' }));
+                      // getContactName(newValue.branch, formData.clientName);
+                      getOpportunityName(newValue.branch, formData.clientName);
+                      getIterationId(newValue.branch, formData.clientName);
                       setFieldErrors((prev) => ({ ...prev, branchName: '', address: '' }));
                     } else {
                       setFormData((prev) => ({ ...prev, branchName: '' }));
@@ -866,13 +868,13 @@ export const Quotation = ({ selectedRow }) => {
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={opportunityList}
-                  getOptionLabel={(option) => (option?.productName ? `${option.productName}` : '')}
-                  value={opportunityList.find((item) => item.productName === formData.oppurtunityName) || null}
+                  getOptionLabel={(option) => (option?.docId ? `${option.docId}` : '')}
+                  value={opportunityList.find((item) => item.docId === formData.oppurtunityId) || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        oppurtunityName: newValue.productName || '',
+                        // oppurtunityName: newValue.productName || '',
                         oppurtunityId: newValue.docId || '',
                         contactName: newValue.contactName || '',
                         mobileNumber: newValue.mobileNo || '',
@@ -880,7 +882,7 @@ export const Quotation = ({ selectedRow }) => {
                       }));
                       setFieldErrors((prev) => ({
                         ...prev,
-                        oppurtunityName: '',
+                        // oppurtunityName: '',
                         oppurtunityId: '',
                         contactName: '',
                         mobileNumber: '',
@@ -890,7 +892,7 @@ export const Quotation = ({ selectedRow }) => {
                     } else {
                       setFormData((prev) => ({
                         ...prev,
-                        oppurtunityName: '',
+                        // oppurtunityName: '',
                         oppurtunityId: '',
                         contactName: '',
                         mobileNumber: '',
@@ -903,18 +905,18 @@ export const Quotation = ({ selectedRow }) => {
                       {...params}
                       label={
                         <span>
-                          Opportunity Name <span className="asterisk">*</span>
+                          Oppurtunity Id <span className="asterisk">*</span>
                         </span>
                       }
                       size="small"
                       fullWidth
-                      error={!!fieldErrors.oppurtunityName}
-                      helperText={fieldErrors.oppurtunityName}
+                      error={!!fieldErrors.oppurtunityId}
+                      helperText={fieldErrors.oppurtunityId}
                     />
                   )}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label={
                     <span>
@@ -929,7 +931,7 @@ export const Quotation = ({ selectedRow }) => {
                   value={formData.oppurtunityId}
                   onChange={handleInputChange}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Contact Name"
@@ -1160,7 +1162,7 @@ export const Quotation = ({ selectedRow }) => {
                                           type="number"
                                           sx={{ minWidth: '100px' }}
                                           value={row.sellingPrice}
-                                          disabled
+                                          // disabled
                                           onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                           error={!!quotationPriceErrors[index]?.sellingPrice}
                                           helperText={quotationPriceErrors[index]?.sellingPrice}

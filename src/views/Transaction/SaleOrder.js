@@ -112,11 +112,23 @@ const SalesOrder = ({ selectedRow }) => {
     []
   );
   const summaryValues = useMemo(() => {
-    const grossAmount = salesOrderDetails.reduce((sum, item) => sum + (parseFloat(item.sellingPrice) || 0) * (parseInt(item.qty) || 0), 0);
+    // 1) Gross Amount = Σ (sellingPrice * qty)
+    const grossAmount = salesOrderDetails.reduce((sum, item) => {
+      const lineTotal = (parseFloat(item.sellingPrice) || 0) * (parseInt(item.qty) || 0);
+      return sum + lineTotal;
+    }, 0);
 
-    const totalDiscount = salesOrderDetails.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
+    // 2) Total Discount = Σ (lineTotal × discount%)
+    const totalDiscount = salesOrderDetails.reduce((sum, item) => {
+      const lineTotal = (parseFloat(item.sellingPrice) || 0) * (parseInt(item.qty) || 0);
+      const lineDiscount = ((parseFloat(item.discount) || 0) / 100) * lineTotal;
+      return sum + lineDiscount;
+    }, 0);
 
+    // 3) Net Amount = Gross - Discount
     const netAmount = grossAmount - totalDiscount;
+
+    // 4) Discount % of overall gross
     const discountPercentage = grossAmount > 0 ? (totalDiscount / grossAmount) * 100 : 0;
 
     return {
@@ -127,7 +139,6 @@ const SalesOrder = ({ selectedRow }) => {
       amountInWords: numberToWords(netAmount)
     };
   }, [salesOrderDetails]);
-
   // Number to words converter
   function numberToWords(num) {
     const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -235,11 +246,12 @@ const SalesOrder = ({ selectedRow }) => {
       return error;
     }
   };
-  const getProductName = async (oppurtunityId, clientName) => {
+  const getProductName = async (quotationId, clientName) => {
     try {
       const response = await apiCalls(
         'get',
-        `/transaction/getProductNameFromLeadScreen?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`
+        `/transaction/getProductNameFromQuotation?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}&quotationId=${quotationId}`
+        // `/transaction/getProductNameFromLeadScreen?clientName=${encodeURIComponent(clientName)}&oppurtunityId=${oppurtunityId}&orgId=${orgId}`
       );
       if (response.status === true) {
         setProductList(response.paramObjectsMap.productNameDetails || []);
@@ -552,11 +564,6 @@ const SalesOrder = ({ selectedRow }) => {
 
     if (!formData.branchName.trim()) {
       newErrors.branch = 'Branch name is required';
-      isValid = false;
-    }
-
-    if (!formData.quotationName.trim()) {
-      newErrors.quotationName = 'Quotation Name is required';
       isValid = false;
     }
     if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNumber)) {
@@ -960,6 +967,58 @@ const SalesOrder = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={quotationList}
+                    getOptionLabel={(option) => (option?.docId ? `${option.docId}` : '')}
+                    value={quotationList.find((item) => item.docId === formData.quotationId) || null}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          // quotationName: newValue.oppurtunityName,
+                          quotationId: newValue.docId,
+                          contactName: newValue.contactName,
+                          mobileNumber: newValue.mobileNo,
+                          email: newValue.email
+                        }));
+                        getProductName(newValue.docId, formData.clientName);
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          // quotationName: '',
+                          quotationId: '',
+                          contactName: '',
+                          mobileNumber: '',
+                          email: ''
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          // quotationName: '',
+                          quotationId: '',
+                          contactName: '',
+                          mobileNumber: '',
+                          email: ''
+                        }));
+                        setFieldErrors((prev) => ({ ...prev, quotationId: 'Quotation Id is required' }));
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={
+                          <span>
+                            Quotation Id <span className="asterisk">*</span>
+                          </span>
+                        }
+                        size="small"
+                        fullWidth
+                        error={!!fieldErrors.quotationId}
+                        helperText={fieldErrors.quotationId}
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={quotationList}
                     getOptionLabel={(option) => (option?.oppurtunityName ? `${option.oppurtunityName}` : '')}
                     value={quotationList.find((item) => item.oppurtunityName === formData.quotationName) || null}
                     onChange={(event, newValue) => {
@@ -1023,7 +1082,7 @@ const SalesOrder = ({ selectedRow }) => {
                     helperText={fieldErrors.quotationId}
                     onBlur={(e) => validateMainField('quotationId', e.target.value)}
                   />
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label="Contact Name"
@@ -1128,15 +1187,15 @@ const SalesOrder = ({ selectedRow }) => {
                                   <th className="px-2 py-2 text-white text-center">Sub Category</th>
                                   <th className="px-2 py-2 text-white text-center">Price *</th>
                                   <th className="px-2 py-2 text-white text-center">Qty *</th>
-                                  <th className="px-2 py-2 text-white text-center">Discount</th>
+                                  <th className="px-2 py-2 text-white text-center">Discount%</th>
                                   <th className="px-2 py-2 text-white text-center">Amount</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {salesOrderDetails.map((detail, index) => {
-                                  const amount =
-                                    (parseFloat(detail.sellingPrice) || 0) * (parseInt(detail.qty) || 0) -
-                                    (parseFloat(detail.discount) || 0);
+                                  const total = (parseFloat(detail.sellingPrice) || 0) * (parseInt(detail.qty) || 0);
+                                  const discountAmt = ((parseFloat(detail.discount) || 0) / 100) * total;
+                                  const amount = total - discountAmt;
                                   return (
                                     <tr key={index}>
                                       <td className="border px-2 py-2 text-center">
@@ -1245,7 +1304,6 @@ const SalesOrder = ({ selectedRow }) => {
                                           inputProps={{ min: 1 }}
                                         />
                                       </td>
-
                                       <td>
                                         <TextField
                                           fullWidth

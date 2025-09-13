@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import UnAssignedLeads from 'views/Reports/UnAssignedLeads';
+import LeadJourney from 'views/Reports/LeadJourney';
 // import LiveStaffTracker from 'views/Tracking/LiveStaffTracker';
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
@@ -44,12 +45,10 @@ const Port = Loadable(lazy(() => import('views/basicMaster/Port')));
 const ListOfValues = Loadable(lazy(() => import('views/basicMaster/ListOfValues')));
 const ScreenAccess = Loadable(lazy(() => import('views/basicMaster/ScreenAccess')));
 
-
 // documents
 const DocumentType = Loadable(lazy(() => import('views/Documents/documentType')));
 const DocumentTypeMapping = Loadable(lazy(() => import('views/Documents/documentTypeMapping')));
 const MultipleDocumentIdGeneration = Loadable(lazy(() => import('views/Documents/multipleDocumentIdGeneration')));
-
 
 // companySetup
 const CreateCompany = Loadable(lazy(() => import('views/companySetup/CreateCompany')));
@@ -60,7 +59,6 @@ const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup
 // Activities
 const Active = Loadable(lazy(() => import('views/Activities/Active')));
 const Schedule = Loadable(lazy(() => import('views/Activities/Schedule')));
-
 
 // Transaction
 const Lead = Loadable(lazy(() => import('views/Transaction/Lead')));
@@ -76,7 +74,7 @@ const Rate = Loadable(lazy(() => import('views/RateManagement/Rate')));
 const Dealer = Loadable(lazy(() => import('views/Dealers/Dealers')));
 
 //Location Tracking
-const LiveStaffTracker = Loadable(lazy(() => import("views/Tracking/LiveStaffTracker")));
+const LiveStaffTracker = Loadable(lazy(() => import('views/Tracking/LiveStaffTracker')));
 
 // NominationEnquiries
 const NominationEnquiries = Loadable(lazy(() => import('views/NominationEnquiries/AllNominationEnquiries')));
@@ -88,7 +86,12 @@ const NominationEnquiries = Loadable(lazy(() => import('views/NominationEnquirie
 
 const FinanceRoute = {
   path: '/',
-  element: <PrivateRoute> <MainLayout /></PrivateRoute>,
+  element: (
+    <PrivateRoute>
+      {' '}
+      <MainLayout />
+    </PrivateRoute>
+  ),
   children: [
     {
       path: '/',
@@ -102,7 +105,12 @@ const FinanceRoute = {
     // companysetup
     {
       path: '/companysetup/createcompany',
-      element: <PrivateRoute> <CreateCompany /></PrivateRoute>
+      element: (
+        <PrivateRoute>
+          {' '}
+          <CreateCompany />
+        </PrivateRoute>
+      )
     },
     {
       path: '/companysetup/companysetup',
@@ -298,6 +306,10 @@ const FinanceRoute = {
       path: '/Tracking/LiveStaffTracker',
       element: <LiveStaffTracker />
     },
+    {
+      path: '/Report/LeadJourney',
+      element: <LeadJourney />
+    }
   ]
 };
 
