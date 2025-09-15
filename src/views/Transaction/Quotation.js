@@ -328,7 +328,7 @@ export const Quotation = ({ selectedRow }) => {
       }
     } catch (error) {
       console.error('Error fetching lead details:', error);
-      showToast('error', 'Failed to fetch lead details');
+      // showToast('error', 'Failed to fetch lead details');
       setIsLoading(false);
     }
   };
@@ -1057,7 +1057,7 @@ export const Quotation = ({ selectedRow }) => {
                             >
                               <table className="table table-bordered">
                                 <thead>
-                                  <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
+                                  <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
                                     <th className="table-header">Action</th>
                                     <th className="table-header">#</th>
                                     <th className="table-header">Product Name</th>

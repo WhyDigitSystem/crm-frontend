@@ -893,11 +893,11 @@ const EmployeeDetails = () => {
                     multiline
                     startIcon={<CloudUploadIcon />}
                     sx={{
-                      color: '#c156ff',
-                      borderColor: '#c156ff',
+                      color: '#3b82f6',
+                      borderColor: '#3b82f6',
                       borderRadius: '12px',
                       '&:hover': {
-                        borderColor: '#c156ff',
+                        borderColor: '#3b82f6',
                         backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
                       }
                     }}
@@ -912,7 +912,7 @@ const EmployeeDetails = () => {
                       variant="contained"
                       sx={{
                         whiteSpace: 'nowrap',
-                        color: '#c156ff'
+                        color: '#3b82f6'
                       }}
                       onClick={handleOpen}
                     >
@@ -926,7 +926,7 @@ const EmployeeDetails = () => {
                       variant="h5"
                       sx={{
                         whiteSpace: 'nowrap',
-                        color: '#c156ff'
+                        color: '#3b82f6'
                       }}
                     >
                       Emp Img

@@ -2,18 +2,18 @@ import React from 'react';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import { TabContext } from '@mui/lab';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import { Chip } from '@mui/material';
+import { Button } from '@mui/material';
 import { IconButton } from '@mui/material';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, Table, TableBody, TableCell, TableHead, TableRow, TableContainer } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import Tab from '@mui/material/Tab';
+import GetAppIcon from '@mui/icons-material/GetApp'; 
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import apiCalls from 'apicall';
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -79,6 +79,70 @@ function QuotationReport() {
     branch: '',
     productName: ''
   });
+  const groupByDocId = (data) => {
+    return data.reduce((acc, item) => {
+      if (!acc[item.docId]) {
+        acc[item.docId] = {
+          docId: item.docId,
+          docDate: item.docDate,
+          count: item.count,
+          clientName: item.clientName,
+          contactName: item.contactName,
+          email: item.email,
+          status: item.status,
+          screenCode: item.screenCode,
+          children: []
+        };
+      }
+      acc[item.docId].children.push({
+        subCategory: item.subCategory,
+        category: item.category,
+        productName: item.productName,
+        qty: item.qty,
+        sellingPrice: item.sellingPrice,
+        amount: item.amount
+      });
+      return acc;
+    }, {});
+  };
+  const groupQuoteRevisions = (data) => {
+    return data.reduce((acc, item) => {
+      if (!acc[item.docId]) {
+        acc[item.docId] = {
+          docId: item.docId,
+          docDate: item.docDate,
+          clientName: item.clientName,
+          branchName: item.branchName,
+          contactName: item.contactName,
+          email: item.email,
+          mobileNumber: item.mobileNumber,
+          gstNo: item.gstNo,
+          status: item.status,
+          iterations: item.iterations,
+          grossAmount: item.grossAmount,
+          discount: item.discount,
+          netAmount: item.netAmount,
+          narration: item.narration,
+          count: item.count,
+          screenCode: item.screenCode,
+          sourceScreenName: item.sourceScreenName,
+          children: []
+        };
+      }
+
+      acc[item.docId].children.push({
+        subCategory: item.subCategory,
+        category: item.category,
+        productName: item.productName,
+        qty: item.qty,
+        sellingPrice: item.sellingPrice,
+        amount: item.amount
+      });
+
+      return acc;
+    }, {});
+  };
+
   const handleClear = () => {
     setListView(false);
     setFormData({
@@ -134,110 +198,6 @@ function QuotationReport() {
       console.error('Error fetching gate passes:', error);
     }
   };
-  const reportColumns = [
-    countOpen
-      ? { accessorKey: 'docId', header: 'Doc Id', size: 80 }
-      : {
-          accessorKey: 'docId',
-          header: 'Doc Id',
-          size: 100,
-          Cell: ({ row }) => {
-            const docId = row.original.docId;
-            const screenCode = row.original.screenCode;
-            return (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDocClick(docId, screenCode);
-                }}
-                style={{
-                  color: '#f59e0b',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s, text-shadow 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#fbbf24';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#f59e0b';
-                }}
-              >
-                {docId}
-              </a>
-            );
-          }
-        },
-    countOpen
-      ? { accessorKey: 'iterations', header: 'Iterations', size: 80 }
-      : {
-          accessorKey: 'count',
-          header: 'No. of Iterations',
-          size: 100,
-          Cell: ({ row }) => {
-            const docId = row.original.docId;
-            const count = row.original.count;
-            return (
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleCountClick(docId);
-                }}
-                style={{
-                  color: '#f59e0b',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s, text-shadow 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.color = '#fbbf24';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = '#f59e0b';
-                }}
-              >
-                {count}
-              </a>
-            );
-          }
-        },
-
-    { accessorKey: 'docDate', header: 'Date', size: 80 },
-    { accessorKey: 'subCategory', header: 'Sub Category', size: 80 },
-    { accessorKey: 'category', header: 'Category', size: 80 },
-    { accessorKey: 'productName', header: 'Product Name', size: 80 },
-    {
-      accessorKey: 'qty',
-      header: 'Qty',
-      size: 50,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'center', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-      )
-    },
-    {
-      accessorKey: 'sellingPrice',
-      header: 'SP',
-      size: 50,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-      )
-    },
-    {
-      accessorKey: 'amount',
-      header: 'Amt',
-      size: 50,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-      )
-    },
-    { accessorKey: 'clientName', header: 'Client Name', size: 80 },
-    { accessorKey: 'contactName', header: 'Contact Name', size: 70 },
-    { accessorKey: 'email', header: 'Email', size: 100 },
-    { accessorKey: 'status', header: 'Status', size: 80 }
-  ];
-
   const handleGo = async () => {
     const errors = {};
     if (Object.keys(errors).length === 0) {
@@ -257,8 +217,8 @@ function QuotationReport() {
           );
         }
         if (response.status === true) {
-          console.log('Response:', response);
-          setRowData(response.paramObjectsMap.quotationReportDeatils);
+          const grouped = Object.values(groupByDocId(response.paramObjectsMap.quotationReportDeatils));
+          setRowData(grouped);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -277,7 +237,7 @@ function QuotationReport() {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-  const handleDocClick = async (docId, screenCode) => {
+  const handleDocIdClick = async (docId, screenCode) => {
     setModalOpen(true);
     try {
       const response = await apiCalls('get', `/transaction/getQuotationByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`);
@@ -290,12 +250,13 @@ function QuotationReport() {
       console.error('Error fetching data:', error);
     }
   };
-  const handleCountClick = async (docId) => {
+  const handleIterationClick = async (docId) => {
     setCountOpen(true);
     try {
       const response = await apiCalls('get', `/transaction/getCountQuoteRevision?docId=${docId}&orgId=${orgId}`);
-      if (response.status === true) {
-        setCountData(response.paramObjectsMap.quoteRevisionVO);
+      if (response.status) {
+        const grouped = Object.values(groupQuoteRevisions(response.paramObjectsMap.quoteRevisionVO));
+        setCountData(grouped);
       } else {
         console.error('API Error:', response);
       }
@@ -770,48 +731,107 @@ function QuotationReport() {
           maxWidth="xl"
           PaperComponent={PaperComponent}
           aria-labelledby="draggable-dialog-title"
-          PaperProps={{
-            sx: { p: 0, m: 0, borderRadius: 1 }
-          }}
         >
           <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
             Quotation Report
-            <IconButton
-              onClick={() => setListView(false)}
-              sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
-              }}
-            >
+            {/* Close Button */}
+            <IconButton onClick={() => setListView(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
               <CloseIcon />
             </IconButton>
+            {/* Excel Download */}
+            <IconButton onClick={handleDownloadExcel} sx={{ position: 'absolute', right: 50, top: 8, color: 'white' }}>
+              <GetAppIcon /> {/* ✅ Excel icon */}
+            </IconButton>
+            {/* PDF Download */}
+            <IconButton onClick={handleDownloadPdf} sx={{ position: 'absolute', right: 90, top: 8, color: 'white' }}>
+              <PictureAsPdfIcon /> {/* ✅ PDF icon */}
+            </IconButton>
           </DialogTitle>
-
-          <DialogContent
-            sx={{
-              p: 0,
-              backgroundColor: '#0f0f1a'
-            }}
-          >
-            <CommonReportTable
-              data={rowData}
-              columns={reportColumns}
-              isListView={listView}
-              fileName={'Quotation Report'}
-              handleDownloadPdf={() =>
-                handleDownloadPdf({
-                  logo: listViewData[0]?.companyLogo,
-                  columns: reportColumns,
-                  data: rowData,
-                  formData,
-                  fileName: 'Quotation Report',
-                  loginUserName
-                })
-              }
-              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
-            />
+          <DialogContent sx={{ p: 0 }}>
+            <TableContainer>
+              <Table size="small" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Doc Id</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>No. of Iterations</TableCell>
+                    <TableCell>Sub Category</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Product Name</TableCell>
+                    <TableCell align="center">Qty</TableCell>
+                    <TableCell align="right">SP</TableCell>
+                    <TableCell align="right">Amount</TableCell>
+                    <TableCell>Client Name</TableCell>
+                    <TableCell>Contact Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rowData.map((doc, docIndex) => {
+                    const totalChildren = doc.children.length;
+                    return doc.children.map((child, childIndex) => (
+                      <TableRow key={`${doc.docId}-${childIndex}`}>
+                        {childIndex === 0 && (
+                          <>
+                            <TableCell
+                              rowSpan={totalChildren}
+                              sx={{ color: 'blue', cursor: 'pointer', textDecoration: 'none' }}
+                              onClick={() => handleDocIdClick(doc.docId, doc.screenCode)}
+                            >
+                              {doc.docId}
+                            </TableCell>
+                            <TableCell rowSpan={totalChildren}>{dayjs(doc.docDate).format('DD/MM/YYYY')}</TableCell>
+                            <TableCell rowSpan={totalChildren} align="center">
+                              <Chip
+                                label={`View (${doc.count})`}
+                                color="secondary"
+                                size="small"
+                                clickable
+                                onClick={() => handleIterationClick(doc.docId, doc.count)}
+                                sx={{ fontWeight: 600 }}
+                              />
+                            </TableCell>
+                          </>
+                        )}
+                        <TableCell>{child.subCategory}</TableCell>
+                        <TableCell>{child.category}</TableCell>
+                        <TableCell>{child.productName}</TableCell>
+                        <TableCell align="center">{child.qty}</TableCell>
+                        <TableCell align="right">
+                          {child.sellingPrice ? Number(child.sellingPrice).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '-'}
+                        </TableCell>
+                        <TableCell align="right">
+                          {child.amount ? Number(child.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '-'}
+                        </TableCell>
+                        {childIndex === 0 && (
+                          <>
+                            <TableCell rowSpan={totalChildren}>{doc.clientName}</TableCell>
+                            <TableCell rowSpan={totalChildren}>{doc.contactName}</TableCell>
+                            <TableCell rowSpan={totalChildren}>{doc.email}</TableCell>
+                            {/* <TableCell rowSpan={totalChildren}>{doc.status}</TableCell> */}
+                            <TableCell rowSpan={totalChildren} align="center">
+                              <Chip
+                                label={doc.status}
+                                size="small"
+                                sx={{
+                                  fontWeight: 600,
+                                  color: 'white',
+                                  ...(doc.status === 'APPROVED' && { backgroundColor: '#4caf50' }), // Green
+                                  ...(doc.status === 'REJECTED' && { backgroundColor: '#f44336' }), // Red
+                                  ...(doc.status === 'NEW' && { backgroundColor: '#2196f3' }), // Blue
+                                  ...(doc.status === 'REVISED' && { backgroundColor: '#ff9800' }) // Orange
+                                }}
+                              />
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    ));
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </DialogContent>
         </Dialog>
         <>
@@ -836,30 +856,94 @@ function QuotationReport() {
             </DialogContent>
           </Dialog>
         </>
-        <>
-          <Dialog
-            open={countOpen}
-            maxWidth={'xl'}
-            fullWidth={true}
-            onClose={() => setCountOpen(false)}
-            PaperComponent={PaperComponent}
-            aria-labelledby="draggable-dialog-title"
-          >
-            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <h6 style={{ margin: 0, textAlign: 'center' }}>Report Details</h6>
-                <IconButton onClick={() => setCountOpen(false)} color="error">
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-            </DialogTitle>
-            <DialogContent>
-              {countData && (
-                <>{isLoading ? <FullScreenLoader open={true} /> : <CommonReportTable data={countData} columns={reportColumns} />}</>
-              )}
-            </DialogContent>
-          </Dialog>
-        </>
+        <Dialog
+          open={countOpen}
+          maxWidth="xl"
+          fullWidth
+          onClose={() => setCountOpen(false)}
+          PaperComponent={PaperComponent}
+          aria-labelledby="draggable-dialog-title"
+        >
+          <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <h6 style={{ margin: 0, textAlign: 'center' }}>Report Details</h6>
+              <IconButton onClick={() => setCountOpen(false)} color="error">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+
+          <DialogContent>
+            {countData && (
+              <>
+                {isLoading ? (
+                  <FullScreenLoader open={true} />
+                ) : (
+                  <Table size="small" stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Doc Id</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Iterations</TableCell>
+                        <TableCell>Client Name</TableCell>
+                        <TableCell>Contact</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell align="right">Net Amount</TableCell>
+                        <TableCell>Sub Category</TableCell>
+                        <TableCell>Category</TableCell>
+                        <TableCell>Product</TableCell>
+                        <TableCell align="center">Qty</TableCell>
+                        <TableCell align="right">SP</TableCell>
+                        <TableCell align="right">Amount</TableCell>
+                      </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                      {countData.map((doc, docIndex) => {
+                        const totalChildren = doc.children.length;
+                        return doc.children.map((child, childIndex) => (
+                          <TableRow key={`${doc.docId}-${childIndex}`}>
+                            {childIndex === 0 && (
+                              <>
+                                <TableCell rowSpan={totalChildren}>{doc.docId}</TableCell>
+                                <TableCell rowSpan={totalChildren}>{dayjs(doc.docDate).format('DD/MM/YYYY')}</TableCell>
+                                <TableCell rowSpan={totalChildren}>{doc.iterations}</TableCell>
+                                <TableCell rowSpan={totalChildren}>{doc.clientName}</TableCell>
+                                <TableCell rowSpan={totalChildren}>{doc.contactName}</TableCell>
+                                <TableCell rowSpan={totalChildren}>
+                                  <Chip
+                                    label={doc.status}
+                                    size="small"
+                                    sx={{
+                                      color: doc.status === 'APPROVED' ? 'white' : doc.status === 'REJECTED' ? 'white' : 'white',
+                                      backgroundColor: doc.status === 'APPROVED' ? 'green' : doc.status === 'REJECTED' ? 'red' : '#1976d2',
+                                      fontWeight: 600
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell rowSpan={totalChildren} align="right">
+                                  {doc.netAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                </TableCell>
+                              </>
+                            )}
+
+                            {/* Child rows */}
+                            <TableCell>{child.subCategory}</TableCell>
+                            <TableCell>{child.category}</TableCell>
+                            <TableCell>{child.productName}</TableCell>
+                            <TableCell align="center">{child.qty}</TableCell>
+                            <TableCell align="right">{child.sellingPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell align="right">{child.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                          </TableRow>
+                        ));
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

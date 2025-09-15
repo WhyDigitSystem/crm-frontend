@@ -767,11 +767,11 @@ export const CustomerDetails = () => {
                   multiline
                   startIcon={<CloudUploadIcon />}
                   sx={{
-                    color: '#c156ff',
-                    borderColor: '#c156ff',
+                    color: '#3b82f6',
+                    borderColor: '#3b82f6',
                     borderRadius: '12px',
                     '&:hover': {
-                      borderColor: '#c156ff',
+                      borderColor: '#3b82f6',
                       backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
                     }
                   }}
@@ -786,7 +786,7 @@ export const CustomerDetails = () => {
                     variant="contained"
                     sx={{
                       whiteSpace: 'nowrap',
-                      color: '#c156ff'
+                      color: '#3b82f6'
                     }}
                     onClick={handleOpen}
                   >
@@ -862,7 +862,7 @@ export const CustomerDetails = () => {
                         <div className="table-responsive">
                           <table className="table table-bordered">
                             <thead>
-                              <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
+                              <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                   Action
                                 </th>
@@ -1015,7 +1015,7 @@ export const CustomerDetails = () => {
                         <div className="table-responsive">
                           <table className="table table-bordered">
                             <thead>
-                              <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
+                              <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                   Action
                                 </th>

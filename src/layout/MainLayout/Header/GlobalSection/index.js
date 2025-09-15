@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
@@ -52,7 +51,6 @@ const GlobalSection = () => {
   const [clientVO, setClientVO] = useState([]);
   const [globalParameter, setGlobalParameter] = useState([]);
   const [branchName, setBranchName] = useState('');
-
 
   const anchorRef = useRef(null);
 
@@ -119,7 +117,6 @@ const GlobalSection = () => {
     }
   };
 
-
   const getGlobalParameter = async () => {
     try {
       const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userid=${userId}`);
@@ -185,7 +182,6 @@ const GlobalSection = () => {
     setFinYearValue(event.target.value);
   };
 
-
   return (
     <>
       <Box
@@ -204,11 +200,11 @@ const GlobalSection = () => {
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
               transition: 'all .2s ease-in-out',
-              background: '#feebf6',
-              color: '#c156ff',
+              background: theme.palette.primary.light, // ✅ use theme instead of hex
+              color: theme.palette.primary.main, // ✅ theme primary
               '&[aria-controls="menu-list-grow"],&:hover': {
-                background: '#c156ff', // slightly darker shade for hover
-                color: '#ffff'
+                background: theme.palette.primary.main, // ✅ main on hover
+                color: theme.palette.primary.contrastText // ✅ auto contrast text
               }
             }}
             ref={anchorRef}
@@ -243,9 +239,16 @@ const GlobalSection = () => {
           <Transitions position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
             <Paper sx={{ width: 300 }}>
               <ClickAwayListener onClickAway={handleClose}>
-                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]} sx={{
-                  borderTop: `4px solid ${theme.palette.primary.main}`
-                }}>
+                <MainCard
+                  border={false}
+                  elevation={16}
+                  content={false}
+                  boxShadow
+                  shadow={theme.shadows[16]}
+                  sx={{
+                    borderTop: `4px solid ${theme.palette.primary.main}`
+                  }}
+                >
                   <Grid container direction="column" spacing={2}>
                     <Grid item xs={12}>
                       <Grid container alignItems="center" justifyContent="space-between" sx={{ pt: 2, px: 2 }}>

@@ -6,37 +6,30 @@ import React from 'react';
 
 const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px', isLoading }) => {
   const anchorRef = React.useRef(null);
+  const theme = useTheme();
 
   return (
     <Tooltip title={title} placement={placement}>
-      <ButtonBase
-        sx={{ borderRadius: '10px', marginRight: margin }}
-        onClick={onClick}
-        disabled={isLoading}
-      >
+      <ButtonBase sx={{ borderRadius: '10px', marginRight: margin }} onClick={onClick} disabled={isLoading}>
         <Avatar
           variant="rounded"
           sx={{
             width: '35px',
             height: '35px',
             transition: 'all .2s ease-in-out',
-            background: '#feebf6',
-            color: '#c156ff',
+            background: theme.palette.primary.light, // light tone
+            color: theme.palette.primary.main, // main tone
             borderRadius: '10px',
             '&:hover': {
-              background: '#c156ff',
-              color: '#fff'
+              background: theme.palette.primary.main, // main tone on hover
+              color: theme.palette.primary.contrastText // auto contrast text
             }
           }}
           ref={anchorRef}
           aria-haspopup="true"
           color="inherit"
         >
-          {isLoading ? (
-            <CircularProgress size={22} color="inherit" />
-          ) : (
-            <Icon size="1.3rem" stroke={1.5} />
-          )}
+          {isLoading ? <CircularProgress size={22} color="inherit" /> : <Icon size="1.3rem" stroke={1.5} />}
         </Avatar>
       </ButtonBase>
     </Tooltip>

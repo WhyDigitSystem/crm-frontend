@@ -708,7 +708,7 @@ const Rate = () => {
                             <div className="table-responsive">
                               <table className="table table-bordered ">
                                 <thead>
-                                  <tr style={{ background: '#c156ff', color: '#ede7f6' }}>
+                                  <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
                                     <th className="table-header">Action</th>
                                     <th className="table-header">#</th>
                                     <th className="table-header">Type</th>

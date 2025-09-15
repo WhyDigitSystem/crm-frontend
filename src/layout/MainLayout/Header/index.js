@@ -82,9 +82,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
               height: 35,
               transition: 'all .2s ease-in-out',
               background: '#feebf6',
-              color: '#c156ff',
+              color: '#3b82f6',
               '&:hover': {
-                background: '#c156ff',
+                background: '#3b82f6',
                 color: '#fff'
               }
             }}
