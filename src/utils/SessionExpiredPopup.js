@@ -13,7 +13,6 @@ const SessionExpiredPopup = ({ open, onClose }) => {
   return (
     <Dialog open={open}>
       <DialogTitle>
-        {' '}
         <img src="https://cdn-icons-gif.flaticon.com/12146/12146036.gif" width={40} height={40}></img>
         <Typography className="mt-4" variant="h4" component="span" style={{ marginLeft: 10 }}>
           Session Expired

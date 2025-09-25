@@ -4,8 +4,8 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
-import UnAssignedLeads from 'views/Reports/UnAssignedLeads';
-import LeadJourney from 'views/Reports/LeadJourney';
+const StaticReport = Loadable(lazy(() => import('views/Reports/StaticReport')));
+const StaticReport2 = Loadable(lazy(() => import('views/Reports/StaticReport2')));
 // import LiveStaffTracker from 'views/Tracking/LiveStaffTracker';
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
@@ -17,6 +17,8 @@ const SalesOrderReport = Loadable(lazy(() => import('views/Reports/SalesOrderRep
 const ActiveReport = Loadable(lazy(() => import('views/Reports/ActiveReport')));
 const ScheduleReport = Loadable(lazy(() => import('views/Reports/ScheduleReport')));
 const DealerReport = Loadable(lazy(() => import('views/Reports/DealerReport')));
+const UnAssignedLeads = Loadable(lazy(() => import('views/Reports/UnAssignedLeads')));
+const LeadJourney = Loadable(lazy(() => import('views/Reports/LeadJourney')));
 
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
@@ -309,6 +311,14 @@ const FinanceRoute = {
     {
       path: '/Report/LeadJourney',
       element: <LeadJourney />
+    },
+    {
+      path: '/Report/StaticReport',
+      element: <StaticReport />
+    },
+    {
+      path: '/Report/StaticReportT',
+      element: <StaticReport2 />
     }
   ]
 };

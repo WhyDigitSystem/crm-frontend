@@ -85,6 +85,20 @@ const reportChildren = [
         url: '/Report/LeadJourney',
         icon: IconTimeline
     },
+    hasScreenAccess('SR') && {
+        id: 'StaticReport',
+        title: 'Static Report',
+        type: 'item',
+        url: '/Report/StaticReport',
+        icon: IconTimeline
+    },
+    hasScreenAccess('SRT') && {
+        id: 'StaticReportT',
+        title: 'Static Report2',
+        type: 'item',
+        url: '/Report/StaticReportT',
+        icon: IconTimeline
+    },
 ].filter(Boolean);
 
 const Reports =

@@ -1,6 +1,6 @@
 // utils/authUtils.js
 
-import apiCalls from 'apicall';
+import apiCalls from '../apicall';
 import { handleSessionExpiration } from './sessionUtils';
 
 export const refreshToken = async (tokenId, userName) => {
