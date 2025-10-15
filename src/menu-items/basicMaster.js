@@ -18,6 +18,7 @@ import {
   IconBox,
   IconCurrencyRupee
 } from '@tabler/icons-react';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 
 // screen access utility
 const hasScreenAccess = (screenId) => {
@@ -145,6 +146,13 @@ const basicMasterChildren = [
     type: 'item',
     url: '/basicMaster/listOfValues',
     icon: IconShieldLock
+  },
+  hasScreenAccess('WH') && {
+    id: 'warehouse',
+    title: 'Warehouse',
+    type: 'item',
+    url: '/basicMaster/warehouse',
+    icon: Inventory2Icon
   },
 ].filter(Boolean);
 

@@ -1163,11 +1163,11 @@ const Lead = ({ selectedRow }) => {
                       multiline
                       startIcon={<CloudUploadIcon />}
                       sx={{
-                        color: '#3b82f6',
-                        borderColor: '#3b82f6',
+                        color: '#374151',
+                        borderColor: '#374151',
                         borderRadius: '12px',
                         '&:hover': {
-                          borderColor: '#3b82f6',
+                          borderColor: '#374151',
                           backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
                         }
                       }}
@@ -1182,7 +1182,7 @@ const Lead = ({ selectedRow }) => {
                         variant="contained"
                         sx={{
                           whiteSpace: 'nowrap',
-                          color: '#3b82f6'
+                          color: '#374151'
                         }}
                         onClick={handleOpen}
                       >
@@ -1270,7 +1270,7 @@ const Lead = ({ selectedRow }) => {
                           <div className="table-responsive">
                             <table className="table table-bordered">
                               <thead>
-                                <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
+                                <tr style={{ background: '#374151', color: '#ede7f6' }}>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                     Action
                                   </th>
@@ -1440,7 +1440,7 @@ const Lead = ({ selectedRow }) => {
                           <div className="table-responsive">
                             <table className="table table-bordered">
                               <thead>
-                                <tr style={{ background: '#3b82f6', color: '#ede7f6' }}>
+                                <tr style={{ background: '#374151', color: '#ede7f6' }}>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                     Action
                                   </th>

@@ -122,7 +122,7 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
         //   }}
         //   {...others}
         // >
-        <Box sx={{ p: 0, pl: card === false ? 0 : 1, marginTop: '-20px', marginBottom: '0px' }}>
+        <Box sx={{ p: 0, pl: card === false ? 0 : 1, marginTop: '-5px', marginBottom: '0px' }}>
           <Grid
             container
             direction={rightAlign ? 'row' : 'column'}

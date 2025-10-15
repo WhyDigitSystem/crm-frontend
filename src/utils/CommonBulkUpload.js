@@ -157,7 +157,7 @@ const CommonBulkUpload = ({
               variant="contained"
               color="secondary"
               startIcon={<FaCloudUploadAlt />}
-              style={{ textTransform: 'none', padding: '6px 12px', backgroundColor: '#3b82f6' }}
+              style={{ textTransform: 'none', padding: '6px 12px', backgroundColor: '#374151' }}
             >
               {uploadText}
               <VisuallyHiddenInput onChange={handleFileChange} />
@@ -175,7 +175,7 @@ const CommonBulkUpload = ({
                   marginLeft: '10px',
                   textTransform: 'none',
                   padding: '2px 4px',
-                  color: '#3b82f6'
+                  color: '#374151'
                 }}
               >
                 Cancel
@@ -214,10 +214,10 @@ const CommonBulkUpload = ({
           </div>
         </DialogContent>
         <DialogActions className="d-flex justify-content-between p-2">
-          <Button onClick={handleClose} color="secondary" style={{ textTransform: 'none', padding: '4px 8px', color: '#3b82f6' }}>
+          <Button onClick={handleClose} color="secondary" style={{ textTransform: 'none', padding: '4px 8px', color: '#374151' }}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="secondary" variant="contained" style={{ textTransform: 'none', padding: '4px 8px', backgroundColor: '#3b82f6' }}>
+          <Button onClick={handleSubmit} color="secondary" variant="contained" style={{ textTransform: 'none', padding: '4px 8px', backgroundColor: '#374151' }}>
             Submit
           </Button>
         </DialogActions>

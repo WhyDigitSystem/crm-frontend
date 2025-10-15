@@ -1,41 +1,45 @@
-$paper: #f8f9fb; // softer, neutral background
-$background: #ffffff;
-// primary
-$primaryLight: #eff6ff; // blue-100
-$primary200: #93c5fd; // blue-300
-$primaryMain: #3b82f6; // blue-500
-$primaryDark: #1d4ed8; // blue-700
-$primary800: #1e40af; // blue-800
+// ==============================|| LIGHT THEME COLORS ||============================== //
 
-// secondary
-$secondaryLight: #f3f4f6; // grey-100
-$secondary200: #e5e7eb; // grey-200
-$secondaryMain: #6b7280; // grey-500
-$secondaryDark: #374151; // grey-700
-$secondary800: #111827; // grey-900
+// Paper & Background
+$paper: #ffffff; // pure white form area
+$background: #f9fafb; // soft neutral page background
 
-// success
+// Primary (EFIT Blue)
+$primaryLight: #e0f2fe; // light blue for hover/focus
+$primary200: #90caf9; // medium tint
+$primaryMain: #1976d2; // main EFIT blue
+$primaryDark: #1565c0; // darker hover shade
+$primary800: #0d47a1; // deep accent blue
+
+// Secondary (EFIT Green)
+$secondaryLight: #b2f5ea; // minty light
+$secondary200: #80e0cf; // soft accent
+$secondaryMain: #00bfa6; // brand green
+$secondaryDark: #009e8a; // darker shade
+$secondary800: #00796b; // deep teal
+
+// Success
 $successLight: #dcfce7;
 $success200: #86efac;
-$successMain: #22c55e; // green-500
-$successDark: #15803d; // green-700
+$successMain: #22c55e;
+$successDark: #15803d;
 
-// error
+// Error
 $errorLight: #fee2e2;
-$errorMain: #ef4444; // red-500
-$errorDark: #b91c1c; // red-700
+$errorMain: #ef4444;
+$errorDark: #b91c1c;
 
-// orange / accent
-$orangeLight: #fff7ed;
-$orangeMain: #fb923c; // orange-400
-$orangeDark: #ea580c; // orange-700
-
-// warning
+// Warning
 $warningLight: #fef9c3;
-$warningMain: #facc15; // yellow-400
-$warningDark: #ca8a04; // yellow-700
+$warningMain: #facc15;
+$warningDark: #ca8a04;
 
-// grey / neutral
+// Orange / Accent
+$orangeLight: #fff7ed;
+$orangeMain: #fb923c;
+$orangeDark: #ea580c;
+
+// Neutral / Grey
 $grey50: #f9fafb;
 $grey100: #f3f4f6;
 $grey200: #e5e7eb;
@@ -47,74 +51,74 @@ $grey900: #111827;
 
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
-// background
+// Background
 $darkBackground: #0f172a; // slate-900
 $darkPaper: #1e293b; // slate-800
 
-// dark levels
+// Dark Levels
 $darkLevel1: #334155; // slate-700
 $darkLevel2: #1e293b; // slate-800
 
-// primary dark
-$darkPrimaryLight: #ddd6fe;
-$darkPrimaryMain: #8b5cf6;
-$darkPrimaryDark: #6d28d9;
-$darkPrimary200: #c4b5fd;
-$darkPrimary800: #4c1d95;
+// Primary Dark
+$darkPrimaryLight: #90caf9;
+$darkPrimaryMain: #1976d2;
+$darkPrimaryDark: #1565c0;
+$darkPrimary200: #64b5f6;
+$darkPrimary800: #0d47a1;
 
-// secondary dark
-$darkSecondaryLight: #bae6fd;
-$darkSecondaryMain: #0ea5e9;
-$darkSecondaryDark: #0369a1;
-$darkSecondary200: #7dd3fc;
-$darkSecondary800: #075985;
+// Secondary Dark
+$darkSecondaryLight: #80e0cf;
+$darkSecondaryMain: #00bfa6;
+$darkSecondaryDark: #009e8a;
+$darkSecondary200: #b2f5ea;
+$darkSecondary800: #00796b;
 
-// text variants
-$darkTextTitle: #f1f5f9; // slate-100
-$darkTextPrimary: #e2e8f0; // slate-200
-$darkTextSecondary: #94a3b8; // slate-400
+// Text Variants (Dark Mode)
+$darkTextTitle: #f1f5f9;
+$darkTextPrimary: #e2e8f0;
+$darkTextSecondary: #94a3b8;
 
-// ==============================|| JAVASCRIPT ||============================== //
+// ==============================|| JAVASCRIPT EXPORT ||============================== //
 :export {
-  // paper & background
+  // Paper & Background
   paper: $paper;
 
-  // primary
+  // Primary
   primaryLight: $primaryLight;
   primary200: $primary200;
   primaryMain: $primaryMain;
   primaryDark: $primaryDark;
   primary800: $primary800;
 
-  // secondary
+  // Secondary
   secondaryLight: $secondaryLight;
   secondary200: $secondary200;
   secondaryMain: $secondaryMain;
   secondaryDark: $secondaryDark;
   secondary800: $secondary800;
 
-  // success
+  // Success
   successLight: $successLight;
   success200: $success200;
   successMain: $successMain;
   successDark: $successDark;
 
-  // error
+  // Error
   errorLight: $errorLight;
   errorMain: $errorMain;
   errorDark: $errorDark;
 
-  // orange
-  orangeLight: $orangeLight;
-  orangeMain: $orangeMain;
-  orangeDark: $orangeDark;
-
-  // warning
+  // Warning
   warningLight: $warningLight;
   warningMain: $warningMain;
   warningDark: $warningDark;
 
-  // grey
+  // Orange
+  orangeLight: $orangeLight;
+  orangeMain: $orangeMain;
+  orangeDark: $orangeDark;
+
+  // Grey
   grey50: $grey50;
   grey100: $grey100;
   grey200: $grey200;
@@ -126,27 +130,27 @@ $darkTextSecondary: #94a3b8; // slate-400
 
   // ==============================|| DARK THEME VARIANTS ||============================== //
 
-  // paper & background
+  // Background
   darkPaper: $darkPaper;
   darkBackground: $darkBackground;
 
-  // dark 800 & 900
+  // Dark Levels
   darkLevel1: $darkLevel1;
   darkLevel2: $darkLevel2;
 
-  // text variants
+  // Text Variants
   darkTextTitle: $darkTextTitle;
   darkTextPrimary: $darkTextPrimary;
   darkTextSecondary: $darkTextSecondary;
 
-  // primary dark
+  // Primary Dark
   darkPrimaryLight: $darkPrimaryLight;
   darkPrimaryMain: $darkPrimaryMain;
   darkPrimaryDark: $darkPrimaryDark;
   darkPrimary200: $darkPrimary200;
   darkPrimary800: $darkPrimary800;
 
-  // secondary dark
+  // Secondary Dark
   darkSecondaryLight: $darkSecondaryLight;
   darkSecondaryMain: $darkSecondaryMain;
   darkSecondaryDark: $darkSecondaryDark;

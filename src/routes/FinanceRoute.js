@@ -4,6 +4,11 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+const Warehouse = Loadable(lazy(() => import('views/basicMaster/Warehouse')));
+const QualityManagement = Loadable(lazy(() => import('views/Transaction/QualityManagement')));
+const SupplierManagement = Loadable(lazy(() => import('views/Transaction/SupplierManagement')));
+const InventoryManagement = Loadable(lazy(() => import('views/Transaction/InventoryManagement')));
+const ProductionManagement = Loadable(lazy(() => import('views/Transaction/ProductionManagement')));
 const StaticReport = Loadable(lazy(() => import('views/Reports/StaticReport')));
 const StaticReport2 = Loadable(lazy(() => import('views/Reports/StaticReport2')));
 // import LiveStaffTracker from 'views/Tracking/LiveStaffTracker';
@@ -205,7 +210,10 @@ const FinanceRoute = {
       path: '/basicMaster/port',
       element: <Port />
     },
-
+    {
+      path: '/basicMaster/warehouse',
+      element: <Warehouse />
+    },
     // Document
     {
       path: '/Documents/documentType',
@@ -319,6 +327,22 @@ const FinanceRoute = {
     {
       path: '/Report/StaticReportT',
       element: <StaticReport2 />
+    },
+    {
+      path: '/Transaction/ProductionManagement',
+      element: <ProductionManagement />
+    },
+    {
+      path: '/Transaction/InventoryManagement',
+      element: <InventoryManagement />
+    },
+    {
+      path: '/Transaction/SupplierManagement',
+      element: <SupplierManagement />
+    },
+    {
+      path: '/Transaction/QualityManagement',
+      element: <QualityManagement />
     }
   ]
 };

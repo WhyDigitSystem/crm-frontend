@@ -51,7 +51,35 @@ const transactionChildren = [
     type: 'item',
     url: '/Transaction/CustomerDetails',
     icon: IconUsers
-  }
+  },
+  hasScreenAccess('PM') && {
+    id: 'ProductionManagement',
+    title: 'Production Management',
+    type: 'item',
+    url: '/Transaction/ProductionManagement',
+    icon: IconUsers
+  },
+  hasScreenAccess('IM') && {
+    id: 'InventoryManagement',
+    title: 'Inventory Management',
+    type: 'item',
+    url: '/Transaction/InventoryManagement',
+    icon: IconUsers
+  },
+  hasScreenAccess('SM') && {
+    id: 'SupplierManagement',
+    title: 'Supplier Management',
+    type: 'item',
+    url: '/Transaction/SupplierManagement',
+    icon: IconUsers
+  },
+  hasScreenAccess('QM') && {
+    id: 'QualityManagement',
+    title: 'Quality Management',
+    type: 'item',
+    url: '/Transaction/QualityManagement',
+    icon: IconUsers
+  },
 ].filter(Boolean);
 
 const Transaction =
