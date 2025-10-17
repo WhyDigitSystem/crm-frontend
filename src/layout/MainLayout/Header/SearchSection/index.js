@@ -44,15 +44,22 @@ const PopperStyle = styled(Popper)(({ theme }) => ({
 
 const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
-  height:40,
+  height: 40,
   marginLeft: 16,
   paddingLeft: 16,
   paddingRight: 16,
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: '#374151', // darker gray, matches header
   borderRadius: theme.shape.borderRadius,
+  '& .MuiOutlinedInput-notchedOutline': {
+    border: 'none' // remove the white border
+  },
   '& input': {
     background: 'transparent !important',
-    paddingLeft: '4px !important'
+    paddingLeft: '4px !important',
+    color: '#fff',
+    '&::placeholder': {
+      color: '#d1d5db' // light gray placeholder
+    }
   },
   [theme.breakpoints.down('lg')]: {
     width: 250
@@ -60,7 +67,7 @@ const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     width: '100%',
     marginLeft: 4,
-    background: '#fff'
+    background: '#374151'
   }
 }));
 
@@ -87,9 +94,7 @@ const MobileSearch = ({ value, setValue, popupState, screens }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const filteredScreens = screens.filter((screen) =>
-    screen.name.toLowerCase().includes(value.toLowerCase())
-  );
+  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
 
   const handleSearch = (screen) => {
     navigate(screen.path);
@@ -106,25 +111,6 @@ const MobileSearch = ({ value, setValue, popupState, screens }) => {
         startAdornment={
           <InputAdornment position="start">
             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
-          </InputAdornment>
-        }
-        endAdornment={
-          <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
-            <ButtonBase onClick={() => popupState.close()}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  background: theme.palette.orange.light,
-                  color: theme.palette.orange.dark,
-                  '&:hover': {
-                    background: theme.palette.orange.dark,
-                    color: theme.palette.orange.light
-                  }
-                }}
-              >
-                <IconX stroke={1.5} size="1.3rem" />
-              </Avatar>
-            </ButtonBase>
           </InputAdornment>
         }
         fullWidth
@@ -164,9 +150,7 @@ const DesktopSearch = ({ value, setValue, screens }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const filteredScreens = screens.filter((screen) =>
-    screen.name.toLowerCase().includes(value.toLowerCase())
-  );
+  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
 
   const handleSearch = (screen) => {
     navigate(screen.path);
@@ -185,20 +169,9 @@ const DesktopSearch = ({ value, setValue, screens }) => {
             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
           </InputAdornment>
         }
-        endAdornment={
-          <InputAdornment position="end">
-            <ButtonBase>
-              <HeaderAvatarStyle variant="rounded">
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
-              </HeaderAvatarStyle>
-            </ButtonBase>
-          </InputAdornment>
-        }
       />
       {value && (
-        <SearchResultsPaper
-          sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, ml: 2, zIndex: 1600 }}
-        >
+        <SearchResultsPaper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, ml: 2, zIndex: 1600 }}>
           <List>
             {filteredScreens.length > 0 ? (
               filteredScreens.map((screen) => (
@@ -275,13 +248,8 @@ const SearchSection = () => {
                 {({ TransitionProps }) => (
                   <Transitions type="zoom" {...TransitionProps}>
                     <Card sx={{ width: '100%' }}>
-                      <Box sx={{ p: 1 }}> 
-                        <MobileSearch
-                          value={value}
-                          setValue={setValue}
-                          popupState={popupState}
-                          screens={screenList}
-                        />
+                      <Box sx={{ p: 1 }}>
+                        <MobileSearch value={value} setValue={setValue} popupState={popupState} screens={screenList} />
                       </Box>
                     </Card>
                   </Transitions>
@@ -301,9 +269,3 @@ const SearchSection = () => {
 };
 
 export default SearchSection;
-
-
-
-
-
-

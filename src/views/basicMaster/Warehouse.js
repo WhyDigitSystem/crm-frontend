@@ -39,7 +39,7 @@ export const Warehouse = () => {
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'warehouseCode', header: 'Code', size: 140 },
+    { accessorKey: 'code', header: 'Code', size: 140 },
     {
       accessorKey: 'warehouse',
       header: 'Warehouse',

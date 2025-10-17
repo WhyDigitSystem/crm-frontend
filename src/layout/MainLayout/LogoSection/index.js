@@ -30,8 +30,8 @@ const LogoSection = () => {
         src={LogoImage}
         alt="logo"
         style={{
-          width: "150px",
-          height: "50px",
+          width: "100px",
+          // height: "50px",
         }}
       />
 

@@ -74,12 +74,13 @@ const NavItem = ({ item, level }) => {
         alignItems: 'flex-start',
         backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
         py: level > 1 ? 0.30 : 0.30,
-        pl: `${level * 20}px`
+        pl: `${level * 20}px`,
+        color: 'white'
       }}
       selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
       onClick={() => itemHandler(item.id)}
     >
-      <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
+      <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36, color: 'white' }}>{itemIcon}</ListItemIcon>
       <ListItemText
         primary={
           <Typography variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'} color="inherit">

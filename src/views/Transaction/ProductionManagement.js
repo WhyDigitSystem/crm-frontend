@@ -31,16 +31,13 @@ const ProductionManagement = ({ selectedRow }) => {
   const [branch] = useState(localStorage.getItem('branch'));
   const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear] = useState(localStorage.getItem('finYear'));
-  const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [listView, setListView] = useState(true);
   const [docId, setDocId] = useState('');
-  const [open, setOpen] = useState(false);
   const [relatedOrder] = useState([]);
   const [supervisorName, setSupervisorName] = useState([]);
   const [productName, setProductName] = useState([]);
-  const [clientTypes] = useState(['Company', 'Individual']);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);

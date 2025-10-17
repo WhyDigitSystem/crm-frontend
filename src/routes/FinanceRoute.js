@@ -4,6 +4,10 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+const InventoryItemReport = Loadable(lazy(() => import('views/Reports/InventoryItemReport')));
+const QualityTestReport = Loadable(lazy(() => import('views/Reports/QualityTestReport')));
+const SupplierManagementReport = Loadable(lazy(() => import('views/Reports/SupplierManagementReport')));
+const ProductionManagementReport = Loadable(lazy(() => import('views/Reports/ProductionManagementReport')));
 const Warehouse = Loadable(lazy(() => import('views/basicMaster/Warehouse')));
 const QualityManagement = Loadable(lazy(() => import('views/Transaction/QualityManagement')));
 const SupplierManagement = Loadable(lazy(() => import('views/Transaction/SupplierManagement')));
@@ -319,6 +323,22 @@ const FinanceRoute = {
     {
       path: '/Report/LeadJourney',
       element: <LeadJourney />
+    },
+    {
+      path: '/Report/ProductionManagementReport',
+      element: <ProductionManagementReport />
+    },
+    {
+      path: '/Report/InventoryManagementReport',
+      element: <InventoryItemReport />
+    },
+    {
+      path: '/Report/QualityTestReport',
+      element: <QualityTestReport />
+    },
+    {
+      path: '/Report/SupplierManagementReport',
+      element: <SupplierManagementReport />
     },
     {
       path: '/Report/StaticReport',

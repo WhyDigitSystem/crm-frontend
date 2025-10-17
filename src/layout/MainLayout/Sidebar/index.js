@@ -1,20 +1,12 @@
 import PropTypes from 'prop-types';
-
-// material-ui
-import { Box, Chip, Drawer, Stack, useMediaQuery } from '@mui/material';
+import { Box, Drawer, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-
-// third-party
 import { BrowserView, MobileView } from 'react-device-detect';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-
-// project imports
 import { drawerWidth } from 'store/constant';
 import LogoSection from '../LogoSection';
 import MenuCard from './MenuCard';
 import MenuList from './MenuList';
-
-// ==============================|| SIDEBAR DRAWER ||============================== //
 
 const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
   const theme = useTheme();
@@ -27,29 +19,25 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           <LogoSection />
         </Box>
       </Box>
+
       <BrowserView>
         <PerfectScrollbar
           component="div"
           style={{
             height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-            paddingLeft: '14px',
-            paddingRight: '14px'
+            paddingLeft: '5px',
+            paddingRight: '5px'
           }}
         >
           <MenuList />
           <MenuCard />
-          {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
-            <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
-          </Stack> */}
         </PerfectScrollbar>
       </BrowserView>
+
       <MobileView>
         <Box sx={{ px: 1 }}>
           <MenuList />
           <MenuCard />
-          {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
-            <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
-          </Stack> */}
         </Box>
       </MobileView>
     </>
@@ -68,16 +56,22 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
         sx={{
           '& .MuiDrawer-paper': {
             width: drawerWidth,
-            background: theme.palette.background.default,
-            color: theme.palette.text.primary,
+            background: 'linear-gradient(180deg, #111827 0%, #1f2937 100%)',
+            color: '#fff',
             borderRight: 'none',
-            [theme.breakpoints.up('md')]: {
-              top: '70px'
-            }
+            [theme.breakpoints.up('md')]: { top: '69px' },
+            '& .MuiListItem-root': { padding: '12px 20px', borderRadius: '8px', margin: '4px 0' },
+            '& .MuiListItem-root:hover': { backgroundColor: '#00bfa6', color: '#111827' },
+            '& .Mui-selected': {
+              backgroundColor: '#00bfa6',
+              color: '#ffffffff',
+              borderLeft: '4px solid #00bfa6',
+              boxShadow: '2px 0 8px rgba(0,191,166,0.3)'
+            },
+            '& .MuiListItemIcon-root': { minWidth: '40px', fontSize: '1.3rem' }
           }
         }}
         ModalProps={{ keepMounted: true }}
-        color="inherit"
       >
         {drawer}
       </Drawer>

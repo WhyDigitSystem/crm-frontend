@@ -2,21 +2,8 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Autocomplete,
-  Select,
-  Button,
-  Chip,
-  Stack,
-  Avatar,
-  Typography,
-  Dialog,
-  DialogContent
-} from '@mui/material';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Autocomplete, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -33,10 +20,43 @@ import FullScreenLoader from 'utils/FullScreenLoader';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import dealerSample from '../../assets/sample-files/dealer.xlsx';
+import { Switch } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(({ theme }) => ({
+  width: 58,
+  height: 32,
+  padding: 0,
+  display: 'flex',
+  '& .MuiSwitch-switchBase': {
+    padding: 2,
+    '&.Mui-checked': {
+      transform: 'translateX(26px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        backgroundColor: '#1976d2',
+        opacity: 1
+      }
+    }
+  },
+  '& .MuiSwitch-thumb': {
+    boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.3)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    transition: 'all 0.3s ease'
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 32 / 2,
+    opacity: 1,
+    backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#d3d3d3',
+    boxSizing: 'border-box'
+  }
+}));
 
 const Dealer = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(true);
-  const [data, setData] = useState(true);
+  const [data, setData] = useState([]);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -46,16 +66,38 @@ const Dealer = ({ selectedRow }) => {
   const [editId, setEditId] = useState('');
   const [managerList, setManagerList] = useState([]);
   const [salesRepList, setSalesRepList] = useState([]);
-  const [docId, setDocId] = useState([]);
+  const [docId, setDocId] = useState('');
   const [stateList, setStateList] = useState([]);
   const [districtList, setDistrictList] = useState([]);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [isDistributor, setIsDistributor] = useState(false);
+
+  const handleToggle = async (event) => {
+    const checked = event.target.checked;
+    setIsDistributor(checked);
+
+    // Clear current data and form
+    setData([]);
+    setEditId('');
+    handleClear();
+
+    // Fetch new doc id and data based on the new type
+    await getDealersDocId(checked);
+
+    if (checked) {
+      await getDistributerByOrgId();
+    } else {
+      await getDealersByOrgId();
+    }
+  };
+
   useEffect(() => {
     if (selectedRow) {
       setLoading(true);
       getDealersById({ original: selectedRow });
     }
   }, [selectedRow]);
+
   const [formData, setFormData] = useState({
     docDate: dayjs(),
     dealerType: '',
@@ -95,12 +137,44 @@ const Dealer = ({ selectedRow }) => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'name', header: 'Dealer Name', size: 140 },
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'name', header: 'Name', size: 140 },
     { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
     { accessorKey: 'anniversaryDate', header: 'Anniversary Date', size: 140 },
     { accessorKey: 'place', header: 'Place/Town', size: 140 },
     { accessorKey: 'manager', header: 'Manager', size: 140 }
   ];
+
+  const getAllSalesRep = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getSalesRep?orgId=${orgId}`);
+      if (response.status === true) {
+        setSalesRepList(response.paramObjectsMap.employeeName || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+
+  const getAllSalesManager = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getSalesManager?orgId=${orgId}`);
+      if (response.status === true) {
+        setManagerList(response.paramObjectsMap.employeeName || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+
   const getAllStates = async () => {
     try {
       const response = await apiCalls('get', `/commonmaster/state?orgid=${orgId}`);
@@ -115,6 +189,7 @@ const Dealer = ({ selectedRow }) => {
       return error;
     }
   };
+
   const getCityByState = async (state) => {
     try {
       const response = await apiCalls('get', `/dealer/getCityNameFromState?orgId=${orgId}&state=${state}`);
@@ -129,49 +204,96 @@ const Dealer = ({ selectedRow }) => {
       return error;
     }
   };
+
   useEffect(() => {
-    getAllStates();
-    getDealersByOrgId();
-    getDealersDocId();
+    const initializeData = async () => {
+      await getAllStates();
+      await getAllSalesRep();
+      await getAllSalesManager();
+      await getDealersDocId(isDistributor);
+
+      if (isDistributor) {
+        await getDistributerByOrgId();
+      } else {
+        await getDealersByOrgId();
+      }
+    };
+
+    initializeData();
   }, []);
 
   const getDealersByOrgId = async () => {
     setLoading(true);
     try {
       const result = await apiCalls('get', `/dealer/getAllDealerByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
-      setData(result.paramObjectsMap.dealerVO.reverse() || []);
+      setData(result.paramObjectsMap.dealerVO?.reverse() || []);
       setLoading(false);
     } catch (err) {
       setLoading(false);
       console.log('error', err);
     }
   };
-  const getDealersDocId = async () => {
+
+  const getDistributerByOrgId = async () => {
+    setLoading(true);
     try {
-      const response = await apiCalls(
-        'get',
-        `/dealer/getDealerDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
-      );
-      setDocId(response.paramObjectsMap.DealerDocId);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      const result = await apiCalls('get', `/dealer/getAllDistributorByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      setData(result.paramObjectsMap.distributorVO?.reverse() || []);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      console.log('error', err);
     }
   };
+
+  const getDealersDocId = async (isDist = false) => {
+    try {
+      let response;
+      if (isDist) {
+        response = await apiCalls(
+          'get',
+          `/dealer/getDistributorDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+        );
+        setDocId(response?.paramObjectsMap?.distributorDocId || '');
+      } else {
+        response = await apiCalls(
+          'get',
+          `/dealer/getDealerDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+        );
+        setDocId(response?.paramObjectsMap?.DealerDocId || '');
+      }
+    } catch (error) {
+      console.error('Error fetching doc id:', error);
+      setDocId('');
+    }
+  };
+
   const getDealersById = async (row) => {
     setShowForm(true);
     setLoading(true);
     try {
-      const result = await apiCalls('get', `/dealer/getDealerById?id=${row.original.id}`);
+      let result;
+      if (isDistributor) {
+        result = await apiCalls('get', `/dealer/getDistributorById?id=${row.original.id}`);
+      } else {
+        result = await apiCalls('get', `/dealer/getDealerById?id=${row.original.id}`);
+      }
       if (result) {
-        const DealerVO = result.paramObjectsMap.dealerVO;
+        let DealerVO;
+        if (isDistributor) {
+          DealerVO = result.paramObjectsMap.distributorVO;
+        } else {
+          DealerVO = result.paramObjectsMap.dealerVO;
+        }
         setEditId(row.original.id);
         setDocId(DealerVO.docId);
+        getCityByState(DealerVO.state);
         setFormData({
           id: DealerVO.id || '',
-          docDate: DealerVO.docDate ? dayjs(DealerVO.docDate, 'YYYY-MM-DD') : null,
+          docDate: DealerVO.docDate ? dayjs(DealerVO.docDate, 'YYYY-MM-DD') : dayjs(),
           dealerDOB: DealerVO.dateOfBirth ? dayjs(DealerVO.dateOfBirth, 'YYYY-MM-DD') : null,
           dealerAnniversary: DealerVO.anniversaryDate ? dayjs(DealerVO.anniversaryDate, 'YYYY-MM-DD') : null,
-          dealerType: DealerVO.dealerType || '',
+          dealerType: DealerVO.type || '',
           manager: DealerVO.manager || '',
           salesRep: DealerVO.saleRep || '',
           dealerName: DealerVO.name || '',
@@ -196,7 +318,7 @@ const Dealer = ({ selectedRow }) => {
         setLoading(false);
       } else {
         setLoading(false);
-        // Handle erro
+        // Handle error
       }
     } catch (error) {
       setLoading(false);
@@ -224,11 +346,13 @@ const Dealer = ({ selectedRow }) => {
       }
     }
   };
+
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
     console.log('formattedDate', formattedDate);
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
   const handleClear = () => {
     setFormData({
       dealerType: '',
@@ -257,8 +381,9 @@ const Dealer = ({ selectedRow }) => {
     });
     setFieldErrors({});
     setEditId('');
-    getDealersDocId();
+    getDealersDocId(isDistributor);
   };
+
   const handleView = () => {
     setShowForm(!showForm);
     handleClear();
@@ -268,22 +393,22 @@ const Dealer = ({ selectedRow }) => {
     setLoading(true);
     const errors = {};
     if (!formData.dealerType) {
-      errors.dealerType = 'Dealer Type is required';
+      errors.dealerType = 'Type is required';
     }
     if (!formData.dealerName) {
       errors.dealerName = 'Name is required';
     }
-    // if (!formData.manager) {
-    //   errors.manager = 'Manager is required';
-    // }
-    // if (!formData.salesRep) {
-    //   errors.salesRep = 'Sales Rep is required';
-    // }
+    if (!formData.manager) {
+      errors.manager = 'Manager is required';
+    }
+    if (!formData.salesRep) {
+      errors.salesRep = 'Sales Rep is required';
+    }
     if (!formData.state) {
       errors.state = 'State is required';
     }
     if (!formData.district) {
-      errors.district = 'Districe is required';
+      errors.district = 'District is required';
     }
     if (!formData.contactPerson1) {
       errors.contactPerson1 = 'Contact Person 1 is required';
@@ -304,17 +429,17 @@ const Dealer = ({ selectedRow }) => {
         finYear: finYear,
         orgId: orgId,
         createdBy: loginUserName,
-        dealerType: formData.dealerType,
+        type: formData.dealerType,
         manager: formData.manager,
-        salesRep: formData.salesRep,
+        saleRep: formData.salesRep,
         name: formData.dealerName,
-        creditLimit: parseInt(formData.creditLimit),
+        creditLimit: parseInt(formData.creditLimit) || 0,
         chequeAvailable: formData.chequeAvailable,
         state: formData.state,
         district: formData.district,
         place: formData.place,
         address: formData.address,
-        pincode: parseInt(formData.pinCode),
+        pincode: parseInt(formData.pinCode) || 0,
         contactPerson1: formData.contactPerson1,
         mobile1: formData.mobileNo1,
         contactPerson2: formData.contactPerson2,
@@ -328,30 +453,47 @@ const Dealer = ({ selectedRow }) => {
         anniversaryDate: formData.dealerAnniversary?.format('YYYY-MM-DD'),
         active: true
       };
+
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/dealer/createUpdateDealer`, saveFormData);
+        let response;
+        if (isDistributor) {
+          response = await apiCalls('put', `/dealer/createUpdateDistributor`, saveFormData);
+        } else {
+          response = await apiCalls('put', `/dealer/createUpdateDealer`, saveFormData);
+        }
         if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? 'Dealers Updated Successfully' : 'Dealers Created successfully');
-          getDealersByOrgId();
-          getDealersDocId();
+          if (isDistributor) {
+            showToast('success', editId ? 'Distributor Updated Successfully' : 'Distributor Created successfully');
+          } else {
+            showToast('success', editId ? 'Dealer Updated Successfully' : 'Dealer Created successfully');
+          }
+
+          // Refresh the appropriate list based on current type
+          if (isDistributor) {
+            await getDistributerByOrgId();
+          } else {
+            await getDealersByOrgId();
+          }
+
+          getDealersDocId(isDistributor);
           handleClear();
           setLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Dealers creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || `${isDistributor ? 'Distributor' : 'Dealer'} creation failed`);
           setLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
         setLoading(false);
-        showToast('error', 'Dealers creation failed');
+        showToast('error', `${isDistributor ? 'Distributor' : 'Dealer'} creation failed`);
       }
     } else {
       setFieldErrors(errors);
       setLoading(false);
     }
   };
+
   const handleBulkUploadClose = () => {
     setUploadOpen(false);
   };
@@ -364,9 +506,11 @@ const Dealer = ({ selectedRow }) => {
   const handleFileUpload = (event) => {
     console.log(event.target.files[0]);
   };
+
   const handleBulkUpload = () => {
     setUploadOpen(true);
   };
+
   return (
     <>
       {loading && (
@@ -378,10 +522,9 @@ const Dealer = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex justify-content-between align-items-center mb-4" style={{ width: '100%' }}>
+            {/* Left side buttons */}
             {!selectedRow && (
-              <div className="d-flex">
-                {!showForm && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
-                <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
+              <div className="d-flex align-items-center gap-0">
                 {uploadOpen && (
                   <CommonBulkUpload
                     open={uploadOpen}
@@ -399,8 +542,10 @@ const Dealer = ({ selectedRow }) => {
                     branch={branch}
                     branchCode={branchCode}
                     finYear={finYear}
-                  ></CommonBulkUpload>
+                  />
                 )}
+                <ActionButton title="BulkUpload" icon={CloudUploadIcon} onClick={handleBulkUpload} />
+                {!showForm && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
                 {showForm && (
                   <>
                     <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
@@ -409,6 +554,40 @@ const Dealer = ({ selectedRow }) => {
                   </>
                 )}
               </div>
+            )}
+            {showForm && (
+              <>
+                {/* Right side: Dealer / Distributor Toggle */}
+                <div
+                  className="d-flex align-items-center gap-2"
+                  style={{
+                    background: '#f5f5f5',
+                    padding: '3px 8px',
+                    borderRadius: '20px',
+                    boxShadow: '0 0 5px rgba(0,0,0,0.15)'
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: !isDistributor ? '#1976d2' : '#777',
+                      transition: '0.3s'
+                    }}
+                  >
+                    Dealer
+                  </span>
+                  <IOSSwitch checked={isDistributor} onChange={handleToggle} />
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: isDistributor ? '#1976d2' : '#777',
+                      transition: '0.3s'
+                    }}
+                  >
+                    Distributor
+                  </span>
+                </div>
+              </>
             )}
           </div>
           {showForm ? (
@@ -436,16 +615,16 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.dealerType}>
                     <InputLabel id="dealerType-label">
-                      Dealer Type <span className="asterisk">*</span>
+                      Type <span className="asterisk">*</span>
                     </InputLabel>
                     <Select
                       labelId="dealerType-label"
-                      label="Dealer Type"
+                      label="Type"
                       value={formData.dealerType}
                       onChange={handleInputChange}
                       name="dealerType"
                     >
-                      <MenuItem value="Existing Dealer">Existing Dealer</MenuItem>
+                      <MenuItem value="Existing">Existing</MenuItem>
                       <MenuItem value="Hot Prospect">Hot Prospect</MenuItem>
                       <MenuItem value="Cold Prospect">Cold Prospect</MenuItem>
                     </Select>
@@ -455,18 +634,18 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={managerList}
-                    getOptionLabel={(option) => (option?.manager ? `${option.manager}` : '')}
-                    value={managerList.find((item) => item.manager === formData.manager) || null}
+                    getOptionLabel={(option) => (option?.employeeName ? `${option.employeeName}` : '')}
+                    value={managerList.find((item) => item.employeeName === formData.manager) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          manager: newValue.manager
+                          manager: newValue.employeeName
                         }));
                         setFieldErrors((prev) => ({ ...prev, manager: '' }));
                       } else {
                         setFormData((prev) => ({ ...prev, manager: '' }));
-                        setFieldErrors((prev) => ({ ...prev, manager: 'Requested By is required' }));
+                        setFieldErrors((prev) => ({ ...prev, manager: 'Manager is required' }));
                       }
                     }}
                     renderInput={(params) => (
@@ -488,13 +667,13 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={salesRepList}
-                    getOptionLabel={(option) => (option?.salesRep ? `${option.salesRep}` : '')}
-                    value={salesRepList.find((item) => item.salesRep === formData.salesRep) || null}
+                    getOptionLabel={(option) => (option?.employeeName ? `${option.employeeName}` : '')}
+                    value={salesRepList.find((item) => item.employeeName === formData.salesRep) || null}
                     onChange={(event, newValue) => {
                       if (newValue) {
                         setFormData((prev) => ({
                           ...prev,
-                          salesRep: newValue.salesRep
+                          salesRep: newValue.employeeName
                         }));
                         setFieldErrors((prev) => ({ ...prev, salesRep: '' }));
                       } else {
@@ -521,13 +700,19 @@ const Dealer = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="dealerName"
-                    label="Dealer Name"
+                    label={
+                      <span>
+                        Name <span className="asterisk">*</span>
+                      </span>
+                    }
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="dealerName"
                     value={formData.dealerName}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.dealerName}
+                    helperText={fieldErrors.dealerName}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -554,7 +739,7 @@ const Dealer = ({ selectedRow }) => {
                       onChange={(date) => {
                         setFormData((prev) => ({
                           ...prev,
-                          fromDate: date
+                          dealerAnniversary: date
                         }));
                       }}
                       format="DD-MM-YYYY"
@@ -612,6 +797,10 @@ const Dealer = ({ selectedRow }) => {
                           ...prev,
                           state: ''
                         }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          state: 'State is required'
+                        }));
                       }
                     }}
                     renderInput={(params) => (
@@ -650,6 +839,10 @@ const Dealer = ({ selectedRow }) => {
                           ...prev,
                           district: ''
                         }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          district: 'District is required'
+                        }));
                       }
                     }}
                     renderInput={(params) => (
@@ -670,7 +863,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Place</span>}
+                    label="Place"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -683,7 +876,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Address</span>}
+                    label="Address"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -696,7 +889,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Pin Code</span>}
+                    label="Pin Code"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -743,7 +936,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Contact Person 2</span>}
+                    label="Contact Person 2"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -754,7 +947,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Mobile No 2</span>}
+                    label="Mobile No 2"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -765,7 +958,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Latitude</span>}
+                    label="Latitude"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -776,7 +969,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Longitude</span>}
+                    label="Longitude"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -787,7 +980,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Reg No</span>}
+                    label="GST No"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -798,7 +991,7 @@ const Dealer = ({ selectedRow }) => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    label={<span>Other Info</span>}
+                    label="Other Info"
                     variant="outlined"
                     size="small"
                     fullWidth
