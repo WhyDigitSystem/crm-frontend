@@ -14,7 +14,7 @@ const FullScreenLoader = () => (
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: '#ebd6fb'
+        background: '#ffffffff'
         // backgroundColor: 'transparent'
     }}>
         <img src={Logo} alt="Why Digit System" width={100} />

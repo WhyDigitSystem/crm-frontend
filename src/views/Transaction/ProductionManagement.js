@@ -83,8 +83,8 @@ const ProductionManagement = ({ selectedRow }) => {
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
   const listViewColumns = [
-    { accessorKey: 'productionOrderCode', header: 'Production Order Code', size: 140 },
-    { accessorKey: 'productionOrderDate', header: 'Production Order Date', size: 140 },
+    { accessorKey: 'productionOrderCode', header: 'Prod Id', size: 140 },
+    { accessorKey: 'productionOrderDate', header: 'Date', size: 140 },
     { accessorKey: 'productName', header: 'Product Name', size: 140 },
     { accessorKey: 'plannedQuantity', header: 'Planned Qty', size: 140 },
     { accessorKey: 'producedQuantity', header: 'Produced Qty', size: 140 },
@@ -291,8 +291,6 @@ const ProductionManagement = ({ selectedRow }) => {
 
     try {
       const response = await apiCalls('put', '/master/createUpdateProductionOrder', payload);
-      console.log('data to save', payload);
-
       if (response.status) {
         showToast('success', editId ? 'Production updated successfully' : 'Production created successfully');
         handleClear();
@@ -371,7 +369,7 @@ const ProductionManagement = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
               {!listView && (
                 <>

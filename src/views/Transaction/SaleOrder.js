@@ -810,7 +810,7 @@ const SalesOrder = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
               {!listView && (
                 <>

@@ -2,19 +2,11 @@ import React from 'react';
 import {
   TextField,
   Checkbox,
-  ListItemIcon,
-  ListItemText,
   FormControlLabel,
-  FormHelperText,
   FormControl,
-  InputLabel,
-  MenuItem,
-  Select
 } from '@mui/material';
-import { Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 import { IconButton } from '@mui/material';
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -23,15 +15,11 @@ import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import Brightness2Icon from '@mui/icons-material/Brightness2';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import apiCalls from 'apicall';
 import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import { getAllActiveBranches } from 'utils/CommonFunctions';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -40,7 +28,7 @@ import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import FullScreenLoader from 'utils/FullScreenLoader';
-import InventoryManagement from 'views/Transaction/InventoryManagement';
+import QualityManagement from 'views/Transaction/QualityManagement';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -124,95 +112,43 @@ function QualityTestReport() {
     return 'success'; // Green otherwise
   };
 
-  const reportColumns = [
-    {
-      accessorKey: 'docId',
-      header: 'Doc ID',
-      size: 100,
-      Cell: ({ row }) => {
-        const { docId, screenCode } = row.original;
-        return (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleDocClick(docId, screenCode);
-            }}
-            style={{
-              color: '#f59e0b',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
-            onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
-          >
-            {docId}
-          </a>
-        );
-      }
-    },
-    { accessorKey: 'docDate', header: 'Date', size: 100 },
-    { accessorKey: 'product', header: 'Prod', size: 100 },
-    { accessorKey: 'batchNumber', header: 'Batch', size: 100 },
-    { accessorKey: 'location', header: 'Location', size: 100 },
-    {
-      accessorKey: 'currentStock',
-      header: 'Curr Stk',
-      size: 100,
-      Cell: ({ cell, row }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        const reorderLevel = parseFloat(row.original.reorderlevel || 0);
-        const color = getStockColor(value, reorderLevel);
+const reportColumns = [
+  {
+    accessorKey: 'docId',
+    header: 'Doc ID',
+    size: 100,
+    Cell: ({ row }) => {
+      const { docId, screenCode } = row.original;
+      return (
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleDocClick(docId, screenCode);
+          }}
+          style={{
+            color: '#f59e0b',
+            textDecoration: 'none',
+            cursor: 'pointer',
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
+          onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
+        >
+          {docId}
+        </a>
+      );
+    }
+  },
+  { accessorKey: 'docDate', header: 'Date', size: 120 },
+  { accessorKey: 'product', header: 'Product', size: 150 },
+  { accessorKey: 'batchnumber', header: 'Batch No', size: 150 },
+  { accessorKey: 'testtype', header: 'Test Type', size: 150 },
+  { accessorKey: 'testdate', header: 'Test Date', size: 120 },
+  { accessorKey: 'inspector', header: 'Inspector', size: 150 },
+  { accessorKey: 'result', header: 'Result', size: 100 }
+];
 
-        return (
-          <Chip
-            label={value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            color={color}
-            variant="outlined"
-            size="small"
-          />
-        );
-      }
-    },
-    {
-      accessorKey: 'availableStock',
-      header: 'Avail Stk',
-      size: 100,
-      Cell: ({ cell, row }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        const reorderLevel = parseFloat(row.original.reorderlevel || 0);
-        const color = getStockColor(value, reorderLevel);
-        return (
-          <Chip
-            label={value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            color={color}
-            variant="outlined"
-            size="small"
-          />
-        );
-      }
-    },
-    {
-      accessorKey: 'reservedStock',
-      header: 'Res Stk',
-      size: 100,
-      Cell: ({ cell }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-    },
-    {
-      accessorKey: 'maximumStockLevel',
-      header: 'Max Stk Lvl',
-      size: 120,
-      Cell: ({ cell }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-    },
-    { accessorKey: 'reorderlevel', header: 'Reord Lvl', size: 100 }
-  ];
 
   const handleGo = async () => {
     const errors = {};
@@ -224,16 +160,16 @@ function QualityTestReport() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/inventoryitem/getInventoryItemReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}&toDate=${formData.toDate}&fromDate=${formData.fromDate}`
+            `/inventoryitem/getQualityTestReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}&toDate=${formData.toDate}&fromDate=${formData.fromDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/inventoryitem/getInventoryItemReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}`
+            `/inventoryitem/getQualityTestReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}`
           );
         }
         if (response.status === true) {
-          setRowData(response.paramObjectsMap.inventoryItemDetails || []);
+          setRowData(response.paramObjectsMap.qualityTestDetails || []);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -549,7 +485,7 @@ function QualityTestReport() {
             {(selectedSections.date || selectedSections.productName) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
-                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                  <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
                     <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
                     <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
@@ -570,7 +506,7 @@ function QualityTestReport() {
           }}
         >
           <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
-            Inventory Report
+            Quality Test Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
@@ -594,14 +530,14 @@ function QualityTestReport() {
               data={rowData}
               columns={reportColumns}
               isListView={listView}
-              fileName={'Inventory Report'}
+              fileName={'Quality Test Report'}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
                   columns: reportColumns,
                   data: rowData,
                   formData,
-                  fileName: 'Inventory Report',
+                  fileName: 'Quality Test Report',
                   loginUserName
                 })
               }
@@ -610,7 +546,7 @@ function QualityTestReport() {
                   logo: listViewData[0]?.companyLogo,
                   columns: reportColumns,
                   data: rowData,
-                  fileName: 'Inventory Report'
+                  fileName: 'Quality Test Report'
                 })
               }
             />
@@ -634,7 +570,7 @@ function QualityTestReport() {
               </Box>
             </DialogTitle>
             <DialogContent>
-              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <InventoryManagement selectedRow={fillGridData} />}</>}
+              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <QualityManagement selectedRow={fillGridData} />}</>}
             </DialogContent>
           </Dialog>
         </>

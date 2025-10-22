@@ -1,6 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -8,8 +7,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import IconButton from '@mui/material/IconButton';
 import {
   Avatar,
   Typography,
@@ -49,6 +46,7 @@ const QualityManagement = ({ selectedRow }) => {
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
+      // setListView(false);
       getLeadById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -200,7 +198,8 @@ const QualityManagement = ({ selectedRow }) => {
       remarks: formData.remarks || '',
       result: formData.result || '',
       testType: formData.testType || '',
-      testdate: formData.testdate || dayjs()
+      testdate: formData.testdate || dayjs(),
+      active: true
     };
 
     try {                                      
@@ -279,7 +278,7 @@ const QualityManagement = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
               {!listView && (
                 <>

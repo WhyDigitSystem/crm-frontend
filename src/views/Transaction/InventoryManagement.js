@@ -108,6 +108,7 @@ const InventoryManagement = ({ selectedRow }) => {
       );
       if (response.status) {
         setDocId(response.paramObjectsMap.inventoryItemDocId);
+        setIsDocIdLoading(false);
       }
     } catch (err) {
       console.error('Error fetching Inventory docId:', err);
@@ -150,7 +151,7 @@ const InventoryManagement = ({ selectedRow }) => {
           location: inventoryMan.location || '',
           currentStock: inventoryMan.currentStock || '',
           reservedStock: inventoryMan.reservedStock || '',
-          availableStock: inventoryMan.availableStock || '',
+          // availableStock: inventoryMan.availableStock || '',
           reorderLevel: inventoryMan.reorderLevel || '',
           maximumStockLevel: inventoryMan.maximumStockLevel || '',
           batchNumber: inventoryMan.batchNumber || '',
@@ -237,7 +238,8 @@ const InventoryManagement = ({ selectedRow }) => {
       notes: formData.notes || '',
       product: formData.productName || '',
       reorderLevel: formData.reorderLevel || '',
-      reservedStock: formData.reservedStock || ''
+      reservedStock: formData.reservedStock || '',
+      active: true
     };
     try {
       const response = await apiCalls('put', '/inventoryitem/createUpdateInventoryItem', payload);
@@ -319,7 +321,7 @@ const InventoryManagement = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
               {!listView && (
                 <>
@@ -450,7 +452,7 @@ const InventoryManagement = ({ selectedRow }) => {
                     helperText={fieldErrors.reservedStock}
                   />
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <TextField
                     label={<span>Available Stock</span>}
                     variant="outlined"
@@ -463,7 +465,7 @@ const InventoryManagement = ({ selectedRow }) => {
                     error={!!fieldErrors.availableStock}
                     helperText={fieldErrors.availableStock}
                   />
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label={<span>Reorder Level</span>}

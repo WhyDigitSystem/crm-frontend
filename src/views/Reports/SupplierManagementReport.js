@@ -24,7 +24,7 @@ import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import FullScreenLoader from 'utils/FullScreenLoader';
-import InventoryManagement from 'views/Transaction/InventoryManagement';
+import SupplierManagement from 'views/Transaction/SupplierManagement';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -43,10 +43,10 @@ function SupplierManagementReport() {
   const [modalOpen, setModalOpen] = useState(false);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
-  const [productNameList, setProductName] = useState([]);
+  const [compNameList, setCompName] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    productName: false
+    companyName: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -59,24 +59,24 @@ function SupplierManagementReport() {
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
-    productName: 'All'
+    companyName: 'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
-    productName: ''
+    companyName: ''
   });
   const handleClear = () => {
     setListView(false);
     setFormData({
       fromDate: null,
       toDate: null,
-      productName: 'All'
+      companyName: 'All'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
-      productName: ''
+      companyName: ''
     });
     setRowData([]);
   };
@@ -86,13 +86,13 @@ function SupplierManagementReport() {
   };
   useEffect(() => {
     getCompanyDetails();
-    getProductName();
+    getCompName();
   }, []);
-  const getProductName = async () => {
+  const getCompName = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getProductNameFromProduct?orgId=${orgId}`);
+      const response = await apiCalls('get', `/inventoryitem/getCompanyName?orgId=${orgId}`);
       if (response.status === true) {
-        setProductName(response.paramObjectsMap.productName || []);
+        setCompName(response.paramObjectsMap.companyNameDetails || []);
       } else {
         console.error('API Error:', response);
         return response;
@@ -108,95 +108,57 @@ function SupplierManagementReport() {
     return 'success'; // Green otherwise
   };
 
-  const reportColumns = [
-    {
-      accessorKey: 'docId',
-      header: 'Doc ID',
-      size: 100,
-      Cell: ({ row }) => {
-        const { docId, screenCode } = row.original;
-        return (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleDocClick(docId, screenCode);
-            }}
-            style={{
-              color: '#f59e0b',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
-            onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
-          >
-            {docId}
-          </a>
-        );
-      }
-    },
-    { accessorKey: 'docDate', header: 'Date', size: 100 },
-    { accessorKey: 'product', header: 'Prod', size: 100 },
-    { accessorKey: 'batchNumber', header: 'Batch', size: 100 },
-    { accessorKey: 'location', header: 'Location', size: 100 },
-    {
-      accessorKey: 'currentStock',
-      header: 'Curr Stk',
-      size: 100,
-      Cell: ({ cell, row }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        const reorderLevel = parseFloat(row.original.reorderlevel || 0);
-        const color = getStockColor(value, reorderLevel);
+const reportColumns = [
+  {
+    accessorKey: 'docId',
+    header: 'Doc ID',
+    size: 100,
+    Cell: ({ row }) => {
+      const { docId, screenCode } = row.original;
+      return (
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleDocClick(docId, screenCode);
+          }}
+          style={{
+            color: '#f59e0b',
+            textDecoration: 'none',
+            cursor: 'pointer',
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
+          onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
+        >
+          {docId}
+        </a>
+      );
+    }
+  },
+  { accessorKey: 'docDate', header: 'Date', size: 120 },
+  { accessorKey: 'companyName', header: 'Company Name', size: 220 },
+  { accessorKey: 'contactPerson', header: 'Contact Person', size: 180 },
+  { accessorKey: 'gstNumber', header: 'GST No.', size: 150 },
+  { accessorKey: 'state', header: 'State', size: 120 },
+  { accessorKey: 'address', header: 'Address', size: 220 },
+  { accessorKey: 'phone', header: 'Phone', size: 150 },
+  { accessorKey: 'paymentTerms', header: 'Email', size: 220 },
+  {
+    accessorKey: 'creditLimit',
+    header: 'Credit Limit',
+    size: 150,
+    Cell: ({ cell }) => {
+      const value = parseFloat(cell.getValue() || 0);
+      return value.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+  },
+  { accessorKey: 'paymentTerms', header: 'Payment Terms', size: 150 }
+];
 
-        return (
-          <Chip
-            label={value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            color={color}
-            variant="outlined"
-            size="small"
-          />
-        );
-      }
-    },
-    {
-      accessorKey: 'availableStock',
-      header: 'Avail Stk',
-      size: 100,
-      Cell: ({ cell, row }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        const reorderLevel = parseFloat(row.original.reorderlevel || 0);
-        const color = getStockColor(value, reorderLevel);
-        return (
-          <Chip
-            label={value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            color={color}
-            variant="outlined"
-            size="small"
-          />
-        );
-      }
-    },
-    {
-      accessorKey: 'reservedStock',
-      header: 'Res Stk',
-      size: 100,
-      Cell: ({ cell }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-    },
-    {
-      accessorKey: 'maximumStockLevel',
-      header: 'Max Stk Lvl',
-      size: 120,
-      Cell: ({ cell }) => {
-        const value = parseFloat(cell.getValue() || 0);
-        return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-    },
-    { accessorKey: 'reorderlevel', header: 'Reord Lvl', size: 100 }
-  ];
 
   const handleGo = async () => {
     const errors = {};
@@ -208,16 +170,16 @@ function SupplierManagementReport() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/inventoryitem/getInventoryItemReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}&toDate=${formData.toDate}&fromDate=${formData.fromDate}`
+            `/inventoryitem/getSupplierReport?branch=${branch}&companyName=${formData.companyName}&finyear=${finYear}&orgId=${orgId}&toDate=${formData.toDate}&fromDate=${formData.fromDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/inventoryitem/getInventoryItemReport?branch=${branch}&finyear=${finYear}&orgId=${orgId}&product=${formData.productName}`
+            `/inventoryitem/getSupplierReport?branch=${branch}&companyName=${formData.companyName}&finyear=${finYear}&orgId=${orgId}`
           );
         }
         if (response.status === true) {
-          setRowData(response.paramObjectsMap.inventoryItemDetails || []);
+          setRowData(response.paramObjectsMap.supplierDetails || []);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -302,9 +264,9 @@ function SupplierManagementReport() {
       xPos += 30;
     }
     doc.setFont(undefined, 'bold');
-    doc.text('Product', xPos, 40);
+    doc.text('Comp Name', xPos, 40);
     doc.setFont(undefined, 'normal');
-    doc.text(formData.productName || 'All', xPos, 45);
+    doc.text(formData.companyName || 'All', xPos, 45);
 
     // 5) Table
     const headerLabels = columns.map((c) => c.header);
@@ -371,7 +333,7 @@ function SupplierManagementReport() {
         metadata.push({ label: 'From Date', value: dayjs(formData.fromDate).format('DD-MM-YYYY') });
         metadata.push({ label: 'To Date', value: dayjs(formData.toDate).format('DD-MM-YYYY') });
       }
-      metadata.push({ label: 'Product', value: formData.productName || 'All' });
+      metadata.push({ label: 'Comp Name', value: formData.companyName || 'All' });
       metadata.push({ label: 'Generated By', value: localStorage.getItem('userName') || 'System' });
       metadata.push({ label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') });
 
@@ -454,9 +416,9 @@ function SupplierManagementReport() {
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
-                    <Checkbox checked={selectedSections.productName} onChange={handleCheckboxChange} name="productName" color="secondary" />
+                    <Checkbox checked={selectedSections.companyName} onChange={handleCheckboxChange} name="companyName" color="secondary" />
                   }
-                  label="Product"
+                  label="Company"
                 />
               </div>
             </div>
@@ -500,40 +462,40 @@ function SupplierManagementReport() {
               </>
             )}
 
-            {selectedSections.productName && (
+            {selectedSections.companyName && (
               <div className="col-md-3 mb-3">
                 <Autocomplete
-                  options={['All', ...productNameList.map((row) => row.productName)]}
-                  value={formData.productName || null}
+                  options={['All', ...compNameList.map((row) => row.companyName)]}
+                  value={formData.companyName || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        productName: newValue
+                        companyName: newValue
                       }));
-                      setFieldErrors((prev) => ({ ...prev, productName: '' }));
+                      setFieldErrors((prev) => ({ ...prev, companyName: '' }));
                     } else {
-                      setFormData((prev) => ({ ...prev, productName: '' }));
-                      setFieldErrors((prev) => ({ ...prev, productName: 'Product Name is required' }));
+                      setFormData((prev) => ({ ...prev, companyName: '' }));
+                      setFieldErrors((prev) => ({ ...prev, companyName: 'Comp Name is required' }));
                     }
                   }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<span>Product</span>}
+                      label={<span>Comp Name</span>}
                       size="small"
-                      error={!!fieldErrors.productName}
-                      helperText={fieldErrors.productName}
+                      error={!!fieldErrors.companyName}
+                      helperText={fieldErrors.companyName}
                       fullWidth
                     />
                   )}
                 />
               </div>
             )}
-            {(selectedSections.date || selectedSections.productName) && (
+            {(selectedSections.date || selectedSections.companyName) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
-                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                  <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
                     <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
                     <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
@@ -554,7 +516,7 @@ function SupplierManagementReport() {
           }}
         >
           <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
-            Inventory Report
+            Supplier Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
@@ -578,14 +540,14 @@ function SupplierManagementReport() {
               data={rowData}
               columns={reportColumns}
               isListView={listView}
-              fileName={'Inventory Report'}
+              fileName={'Supplier Report'}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
                   columns: reportColumns,
                   data: rowData,
                   formData,
-                  fileName: 'Inventory Report',
+                  fileName: 'Supplier Report',
                   loginUserName
                 })
               }
@@ -594,7 +556,7 @@ function SupplierManagementReport() {
                   logo: listViewData[0]?.companyLogo,
                   columns: reportColumns,
                   data: rowData,
-                  fileName: 'Inventory Report'
+                  fileName: 'Supplier Report'
                 })
               }
             />
@@ -618,7 +580,7 @@ function SupplierManagementReport() {
               </Box>
             </DialogTitle>
             <DialogContent>
-              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <InventoryManagement selectedRow={fillGridData} />}</>}
+              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <SupplierManagement selectedRow={fillGridData} />}</>}
             </DialogContent>
           </Dialog>
         </>

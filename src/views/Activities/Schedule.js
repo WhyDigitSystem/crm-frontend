@@ -526,7 +526,7 @@ const Schedule = ({ selectedRow }) => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        <div className="d-flex justify-content-between mb-4" style={{ marginBottom: '20px' }}>
+        <div className="d-flex justify-content-between mb-3" style={{ marginBottom: '20px' }}>
           <div className="d-flex flex-wrap">
             {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
             {!listView && (
