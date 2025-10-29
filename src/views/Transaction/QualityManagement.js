@@ -5,8 +5,13 @@ import SaveIcon from '@mui/icons-material/Save';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
+import { TextField, Box, Tab, Grid, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
+import { Chip } from '@mui/material';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import {
   Avatar,
   Typography,
@@ -23,10 +28,10 @@ import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import KPIBox from 'views/basicMaster/KPIBox';
 
 const QualityManagement = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
@@ -42,12 +47,14 @@ const QualityManagement = ({ selectedRow }) => {
   const [listView, setListView] = useState(true);
   const [docId, setDocId] = useState('');
   const [resultList] = useState(['Pass', 'Fail', 'Pending']);
-  const [testTypeList] = useState(['Tensile Test', 'Bend Test', 'Chemical Analysis', 'Weight Test']);
+  const [testStatusList] = useState(['Conducted', 'Pending']);
+  const [testTypeList, setTestTypeList] = useState([]);
+  // const [testTypeList] = useState(['Tensile Test', 'Bend Test', 'Chemical Analysis', 'Weight Test']);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
       // setListView(false);
-      getLeadById({ original: selectedRow });
+      getQualityById({ original: selectedRow });
     }
   }, [selectedRow]);
   const [formData, setFormData] = useState({
@@ -63,7 +70,9 @@ const QualityManagement = ({ selectedRow }) => {
     remarks: '',
     result: '',
     testType: '',
-    testdate: dayjs()
+    testdate: dayjs(),
+    certificate: false,
+    test: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -83,15 +92,51 @@ const QualityManagement = ({ selectedRow }) => {
     { accessorKey: 'testType', header: 'Type', size: 140 },
     { accessorKey: 'testdate', header: 'Date', size: 140 },
     { accessorKey: 'inspector', header: 'Inspector', size: 140 },
-    { accessorKey: 'result', header: 'Result', size: 140 },
-    // { accessorKey: 'city', header: 'Certificate', size: 140 }
+    {
+      accessorKey: 'result',
+      header: 'Result',
+      size: 140,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        let color = 'default';
+        if (value === 'Pass') color = 'success';
+        else if (value === 'Fail') color = 'error';
+        else if (value === 'Pending') color = 'warning';
+        return <Chip label={value} color={color} size="small" />;
+      }
+    },
+    {
+      accessorKey: 'certificate',
+      header: 'Certificate',
+      size: 140,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return <Chip label={value ? 'Yes' : 'No'} color={value ? 'success' : 'default'} size="small" />;
+      }
+    }
   ];
 
   useEffect(() => {
     getAllQuality();
+    getKPIDetails();
     getLeadDocId();
     getProductName();
+    getTestType();
   }, []);
+  const getTestType = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Test%20Type&orgId=${orgId}`);
+      if (response.status === true) {
+        setTestTypeList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
   const getLeadDocId = async () => {
     if (editId) return;
     try {
@@ -110,7 +155,6 @@ const QualityManagement = ({ selectedRow }) => {
       setIsDocIdLoading(false);
     }
   };
-
   const getAllQuality = async () => {
     try {
       const response = await apiCalls(
@@ -129,7 +173,30 @@ const QualityManagement = ({ selectedRow }) => {
       setIsLoading(false);
     }
   };
-  const getLeadById = async (row) => {
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/inventoryitem/getQualityTestCount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.mapp[0];
+        setSummaryCounts({
+          pendingTest: quality.pendingTest || 0,
+          certificates: quality.certificates || 0,
+          percentage: quality.percentage || 0,
+          conducated: quality.conducated || 0
+        });
+        console.log('Summary', summaryCounts);
+        console.log('Summary', response.paramObjectsMap.mapp[0]);
+      } else {
+        setListViewData([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
+  const getQualityById = async (row) => {
     setIsLoading(true);
     setEditId(row.original.id);
     try {
@@ -151,7 +218,9 @@ const QualityManagement = ({ selectedRow }) => {
           remarks: quality.remarks || '',
           result: quality.result || '',
           testType: quality.testType || '',
-          testdate: quality.testdate || dayjs()
+          testdate: quality.testdate || dayjs(),
+          certificate: quality.certificate || false,
+          test: quality.test || ''
         });
         setDocId(quality.docid || '');
       }
@@ -176,6 +245,12 @@ const QualityManagement = ({ selectedRow }) => {
       return error;
     }
   };
+  const handleCheckboxChange = (event) => {
+    setFormData({
+      ...formData,
+      certificate: event.target.checked
+    });
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const processedValue = name === 'contactNo' ? String(value) : value;
@@ -198,16 +273,19 @@ const QualityManagement = ({ selectedRow }) => {
       remarks: formData.remarks || '',
       result: formData.result || '',
       testType: formData.testType || '',
+      certificate: formData.certificate || false,
       testdate: formData.testdate || dayjs(),
-      active: true
+      active: true,
+      test: formData.test || ''
     };
 
-    try {                                      
+    try {
       const response = await apiCalls('put', '/inventoryitem/createUpdateQualityTest', payload);
       if (response.status) {
         showToast('success', editId ? 'Quality Management updated successfully' : 'Quality Management created successfully');
         handleClear();
         getAllQuality();
+        getKPIDetails();
       } else {
         showToast('error', response.message || 'Operation failed');
       }
@@ -235,7 +313,9 @@ const QualityManagement = ({ selectedRow }) => {
       remarks: '',
       result: '',
       testType: '',
-      testdate: dayjs()
+      testdate: dayjs(),
+      certificate: false,
+      test: ''
     });
     setFieldErrors({
       docDate: '',
@@ -261,10 +341,10 @@ const QualityManagement = ({ selectedRow }) => {
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
   const [summaryCounts, setSummaryCounts] = useState({
-    New: 0,
-    Qualified: 0,
-    Unqualified: 0,
-    InProgress: 0
+    pendingTest: 0,
+    certificates: 0,
+    percentage: 0,
+    conducated: 0
   });
 
   return (
@@ -290,7 +370,55 @@ const QualityManagement = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing={true} toEdit={getLeadById} />
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Pass Rate %',
+                      count: summaryCounts.percentage,
+                      color: '#3f51b5',
+                      icon: <TrendingUpIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Test Conducted',
+                      count: summaryCounts.conducated,
+                      color: '#009688',
+                      icon: <AssessmentIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Pending Test',
+                      count: summaryCounts.pendingTest,
+                      color: '#ff7043',
+                      icon: <AccessTimeIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Certificates',
+                      count: summaryCounts.certificates,
+                      color: '#8e24aa',
+                      icon: <WorkspacePremiumIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getQualityById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">
@@ -360,6 +488,29 @@ const QualityManagement = ({ selectedRow }) => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={testTypeList}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={testTypeList.find((item) => item.listOfValues === formData.testType) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'testType', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Test Type</span>}
+                        size="small"
+                        error={!!fieldErrors.testType}
+                        helperText={fieldErrors.testType}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.testType}>
                     <InputLabel>Test Type</InputLabel>
                     <Select
@@ -378,7 +529,7 @@ const QualityManagement = ({ selectedRow }) => {
                     </Select>
                     {fieldErrors.testType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.testType}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -429,6 +580,26 @@ const QualityManagement = ({ selectedRow }) => {
                     {fieldErrors.result && <FormHelperText style={{ color: 'red' }}>{fieldErrors.result}</FormHelperText>}
                   </FormControl>
                 </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" error={!!fieldErrors.test}>
+                    <InputLabel>Test Status</InputLabel>
+                    <Select
+                      label="Test Status"
+                      name="test"
+                      value={formData.test}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.test}
+                      helperText={fieldErrors.test}
+                    >
+                      {testStatusList.map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.test && <FormHelperText style={{ color: 'red' }}>{fieldErrors.test}</FormHelperText>}
+                  </FormControl>
+                </div>
                 <div className="col-md-6 mb-3">
                   <TextField
                     label={<span>Remarks</span>}
@@ -440,6 +611,13 @@ const QualityManagement = ({ selectedRow }) => {
                     onChange={handleInputChange}
                     error={!!fieldErrors.remarks}
                     helperText={fieldErrors.remarks}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControlLabel
+                    control={<Checkbox checked={formData.certificate} onChange={handleCheckboxChange} />}
+                    label="Certificate"
+                    labelPlacement="end"
                   />
                 </div>
               </div>

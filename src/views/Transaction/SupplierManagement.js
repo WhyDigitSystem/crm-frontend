@@ -5,25 +5,23 @@ import SaveIcon from '@mui/icons-material/Save';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
+import { TextField, Box, Tab, Grid, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
-// import {  } from '@mui/material';
+import { motion } from 'framer-motion';
+import { Chip } from '@mui/material';
+import StarRateIcon from '@mui/icons-material/StarRate';
+import GroupsIcon from '@mui/icons-material/Groups';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import BlockIcon from '@mui/icons-material/Block';
 import StarIcon from '@mui/icons-material/Star';
-import {
-  Avatar,
-  Typography,
-  Autocomplete,
-  FormHelperText,
-  FormControl,
-  Rating,
-  FormLabel
-} from '@mui/material';
+import { Avatar, Typography, Autocomplete, FormHelperText, FormControl, Rating, FormLabel } from '@mui/material';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import KPIBox from 'views/basicMaster/KPIBox';
 
 const SupplierManagement = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
@@ -33,19 +31,19 @@ const SupplierManagement = ({ selectedRow }) => {
   const [branch] = useState(localStorage.getItem('branch'));
   const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear] = useState(localStorage.getItem('finYear'));
-  const [value, setValue] = useState(0);
+  const [supplierTypeList, setSupplierType] = useState([]);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [listView, setListView] = useState(true);
   const [docId, setDocId] = useState('');
-  const [supplierTypeList] = useState([
-    'Raw Material Supplier',
-    'Equipment Supplier',
-    'Service Provider',
-    'Consumables Supplier',
-    'Logistics Partner',
-    'Maintenance Service'
-  ]);
+  // const [supplierTypeList] = useState([
+  //   'Raw Material Supplier',
+  //   'Equipment Supplier',
+  //   'Service Provider',
+  //   'Consumables Supplier',
+  //   'Logistics Partner',
+  //   'Maintenance Service'
+  // ]);
   const [cityList, setCityList] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [paymentTermsList] = useState([
@@ -59,6 +57,7 @@ const SupplierManagement = ({ selectedRow }) => {
   ]);
   useEffect(() => {
     if (selectedRow) {
+      console.log('selectedrow', selectedRow);
       setIsLoading(true);
       getSupplierById({ original: selectedRow });
     }
@@ -109,17 +108,71 @@ const SupplierManagement = ({ selectedRow }) => {
     supplied: ''
   });
   const listViewColumns = [
-    { accessorKey: 'docid', header: 'Supplier Code', size: 140 },
-    { accessorKey: 'companyName', header: 'Company Name', size: 140 },
-    { accessorKey: 'contactPerson', header: 'Contact Person', size: 140 },
-    { accessorKey: 'phone', header: 'Phone', size: 140 },
-    { accessorKey: 'email', header: 'Email', size: 140 },
-    { accessorKey: 'supplierType', header: 'Type', size: 140 },
-    { accessorKey: 'status', header: 'Status', size: 140 }
+    { accessorKey: 'docid', header: 'Code', size: 100 },
+    { accessorKey: 'companyName', header: 'Company', size: 100 },
+    { accessorKey: 'contactPerson', header: 'Contact Person', size: 100 },
+    // { accessorKey: 'phone', header: 'Phone', size: 100 },
+    { accessorKey: 'email', header: 'Email', size: 100 },
+    { accessorKey: 'supplierType', header: 'Type', size: 100 },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      size: 100,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+
+        let chipColor = '';
+        let chipLabel = '';
+        let chipBg = '';
+
+        switch (value) {
+          case 'ACTIVE':
+            chipColor = '#00C853';
+            chipBg = 'rgba(0, 200, 83, 0.1)';
+            chipLabel = 'Active';
+            break;
+          case 'INACTIVE':
+            chipColor = '#FF9800';
+            chipBg = 'rgba(255, 152, 0, 0.1)';
+            chipLabel = 'In Progress';
+            break;
+          case 'PENDING APPROVAL':
+            chipColor = '#2979FF';
+            chipBg = 'rgba(41, 121, 255, 0.1)';
+            chipLabel = 'Pending';
+            break;
+          case 'BLOCKED':
+            chipColor = '#D50000';
+            chipBg = 'rgba(213, 0, 0, 0.1)';
+            chipLabel = 'Blocked';
+            break;
+          default:
+            chipColor = '#9E9E9E';
+            chipBg = 'rgba(158, 158, 158, 0.1)';
+            chipLabel = value || 'Unknown';
+        }
+
+        return (
+          <Chip
+            label={chipLabel}
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              color: chipColor,
+              backgroundColor: chipBg,
+              borderRadius: '8px',
+              textTransform: 'capitalize'
+            }}
+          />
+        );
+      }
+    }
   ];
 
   useEffect(() => {
     getAllSupplier();
+    getKPIDetails();
+    getSupplierType();
     getSupplierDocId();
     getStateName();
   }, []);
@@ -201,6 +254,20 @@ const SupplierManagement = ({ selectedRow }) => {
       console.error('Error fetching Supplier details:', error);
       showToast('error', 'Failed to fetch Supplier details');
       setIsLoading(false);
+    }
+  };
+  const getSupplierType = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Supplier%20Type&orgId=${orgId}`);
+      if (response.status === true) {
+        setSupplierType(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
     }
   };
   const getStateName = async () => {
@@ -331,6 +398,7 @@ const SupplierManagement = ({ selectedRow }) => {
         showToast('success', editId ? 'Inventory Management updated successfully' : 'Inventory Management created successfully');
         handleClear();
         getAllSupplier();
+        getKPIDetails();
       } else {
         showToast('error', response.message || 'Operation failed');
       }
@@ -401,7 +469,34 @@ const SupplierManagement = ({ selectedRow }) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
-
+  const [summaryCounts, setSummaryCounts] = useState({
+    rating: 0,
+    activeStatus: 0,
+    inProgressStatus: 0,
+    blocked: 0
+  });
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/inventoryitem/getSupplierCount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.mapp[0];
+        setSummaryCounts({
+          // rating: parseFloat(quality.rating || 0).toFixed(1),
+          rating: Number(parseFloat(quality.rating || 0).toFixed(1)),
+          activeStatus: quality.activeStatus || 0,
+          inProgressStatus: quality.inProgressStatus || 0,
+          blocked: quality.blocked || 0
+        });
+      } else {
+        summaryCounts([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
   return (
     <>
       {isLoading && (
@@ -425,12 +520,55 @@ const SupplierManagement = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              toEdit={getSupplierById}
-            />
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Rating',
+                      count: summaryCounts.rating,
+                      color: '#3f51b5',
+                      icon: <StarRateIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Active Suppliers',
+                      count: summaryCounts.activeStatus,
+                      color: '#009688',
+                      icon: <GroupsIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.inProgressStatus,
+                      color: '#ff7043',
+                      icon: <HourglassTopIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Blocked',
+                      count: summaryCounts.blocked,
+                      color: '#8e24aa',
+                      icon: <BlockIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getSupplierById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">
@@ -481,6 +619,29 @@ const SupplierManagement = ({ selectedRow }) => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={supplierTypeList}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={supplierTypeList.find((item) => item.listOfValues === formData.supplierType) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'supplierType', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Supplier Type</span>}
+                        size="small"
+                        error={!!fieldErrors.supplierType}
+                        helperText={fieldErrors.supplierType}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.supplierType}>
                     <InputLabel>Supplier Type</InputLabel>
                     <Select
@@ -499,7 +660,7 @@ const SupplierManagement = ({ selectedRow }) => {
                     </Select>
                     {fieldErrors.supplierType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierType}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label={<span>Contact Person</span>}

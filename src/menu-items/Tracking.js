@@ -1,5 +1,6 @@
 // assets
 import { IconMapSearch } from '@tabler/icons-react';
+import { IconMapPin } from '@tabler/icons-react';
 
 // screen access utility
 const hasScreenAccess = (screenId) => {
@@ -10,7 +11,8 @@ const hasScreenAccess = (screenId) => {
 
 // constant
 const icons = {
-    IconMapSearch
+    IconMapSearch,
+    IconMapPin
 };
 
 // ==============================|| Tracking MANAGEMENT MENU ITEMS ||============================== //
@@ -22,6 +24,13 @@ const TrackingChilder = [
         type: 'item',
         url: '/Tracking/LiveStaffTracker',
         icon: icons.IconMapSearch
+    },
+    hasScreenAccess('DGV') && {
+        id: 'dealerGeoView',
+        title: 'Dealer GeoView',
+        type: 'item',
+        url: '/Tracking/DealerGeoView',
+        icon: icons.IconMapPin
     }
 ].filter(Boolean);
 

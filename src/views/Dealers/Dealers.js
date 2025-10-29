@@ -65,6 +65,7 @@ const Dealer = ({ selectedRow }) => {
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [managerList, setManagerList] = useState([]);
+  const [dealerNameList, setDealerNameList] = useState([]);
   const [salesRepList, setSalesRepList] = useState([]);
   const [docId, setDocId] = useState('');
   const [stateList, setStateList] = useState([]);
@@ -103,6 +104,7 @@ const Dealer = ({ selectedRow }) => {
     dealerType: '',
     manager: '',
     salesRep: '',
+    dName: '',
     dealerName: '',
     dealerDOB: dayjs(),
     dealerAnniversary: dayjs(),
@@ -127,6 +129,7 @@ const Dealer = ({ selectedRow }) => {
   const [fieldErrors, setFieldErrors] = useState({
     dealerType: '',
     dealerName: '',
+    dName: '',
     manager: '',
     salesRep: '',
     state: '',
@@ -174,6 +177,20 @@ const Dealer = ({ selectedRow }) => {
       return error;
     }
   };
+  const getAllDealerName = async () => {
+    try {
+      const response = await apiCalls('get', `/dealer/getDealerName?orgId=${orgId}`);
+      if (response.status === true) {
+        setDealerNameList(response.paramObjectsMap.dealerNameDetails || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
 
   const getAllStates = async () => {
     try {
@@ -208,6 +225,7 @@ const Dealer = ({ selectedRow }) => {
   useEffect(() => {
     const initializeData = async () => {
       await getAllStates();
+      await getAllDealerName();
       await getAllSalesRep();
       await getAllSalesManager();
       await getDealersDocId(isDistributor);
@@ -296,7 +314,8 @@ const Dealer = ({ selectedRow }) => {
           dealerType: DealerVO.type || '',
           manager: DealerVO.manager || '',
           salesRep: DealerVO.saleRep || '',
-          dealerName: DealerVO.name || '',
+          dealerName: DealerVO.dealerName || '',
+          dName: DealerVO.name || '',
           creditLimit: DealerVO.creditLimit || '',
           chequeAvailable: DealerVO.chequeAvailable || '',
           district: DealerVO.district || '',
@@ -359,6 +378,7 @@ const Dealer = ({ selectedRow }) => {
       manager: '',
       salesRep: '',
       dealerName: '',
+      dName: '',
       dealerDOB: dayjs(),
       docDate: dayjs(),
       dealerAnniversary: dayjs(),
@@ -395,8 +415,8 @@ const Dealer = ({ selectedRow }) => {
     if (!formData.dealerType) {
       errors.dealerType = 'Type is required';
     }
-    if (!formData.dealerName) {
-      errors.dealerName = 'Name is required';
+    if (!formData.dName) {
+      errors.dName = 'Name is required';
     }
     if (!formData.manager) {
       errors.manager = 'Manager is required';
@@ -420,6 +440,7 @@ const Dealer = ({ selectedRow }) => {
       errors.status = 'Status is required';
     }
     setFieldErrors(errors);
+    console.log('Save', errors);
 
     if (Object.keys(errors).length === 0) {
       const saveFormData = {
@@ -432,7 +453,8 @@ const Dealer = ({ selectedRow }) => {
         type: formData.dealerType,
         manager: formData.manager,
         saleRep: formData.salesRep,
-        name: formData.dealerName,
+        name: formData.dName,
+        dealerName: formData.dealerName,
         creditLimit: parseInt(formData.creditLimit) || 0,
         chequeAvailable: formData.chequeAvailable,
         state: formData.state,
@@ -521,7 +543,7 @@ const Dealer = ({ selectedRow }) => {
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
-          <div className="d-flex justify-content-between align-items-center mb-4" style={{ width: '100%' }}>
+          <div className="d-flex justify-content-between align-items-center mb-3" style={{ width: '100%' }}>
             {/* Left side buttons */}
             {!selectedRow && (
               <div className="d-flex align-items-center gap-0">
@@ -593,7 +615,7 @@ const Dealer = ({ selectedRow }) => {
           {showForm ? (
             <>
               <div className="row d-flex ml">
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -611,6 +633,24 @@ const Dealer = ({ selectedRow }) => {
                       />
                     </LocalizationProvider>
                   </FormControl>
+                </div> */}
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="dName"
+                    label={
+                      <span>
+                        Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="dName"
+                    value={formData.dName}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.dName}
+                    helperText={fieldErrors.dName}
+                  />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.dealerType}>
@@ -664,6 +704,37 @@ const Dealer = ({ selectedRow }) => {
                     )}
                   />
                 </div>
+                {isDistributor && (
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={dealerNameList}
+                      getOptionLabel={(option) => (option?.dealerName ? `${option.dealerName}` : '')}
+                      value={dealerNameList.find((item) => item.dealerName === formData.dealerName) || null}
+                      onChange={(event, newValue) => {
+                        if (newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            dealerName: newValue.dealerName
+                          }));
+                          setFieldErrors((prev) => ({ ...prev, dealerName: '' }));
+                        } else {
+                          setFormData((prev) => ({ ...prev, dealerName: '' }));
+                          setFieldErrors((prev) => ({ ...prev, dealerName: 'Dealer is required' }));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={<span>Dealer Name</span>}
+                          size="small"
+                          error={!!fieldErrors.dealerName}
+                          helperText={fieldErrors.dealerName}
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </div>
+                )}
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={salesRepList}
@@ -695,24 +766,6 @@ const Dealer = ({ selectedRow }) => {
                         fullWidth
                       />
                     )}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    id="dealerName"
-                    label={
-                      <span>
-                        Name <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="dealerName"
-                    value={formData.dealerName}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.dealerName}
-                    helperText={fieldErrors.dealerName}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -956,7 +1009,7 @@ const Dealer = ({ selectedRow }) => {
                     onChange={handleInputChange}
                   />
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <TextField
                     label="Latitude"
                     variant="outlined"
@@ -977,7 +1030,7 @@ const Dealer = ({ selectedRow }) => {
                     value={formData.longitude}
                     onChange={handleInputChange}
                   />
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label="GST No"

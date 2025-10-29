@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { TextField, Box, FormControl, InputLabel, MenuItem, Select, FormHelperText, Tab, Tabs, Autocomplete } from '@mui/material';
+import { TextField, Box, FormControl, InputLabel, MenuItem, Select, Grid, Tab, Tabs, Autocomplete } from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -13,8 +13,12 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import KPIBox from 'views/basicMaster/KPIBox';
 
 const SalesOrder = ({ selectedRow }) => {
   // State management
@@ -40,15 +44,8 @@ const SalesOrder = ({ selectedRow }) => {
       getSalesOrderById({ original: selectedRow });
     }
   }, [selectedRow]);
-  const [summaryCounts, setSummaryCounts] = useState({
-    New: 0,
-    Qualified: 0,
-    Unqualified: 0,
-    InProgress: 0
-  });
   const statusOptions = ['Open', 'In-Progress', 'Completed'];
 
-  // Form data
   const [formData, setFormData] = useState({
     address: '',
     salesDate: dayjs(),
@@ -101,13 +98,25 @@ const SalesOrder = ({ selectedRow }) => {
   // Table columns for list view
   const listViewColumns = useMemo(
     () => [
-      { accessorKey: 'docId', header: 'Sales Order ID', size: 140 },
-      { accessorKey: 'clientName', header: 'Client Name', size: 140 },
-      { accessorKey: 'contactName', header: 'Contact', size: 140 },
-      { accessorKey: 'mobileNumber', header: 'Mobile No', size: 140 },
-      { accessorKey: 'email', header: 'Email', size: 140 },
-      { accessorKey: 'status', header: 'Status', size: 140 },
-      { accessorKey: 'totalAmount', header: 'Total Amount', size: 140 }
+      { accessorKey: 'docId', header: 'Sales Order ID', size: 100 },
+      { accessorKey: 'clientName', header: 'Client', size: 100 },
+      { accessorKey: 'contactName', header: 'Contact', size: 100 },
+      { accessorKey: 'mobileNumber', header: 'Mobile No', size: 100 },
+      { accessorKey: 'email', header: 'Email', size: 100 },
+      { accessorKey: 'status', header: 'Status', size: 100 },
+      {
+        accessorKey: 'netAmount',
+        header: 'Total Amount',
+        size: 100,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return (
+            <div style={{ textAlign: 'right' }}>
+              {value !== null && value !== undefined && value !== '' ? Number(value).toLocaleString('en-IN') : '0'}
+            </div>
+          );
+        }
+      },
     ],
     []
   );
@@ -194,6 +203,7 @@ const SalesOrder = ({ selectedRow }) => {
   // Initial data fetch
   useEffect(() => {
     getAllSalesOrders();
+    getKPIDetails();
     getSalesOrderDocId();
     getClientName();
   }, []);
@@ -308,35 +318,6 @@ const SalesOrder = ({ selectedRow }) => {
       // }
       if (response.status === true && response.paramObjectsMap?.salesOrderVO?.length > 0) {
         setListViewData([...response.paramObjectsMap.salesOrderVO].reverse());
-
-        const counts = {
-          New: 0,
-          Qualified: 0,
-          Unqualified: 0,
-          InProgress: 0
-        };
-        response.paramObjectsMap.salesOrderVO.forEach((lead) => {
-          switch (lead.status) {
-            case 'Open':
-            case 'In-Progress':
-              counts.InProgress += 1;
-              break;
-            case 'Completed':
-              counts.Qualified += 1;
-              break;
-            default:
-              break;
-          }
-        });
-
-        // First set the calculated counts
-        setSummaryCounts(counts);
-
-        // Then update the 'New' count properly
-        setSummaryCounts((prev) => ({
-          ...prev,
-          New: response.paramObjectsMap.salesOrderVO.length
-        }));
         setIsLoading(false);
       } else {
         setIsLoading(false);
@@ -675,6 +656,7 @@ const SalesOrder = ({ selectedRow }) => {
         showToast('success', editId ? 'Sales order updated successfully' : 'Sales order created successfully');
         handleClear();
         await getAllSalesOrders();
+        await getKPIDetails();
       } else {
         showToast('error', response.message || 'Operation failed');
       }
@@ -799,6 +781,33 @@ const SalesOrder = ({ selectedRow }) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
+  const [summaryCounts, setSummaryCounts] = useState({
+    totalCount: 0,
+    completed: 0,
+    inprocess: 0,
+    open: 0
+  });
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getSalesOrderCount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.salesOrderCounts[0];
+        setSummaryCounts({
+          totalCount: Number(parseFloat(quality.totalCount || 0).toFixed(1)),
+          completed: quality.completed || 0,
+          inprocess: quality.inprocess || 0,
+          open: quality.open || 0
+        });
+      } else {
+        summaryCounts([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
   return (
     <>
       {isLoading && (
@@ -822,13 +831,58 @@ const SalesOrder = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonTableWithStatus
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              toEdit={getSalesOrderById}
-              summaryCounts={summaryCounts}
-            />
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Total',
+                      count: summaryCounts.totalCount,
+                      color: '#3f51b5',
+                      icon: <SummarizeIcon />
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Completed',
+                      count: summaryCounts.completed,
+                      color: '#4caf50',
+                      icon: <CheckCircleIcon />
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.inprocess,
+                      color: '#039be5',
+                      icon: <AutorenewIcon />
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Open',
+                      count: summaryCounts.open,
+                      color: '#ffb300',
+                      icon: <FolderOpenIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getSalesOrderById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">

@@ -5,9 +5,12 @@ import {
   IconWorld,
   IconFileText,
   IconShoppingCart,
-  IconUsers
+  IconUsers,
+  IconBuildingFactory, // Production Management
+  IconBuildingWarehouse, // Inventory Management
+  IconTruckDelivery, // Supplier Management
+  IconCertificate
 } from '@tabler/icons-react';
-
 // screen access utility
 const hasScreenAccess = (screenId) => {
   const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
@@ -57,29 +60,29 @@ const transactionChildren = [
     title: 'Production Management',
     type: 'item',
     url: '/Transaction/ProductionManagement',
-    icon: IconUsers
+    icon: IconBuildingFactory
   },
   hasScreenAccess('IM') && {
     id: 'InventoryManagement',
     title: 'Inventory Management',
     type: 'item',
     url: '/Transaction/InventoryManagement',
-    icon: IconUsers
+    icon: IconBuildingWarehouse
   },
   hasScreenAccess('SM') && {
     id: 'SupplierManagement',
     title: 'Supplier Management',
     type: 'item',
     url: '/Transaction/SupplierManagement',
-    icon: IconUsers
+    icon: IconTruckDelivery
   },
   hasScreenAccess('QM') && {
     id: 'QualityManagement',
     title: 'Quality Management',
     type: 'item',
     url: '/Transaction/QualityManagement',
-    icon: IconUsers
-  },
+    icon: IconCertificate
+  }
 ].filter(Boolean);
 
 const Transaction =

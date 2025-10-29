@@ -201,9 +201,9 @@ const reportColumns = [
   const handleDocClick = async (docId, screenCode) => {
     setModalOpen(true);
     try {
-      const response = await apiCalls('get', `/inventoryitem/getInventoryItemByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`);
+      const response = await apiCalls('get', `/inventoryitem/getSupplierByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`);
       if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.inventoryItemVO || []);
+        setFillGridData(response.paramObjectsMap.supplierVO || []);
       } else {
         console.error('API Error:', response);
       }

@@ -3,9 +3,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import { DatePicker } from '@mui/x-date-pickers';
+import { Chip } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TextField, MenuItem, Select, InputLabel, ListItemIcon, ListItemText } from '@mui/material';
+import { TextField, Grid, MenuItem, Select, InputLabel, ListItemIcon, ListItemText } from '@mui/material';
 import { useState, useEffect } from 'react';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import Brightness2Icon from '@mui/icons-material/Brightness2';
@@ -14,9 +15,14 @@ import { Autocomplete, FormHelperText, FormControl } from '@mui/material';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import KPIBox from 'views/basicMaster/KPIBox';
 
 const ProductionManagement = ({ selectedRow }) => {
   const shiftIcons = {
@@ -38,6 +44,7 @@ const ProductionManagement = ({ selectedRow }) => {
   const [relatedOrder] = useState([]);
   const [supervisorName, setSupervisorName] = useState([]);
   const [productName, setProductName] = useState([]);
+  const [productionLineList, setProductionLineList] = useState([]);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
@@ -91,11 +98,69 @@ const ProductionManagement = ({ selectedRow }) => {
     { accessorKey: 'productionLine', header: 'Line', size: 140 },
     { accessorKey: 'startDate', header: 'Start Date', size: 140 },
     { accessorKey: 'plannedCompletionDate', header: 'End Date', size: 140 },
-    { accessorKey: 'status', header: 'Status', size: 140 }
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      size: 140,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+
+        let chipColor = '';
+        let chipBg = '';
+        let chipLabel = '';
+
+        switch (value) {
+          case 'PLANNED':
+            chipColor = '#1E88E5'; // Blue
+            chipBg = 'rgba(30, 136, 229, 0.1)';
+            chipLabel = 'Planned';
+            break;
+          case 'INPROGRESS':
+            chipColor = '#FB8C00'; // Orange
+            chipBg = 'rgba(251, 140, 0, 0.1)';
+            chipLabel = 'In Progress';
+            break;
+          case 'COMPLETED':
+            chipColor = '#43A047'; // Green
+            chipBg = 'rgba(67, 160, 71, 0.1)';
+            chipLabel = 'Completed';
+            break;
+          case 'ONHOLD':
+            chipColor = '#8E24AA'; // Purple
+            chipBg = 'rgba(142, 36, 170, 0.1)';
+            chipLabel = 'On Hold';
+            break;
+          case 'CANCELLED':
+            chipColor = '#E53935'; // Red
+            chipBg = 'rgba(229, 57, 53, 0.1)';
+            chipLabel = 'Cancelled';
+            break;
+          default:
+            chipColor = '#9E9E9E'; // Grey
+            chipBg = 'rgba(158, 158, 158, 0.1)';
+            chipLabel = value || 'Unknown';
+        }
+
+        return (
+          <Chip
+            label={chipLabel}
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              color: chipColor,
+              backgroundColor: chipBg,
+              borderRadius: '8px',
+              textTransform: 'capitalize'
+            }}
+          />
+        );
+      }
+    }
   ];
 
   useEffect(() => {
     getAllProductionManagement();
+    getProductionLine();
     getProductionDocId();
     getSupervisorName();
     getProductName();
@@ -209,6 +274,20 @@ const ProductionManagement = ({ selectedRow }) => {
       const response = await apiCalls('get', `/master/getSupervisorName?orgId=${orgId}`);
       if (response.status === true) {
         setSupervisorName(response.paramObjectsMap.supervisorName || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getProductionLine = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Production%20LINE&orgId=${orgId}`);
+      if (response.status === true) {
+        setProductionLineList(response.paramObjectsMap.listValues || []);
       } else {
         console.error('API Error:', response);
         return response;
@@ -369,7 +448,7 @@ const ProductionManagement = ({ selectedRow }) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
+            <div className="d-flex flex-wrap justify-content-start mb-2" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
               {!listView && (
                 <>
@@ -381,13 +460,55 @@ const ProductionManagement = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonTableWithStatus
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              toEdit={getProductionById}
-              summaryCounts={summaryCounts}
-            />
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Total Orders',
+                      count: summaryCounts.New,
+                      color: '#1e88e5',
+                      icon: <ShoppingCartIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Completed',
+                      count: summaryCounts.Qualified,
+                      color: '#43a047',
+                      icon: <CheckCircleIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Cancelled',
+                      count: summaryCounts.Unqualified,
+                      color: '#e53935',
+                      icon: <CancelIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.InProgress,
+                      color: '#fb8c00',
+                      icon: <HourglassTopIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getProductionById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">
@@ -470,7 +591,7 @@ const ProductionManagement = ({ selectedRow }) => {
                   <TextField
                     label={
                       <span>
-                        Planned Qty(Mt)<span className="asterisk">*</span>
+                        Planned Qty<span className="asterisk">*</span>
                       </span>
                     }
                     variant="outlined"
@@ -485,6 +606,33 @@ const ProductionManagement = ({ selectedRow }) => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={productionLineList}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={productionLineList.find((item) => item.listOfValues === formData.productionLine) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'productionLine', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={
+                          <span>
+                            Production Line <span className="asterisk">*</span>
+                          </span>
+                        }
+                        size="small"
+                        error={!!fieldErrors.productionLine}
+                        helperText={fieldErrors.productionLine}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.status}>
                     <InputLabel id="demo-simple-select-label">
                       Production Line <span style={{ color: 'red', fontSize: '20px' }}>*</span>
@@ -505,7 +653,7 @@ const ProductionManagement = ({ selectedRow }) => {
                     </Select>
                     {fieldErrors.productionLine && <FormHelperText style={{ color: 'red' }}>{fieldErrors.productionLine}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>

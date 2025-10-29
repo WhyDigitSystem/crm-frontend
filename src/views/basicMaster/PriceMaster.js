@@ -31,8 +31,6 @@ export const PriceMaster = () => {
   const [loginUserName] = useState(localStorage.getItem('userName'));
 
   const [productList, setProductList] = useState([]);
-  const [categoryList, setCategoryList] = useState([]);
-  const [subCategoryList, setSubCategoryList] = useState([]);
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -54,8 +52,6 @@ export const PriceMaster = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllCategories();
-    getAllSubCategories();
     getAllProducts();
     getAllPrices();
   }, []);
@@ -106,25 +102,6 @@ export const PriceMaster = () => {
       console.error('Error fetching products:', err);
     }
   };
-
-  const getAllSubCategories = async () => {
-    try {
-      const res = await apiCalls('get', `master/getSubCategoryByOrgId?orgId=${orgId}`);
-      setSubCategoryList(res.paramObjectsMap.subCategoryVO || []);
-    } catch (err) {
-      console.error('Error fetching subcategories:', err);
-    }
-  };
-
-  const getAllCategories = async () => {
-    try {
-      const res = await apiCalls('get', `ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
-      setCategoryList(res.paramObjectsMap.categoryVO || []);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
     const updatedValue = name === 'active' ? checked : value;
@@ -273,7 +250,8 @@ export const PriceMaster = () => {
                         productName: newValue.productName || '',
                         brand: newValue.brand || '',
                         category: newValue.category || '',
-                        subCategory: newValue.subCategory || ''
+                        subCategory: newValue.subCategory || '',
+                        price: newValue.pricePerUnit || ''
                       }));
                       setFieldErrors((prev) => ({
                         ...prev,
@@ -330,6 +308,7 @@ export const PriceMaster = () => {
                 <TextField
                   label="Price"
                   type="number"
+                  disabled
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}

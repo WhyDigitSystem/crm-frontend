@@ -26,7 +26,6 @@ import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';

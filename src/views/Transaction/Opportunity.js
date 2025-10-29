@@ -3,7 +3,20 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { TextField, Autocomplete, FormControl, Dialog, DialogContent, DialogTitle, MenuItem, Select, Box, Tab, Tabs } from '@mui/material';
+import {
+  TextField,
+  Grid,
+  Autocomplete,
+  FormControl,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  MenuItem,
+  Select,
+  Box,
+  Tab,
+  Tabs
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton } from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
@@ -13,11 +26,12 @@ import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import { Button, CircularProgress } from '@mui/material';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import CommonReportTable from 'utils/CommonReportTable';
+import KPIBox from 'views/basicMaster/KPIBox';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const Opportunity = ({ selectedRow }) => {
   // State management
@@ -43,13 +57,6 @@ const Opportunity = ({ selectedRow }) => {
       getOpportunityById({ original: selectedRow });
     }
   }, [selectedRow]);
-  const [summaryCounts, setSummaryCounts] = useState({
-    New: 0,
-    Qualified: 0,
-    Unqualified: 0,
-    InProgress: 0
-  });
-
   // User session data
   const orgId = parseInt(localStorage.getItem('orgId'));
   const finYear = parseInt(localStorage.getItem('finYear'));
@@ -113,12 +120,24 @@ const Opportunity = ({ selectedRow }) => {
   const listViewColumns = useMemo(
     () => [
       { accessorKey: 'docId', header: 'Opportunity ID', size: 140 },
-      { accessorKey: 'clientName', header: 'Client Name', size: 140 },
+      { accessorKey: 'clientName', header: 'Client', size: 140 },
       { accessorKey: 'contactName', header: 'Contact', size: 140 },
       { accessorKey: 'mobileNo', header: 'Mobile No', size: 140 },
       { accessorKey: 'email', header: 'Email', size: 140 },
-      { accessorKey: 'status', header: 'Status', size: 140 },
-      { accessorKey: 'totalAmount', header: 'Total Amount', size: 140 }
+      // { accessorKey: 'status', header: 'Status', size: 140 },
+      {
+        accessorKey: 'totalAmount',
+        header: 'Total Amount',
+        size: 100,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return (
+            <div style={{ textAlign: 'right' }}>
+              {value !== null && value !== undefined && value !== '' ? Number(value).toLocaleString('en-IN') : '0'}
+            </div>
+          );
+        }
+      }
     ],
     []
   );
@@ -130,13 +149,36 @@ const Opportunity = ({ selectedRow }) => {
 
   // Initial data fetch
   useEffect(() => {
+    getKPIDetails();
     getAllOpportunities();
     getOpportunityDocId();
     getAllCategories();
     getClientName();
     getProductName();
   }, []);
+  const getSellingPrice = async (productName, index) => {
+    if (!productName || index === undefined) return;
+    try {
+      const response = await apiCalls('get', `/transaction/getSellingPriceFromPriceMaster?orgId=${orgId}&productName=${productName}`);
+      const priceArray = response?.paramObjectsMap?.priceDetails;
 
+      if (response.status === true && Array.isArray(priceArray) && priceArray.length > 0) {
+        const sellingPrice = priceArray[0]?.sellingPrice;
+        setOpportunityDetails((prevRows) => {
+          const updatedRows = [...prevRows];
+          updatedRows[index] = {
+            ...updatedRows[index],
+            opportunityAmount: sellingPrice
+          };
+          return updatedRows;
+        });
+      } else {
+        console.error('API Error: No valid price data found');
+      }
+    } catch (error) {
+      console.error('Error fetching price:', error);
+    }
+  };
   const getAllCategories = async () => {
     try {
       const response = await apiCalls('get', `/ncontroller/getAllCategoryByOrgId?orgId=${orgId}`);
@@ -253,34 +295,6 @@ const Opportunity = ({ selectedRow }) => {
       if (response.status === true && response.paramObjectsMap?.opportunityVO?.length > 0) {
         setListViewData([...response.paramObjectsMap.opportunityVO].reverse());
         setIsLoading(false);
-        const counts = {
-          New: 0,
-          Qualified: 0,
-          Unqualified: 0,
-          InProgress: 0
-        };
-        response.paramObjectsMap.opportunityVO.forEach((lead) => {
-          switch (lead.stage) {
-            case 'Progressing':
-            case 'Proposal':
-            case 'Negotiation':
-              counts.InProgress += 1;
-              break;
-            case 'Closed Won':
-              counts.Qualified += 1;
-              break;
-            case 'Closed Lost':
-              counts.Unqualified += 1;
-              break;
-            default:
-              break;
-          }
-        });
-        setSummaryCounts(counts);
-        setSummaryCounts((prev) => ({
-          ...prev,
-          New: response.paramObjectsMap.opportunityVO.length
-        }));
       } else {
         setIsLoading(false);
         showToast('error', response.message);
@@ -557,6 +571,7 @@ const Opportunity = ({ selectedRow }) => {
         showToast('success', editId ? 'Opportunity updated successfully' : 'Opportunity created successfully');
         handleClear();
         getAllOpportunities();
+        getKPIDetails();
       } else {
         showToast('error', response.message || 'Operation failed');
       }
@@ -785,6 +800,33 @@ const Opportunity = ({ selectedRow }) => {
     { accessorKey: 'email', header: 'Email', size: 100 },
     { accessorKey: 'address', header: 'Address', size: 80 }
   ];
+  const [summaryCounts, setSummaryCounts] = useState({
+    rating: 0,
+    activeStatus: 0,
+    inProgressStatus: 0,
+    blocked: 0
+  });
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/inventoryitem/getSupplierCount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.mapp[0];
+        setSummaryCounts({
+          rating: quality.rating || 0,
+          activeStatus: quality.activeStatus || 0,
+          inProgressStatus: quality.inProgressStatus || 0,
+          blocked: quality.blocked || 0
+        });
+      } else {
+        summaryCounts([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
   return (
     <>
       {isLoading && (
@@ -837,13 +879,55 @@ const Opportunity = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonTableWithStatus
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              toEdit={getOpportunityById}
-              summaryCounts={summaryCounts}
-            />
+            <>
+              {/* <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Rating',
+                      count: summaryCounts.rating,
+                      color: '#3f51b5',
+                      icon: <StarRateIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Active Suppliers',
+                      count: summaryCounts.activeStatus,
+                      color: '#009688',
+                      icon: <GroupsIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.inProgressStatus,
+                      color: '#ff7043',
+                      icon: <HourglassTopIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Blocked',
+                      count: summaryCounts.blocked,
+                      color: '#8e24aa',
+                      icon: <BlockIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid> */}
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getOpportunityById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">
@@ -1177,6 +1261,7 @@ const Opportunity = ({ selectedRow }) => {
                                                 category: '',
                                                 subCategory: ''
                                               };
+                                              getSellingPrice(newValue.productName, index);
                                             } else {
                                               updatedOpportunities[index] = {
                                                 ...updatedOpportunities[index],

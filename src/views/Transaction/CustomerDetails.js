@@ -522,15 +522,14 @@ export const CustomerDetails = () => {
   };
 
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 120 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 120 },
+    { accessorKey: 'docId', header: 'Customer Id', size: 120 },
+    { accessorKey: 'docDate', header: 'Date', size: 120 },
     { accessorKey: 'clientType', header: 'Client Type', size: 180 },
-    { accessorKey: 'clientName', header: 'Client Name', size: 180 },
-    { accessorKey: 'mobileNumber', header: 'Contact', size: 150 },
+    { accessorKey: 'clientName', header: 'Client', size: 180 },
+    { accessorKey: 'mobileNumber', header: 'Contact No', size: 150 },
     { accessorKey: 'email', header: 'Email', size: 200 },
-    { accessorKey: 'industry', header: 'Type', size: 120 },
-    { accessorKey: 'website', header: 'Industry', size: 150 },
-    { accessorKey: 'pincode', header: 'Source', size: 130 }
+    { accessorKey: 'industry', header: 'Industry', size: 120 },
+    // { accessorKey: 'website', header: 'Website', size: 150 }
   ];
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -869,8 +868,8 @@ export const CustomerDetails = () => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   #
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Branch Code *</th>
-                                <th className="px-2 py-2 text-white text-center">Branch Name *</th>
+                                <th className="px-2 py-2 text-white text-center">Br Code *</th>
+                                <th className="px-2 py-2 text-white text-center">Br Name *</th>
                                 <th className="px-2 py-2 text-white text-center">Reg No *</th>
                                 <th className="px-2 py-2 text-white text-center">City *</th>
                                 <th className="px-2 py-2 text-white text-center">State *</th>

@@ -6,10 +6,14 @@ import SaveIcon from '@mui/icons-material/Save';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TextField, Box, Tab, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
+import { TextField, Box, Tab, Grid, Tabs, MenuItem, Select, InputLabel } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import IconButton from '@mui/material/IconButton';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CancelIcon from '@mui/icons-material/Cancel';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import {
   Avatar,
   Typography,
@@ -26,9 +30,10 @@ import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import KPIBox from 'views/basicMaster/KPIBox';
 
 const Lead = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
@@ -46,9 +51,9 @@ const Lead = ({ selectedRow }) => {
   const [open, setOpen] = useState(false);
   const [cityList, setCityList] = useState([]);
   const [assignToList, setAssignToList] = useState([]);
-  const [sources] = useState(['Call', 'Email', 'Existing Customer', 'Partner', 'Public Relations', 'Campaign', 'Website', 'Other']);
-  const [clientTypes] = useState(['Company', 'Individual']);
-  const [industries] = useState(['IT', 'Agriculture', 'Health Care', 'Transport', 'CFO Services', 'Manufacturing', 'Construction']);
+  const [sources, setSourceList] = useState([]);
+  const [clientTypes, setclientTypes] = useState([]);
+  const [industries, setIndustries] = useState([]);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
@@ -60,7 +65,7 @@ const Lead = ({ selectedRow }) => {
     source: '',
     clientType: '',
     clientName: '',
-    mail: '',
+    email: '',
     contactNo: '',
     industry: '',
     website: '',
@@ -88,7 +93,9 @@ const Lead = ({ selectedRow }) => {
     state: '',
     country: '',
     pinCode: '',
-    address: ''
+    address: '',
+    email: '',
+    contactNo: ''
   });
 
   const [leadBranches, setLeadBranches] = useState([
@@ -137,8 +144,8 @@ const Lead = ({ selectedRow }) => {
   ]);
 
   const listViewColumns = [
-    { accessorKey: 'clientName', header: 'Client Name', size: 140 },
-    { accessorKey: 'clientType', header: 'Client Type', size: 140 },
+    { accessorKey: 'clientName', header: 'Name', size: 140 },
+    { accessorKey: 'clientType', header: 'Type', size: 140 },
     { accessorKey: 'contactNo', header: 'Contact No', size: 140 },
     { accessorKey: 'mail', header: 'Email', size: 140 },
     { accessorKey: 'industry', header: 'Industry', size: 140 },
@@ -149,10 +156,56 @@ const Lead = ({ selectedRow }) => {
 
   useEffect(() => {
     getAllLeads();
+    getKPIDetails();
     getLeadDocId();
     getCityName();
+    getSource();
+    getClientType();
+    getIndustries();
     getAssignTo();
   }, []);
+  const getSource = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Source&orgId=${orgId}`);
+      if (response.status === true) {
+        setSourceList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getClientType = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Client%20Type&orgId=${orgId}`);
+      if (response.status === true) {
+        setclientTypes(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getIndustries = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Industries&orgId=${orgId}`);
+      if (response.status === true) {
+        setIndustries(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
   const getLeadDocId = async () => {
     if (editId) return;
     try {
@@ -179,36 +232,6 @@ const Lead = ({ selectedRow }) => {
 
       if (response.status === true && response.paramObjectsMap?.leadVO?.length > 0) {
         setListViewData([...response.paramObjectsMap.leadVO].reverse());
-
-        const counts = {
-          New: 0,
-          Qualified: 0,
-          Unqualified: 0,
-          InProgress: 0
-        };
-
-        response.paramObjectsMap.leadVO.forEach((lead) => {
-          switch (lead.stage) {
-            case 'Progressing':
-            case 'Proposal':
-            case 'Negotiation':
-              counts.InProgress += 1;
-              break;
-            case 'Closed Won':
-              counts.Qualified += 1;
-              break;
-            case 'Closed Lost':
-              counts.Unqualified += 1;
-              break;
-            default:
-              break;
-          }
-        });
-        setSummaryCounts(counts);
-        setSummaryCounts((prev) => ({
-          ...prev,
-          New: response.paramObjectsMap.leadVO.length
-        }));
       } else {
         setListViewData([]);
       }
@@ -219,10 +242,6 @@ const Lead = ({ selectedRow }) => {
       setIsLoading(false);
     }
   };
-  // useEffect(() => {
-  //     console.log("Get all leads", listViewData);
-  //     listViewData.length > 0 ? setIsLoading(false) : setIsLoading(true);
-  // }, [listViewData])
   const getLeadById = async (row) => {
     setIsLoading(true);
     setEditId(row.original.id);
@@ -244,7 +263,7 @@ const Lead = ({ selectedRow }) => {
           customer: lead.customer || '',
           finYear: lead.finYear || '',
           industry: lead.industry || '',
-          mail: lead.mail || '',
+          email: lead.mail || '',
           pinCode: lead.pinCode || '',
           source: lead.source || '',
           state: lead.state || '',
@@ -351,17 +370,42 @@ const Lead = ({ selectedRow }) => {
     }
   };
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    // Convert to string if it's the contactNo field
-    const processedValue = name === 'contactNo' ? String(value) : value;
-    setFormData((prev) => ({ ...prev, [name]: processedValue }));
-    setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    const { name, value, checked, type } = e.target;
+
+    let errorMessage = '';
+    if (name === 'mobileNo' && value && !/^\d{10}$/.test(value)) {
+      errorMessage = 'Invalid mobile number (10 digits required)';
+    }
+    if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      errorMessage = 'Invalid email format';
+    }
+    if (name === 'pinCode' && value && !/^\d{6}$/.test(value)) {
+      errorMessage = 'Invalid pin code (6 digits required)';
+    }
+
+    if (errorMessage) {
+      setFieldErrors((prev) => ({ ...prev, [name]: errorMessage }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   // Convert to string if it's the contactNo field
+  //   const processedValue = name === 'contactNo' ? String(value) : value;
+  //   setFormData((prev) => ({ ...prev, [name]: processedValue }));
+  //   setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+  // };
 
   const validateMainField = (field, value) => {
     const newErrors = { ...fieldErrors };
 
-    if (field === 'mail' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       newErrors[field] = 'Invalid email format';
     } else if (field === 'contactNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
       newErrors[field] = 'Invalid contact number';
@@ -416,8 +460,8 @@ const Lead = ({ selectedRow }) => {
     if (!formData.customer) errors.customer = 'Customer is required';
     if (!formData.address) errors.address = 'Address is required';
 
-    if (formData.mail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) {
-      errors.mail = 'Invalid email format';
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Invalid email format';
     }
 
     if (String(formData.contactNo).trim() && !/^[0-9+\-\s]{10,15}$/.test(String(formData.contactNo))) {
@@ -492,7 +536,7 @@ const Lead = ({ selectedRow }) => {
       customer: formData.customer || '',
       finYear: formData.finYear,
       industry: formData.industry,
-      mail: formData.mail,
+      mail: formData.email,
       orgId: orgId,
       pinCode: formData.pinCode ? parseInt(formData.pinCode) : 0,
       source: formData.source,
@@ -540,6 +584,7 @@ const Lead = ({ selectedRow }) => {
         }
         handleClear();
         getAllLeads();
+        getKPIDetails();
       } else {
         showToast('error', response.message || 'Operation failed');
       }
@@ -560,7 +605,7 @@ const Lead = ({ selectedRow }) => {
       source: '',
       clientType: '',
       clientName: '',
-      mail: '',
+      email: '',
       stage: '',
       contactNo: '',
       industry: '',
@@ -789,11 +834,32 @@ const Lead = ({ selectedRow }) => {
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
   const [summaryCounts, setSummaryCounts] = useState({
-    New: 0,
-    Qualified: 0,
-    Unqualified: 0,
-    InProgress: 0
+    inprocess: 0,
+    lost: 0,
+    won: 0,
+    totalCount: 0
   });
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getLeadcount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.leadCounts[0];
+        setSummaryCounts({
+          inprocess: quality.inprocess || 0,
+          lost: quality.lost || 0,
+          won: quality.won || 0,
+          totalCount: quality.totalCount || 0
+        });
+      } else {
+        summaryCounts([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -818,13 +884,55 @@ const Lead = ({ selectedRow }) => {
             </div>
           )}
           {listView && !isLoading ? (
-            <CommonTableWithStatus
-              data={listViewData}
-              columns={listViewColumns}
-              enableEditing={true}
-              toEdit={getLeadById}
-              summaryCounts={summaryCounts}
-            />
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Total',
+                      count: summaryCounts.totalCount,
+                      color: '#3f51b5',
+                      icon: <SummarizeIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Won',
+                      count: summaryCounts.won,
+                      color: '#009688',
+                      icon: <EmojiEventsIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Lost',
+                      count: summaryCounts.lost,
+                      color: 'red',
+                      icon: <CancelIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.inprocess,
+                      color: '#ff7043',
+                      icon: <HourglassTopIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getLeadById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <>
               <div className="row d-flex ml">
@@ -858,6 +966,52 @@ const Lead = ({ selectedRow }) => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={sources}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={sources.find((item) => item.listOfValues === formData.source) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'source', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Source</span>}
+                        size="small"
+                        error={!!fieldErrors.source}
+                        helperText={fieldErrors.source}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={clientTypes}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={clientTypes.find((item) => item.listOfValues === formData.clientType) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'clientType', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Client Type</span>}
+                        size="small"
+                        error={!!fieldErrors.clientType}
+                        helperText={fieldErrors.clientType}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.source}>
                     <InputLabel>
                       Source<span className="asterisk">*</span>
@@ -867,8 +1021,6 @@ const Lead = ({ selectedRow }) => {
                       name="source"
                       value={formData.source}
                       onChange={handleInputChange}
-                      // error={!!fieldErrors.source}
-                      // helperText={fieldErrors.source}
                     >
                       {sources.map((source) => (
                         <MenuItem key={source} value={source}>
@@ -878,8 +1030,8 @@ const Lead = ({ selectedRow }) => {
                     </Select>
                     {fieldErrors.source && <FormHelperText style={{ color: 'red' }}>{fieldErrors.source}</FormHelperText>}
                   </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
+                </div> */}
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.clientType}>
                     <InputLabel>
                       Client Type<span className="asterisk">*</span>
@@ -900,7 +1052,7 @@ const Lead = ({ selectedRow }) => {
                     </Select>
                     {fieldErrors.clientType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.clientType}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label={
@@ -925,9 +1077,11 @@ const Lead = ({ selectedRow }) => {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    name="mail"
-                    value={formData.mail}
+                    name="email"
+                    value={formData.email}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.email}
+                    helperText={fieldErrors.email}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -939,9 +1093,35 @@ const Lead = ({ selectedRow }) => {
                     name="contactNo"
                     value={formData.contactNo}
                     onChange={handleInputChange}
+                    inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
+                    error={!!fieldErrors.contactNo}
+                    helperText={fieldErrors.contactNo}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={industries}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={industries.find((item) => item.listOfValues === formData.industry) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'industry', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Industries</span>}
+                        size="small"
+                        error={!!fieldErrors.industry}
+                        helperText={fieldErrors.industry}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel>Industry</InputLabel>
                     <Select label="Industry" name="industry" value={formData.industry} onChange={handleInputChange}>
@@ -952,7 +1132,7 @@ const Lead = ({ selectedRow }) => {
                       ))}
                     </Select>
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label="Website"
@@ -1057,7 +1237,7 @@ const Lead = ({ selectedRow }) => {
                     name="pinCode"
                     value={formData.pinCode}
                     onChange={handleInputChange}
-                    type="number"
+                    inputProps={{ maxLength: 6, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
                     error={!!fieldErrors.pinCode}
                     helperText={fieldErrors.pinCode}
                   />
@@ -1364,7 +1544,7 @@ const Lead = ({ selectedRow }) => {
                                               {...params}
                                               label={
                                                 <span>
-                                                  City <span className="asterisk">*</span>
+                                                  City
                                                 </span>
                                               }
                                               size="small"
@@ -1373,15 +1553,6 @@ const Lead = ({ selectedRow }) => {
                                           )}
                                         />
                                       </Box>
-                                      {/* <TextField
-                                                                                fullWidth
-                                                                                size="small"
-                                                                                value={branch.city}
-                                                                                onChange={(e) => handleBranchChange(index, 'city', e.target.value)}
-                                                                                onBlur={(e) => validateBranchField(index, 'city', e.target.value)}
-                                                                                error={!!branchErrors[index]?.city}
-                                                                                helperText={branchErrors[index]?.city} 
-                                                                            />*/}
                                     </td>
                                     <td>
                                       <TextField

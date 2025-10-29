@@ -36,6 +36,7 @@ function DealerReport() {
     const [orgId] = useState(localStorage.getItem('orgId'));
     const [finYear] = useState(localStorage.getItem('finYear'));
     const [loginUserName] = useState(localStorage.getItem('userName'));
+    const [branch] = useState(localStorage.getItem('branch'));
     const [isLoading, setIsLoading] = useState(false);
     const [dealerNameList, setDealerNameList] = useState([]);
     const [fillGridData, setFillGridData] = useState([]);
@@ -149,12 +150,12 @@ function DealerReport() {
                 if (formData.fromDate && formData.toDate) {
                     response = await apiCalls(
                         'get',
-                        `/dealer/getDealerReport?dealerName=${formData.dealerName}&finYear=${finYear}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
+                        `/dealer/getDealerReport?dealerName=${formData.dealerName}&finYear=${finYear}&branch=${branch}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
                     );
                 } else {
                     response = await apiCalls(
                         'get',
-                        `/dealer/getDealerReport?dealerName=${formData.dealerName}&finYear=${finYear}&orgId=${orgId}`
+                        `/dealer/getDealerReport?dealerName=${formData.dealerName}&finYear=${finYear}&orgId=${orgId}&branch=${branch}`
                     );
                 }
                 if (response.status === true) {

@@ -4,6 +4,8 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
+const DealerGeoView = Loadable(lazy(() => import('views/Tracking/DealerGeoView')));
+const RoleName = Loadable(lazy(() => import('views/basicMaster/RoleName')));
 const InventoryItemReport = Loadable(lazy(() => import('views/Reports/InventoryItemReport')));
 const QualityTestReport = Loadable(lazy(() => import('views/Reports/QualityTestReport')));
 const SupplierManagementReport = Loadable(lazy(() => import('views/Reports/SupplierManagementReport')));
@@ -203,6 +205,10 @@ const FinanceRoute = {
       element: <ListOfValues />
     },
     {
+      path: '/basicMaster/RoleName',
+      element: <RoleName />
+    },
+    {
       path: '/basicMaster/ScreenNames',
       element: <ScreenNames />
     },
@@ -319,6 +325,10 @@ const FinanceRoute = {
     {
       path: '/Tracking/LiveStaffTracker',
       element: <LiveStaffTracker />
+    },
+    {
+      path: '/Tracking/DealerGeoView',
+      element: <DealerGeoView />
     },
     {
       path: '/Report/LeadJourney',

@@ -5,6 +5,11 @@ import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { toWords } from 'number-to-words';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import {
   TextField,
@@ -15,14 +20,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
+  Grid,
   Box,
   Tabs,
   Tab,
@@ -37,9 +35,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
-import CommonTableWithStatus from 'views/basicMaster/CommonTableWithStatus';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import { tr } from 'date-fns/locale';
+import KPIBox from 'views/basicMaster/KPIBox';
+import QuotationPDF from './QuotationPDF';
 // import FullScreenLoader from 'utils/FullScreenLoader';
 
 export const Quotation = ({ selectedRow }) => {
@@ -54,10 +53,13 @@ export const Quotation = ({ selectedRow }) => {
   const [finYear] = useState(new Date().getFullYear().toString());
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
-  // const [sellingPrice, setSellingPrice] = useState([]);
+  const [pdfData, setPdfData] = useState([]);
+  const [downloadPdf, setDownloadPdf] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState([]);
 
   const [clientNameList, setClientNameList] = useState([]);
+  const [quotaionById, setQuotaionById] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [opportunityList, setOpportunityList] = useState([]);
   const [productList, setProductList] = useState([]);
@@ -67,12 +69,6 @@ export const Quotation = ({ selectedRow }) => {
       getQuotationById({ original: selectedRow });
     }
   }, [selectedRow]);
-  const [summaryCounts, setSummaryCounts] = useState({
-    New: 0,
-    Qualified: 0,
-    Unqualified: 0,
-    InProgress: 0
-  });
   const [formData, setFormData] = useState({
     quoteId: '',
     quoteDate: dayjs(),
@@ -113,7 +109,7 @@ export const Quotation = ({ selectedRow }) => {
     mobileNumber: '',
     status: '',
     address: '',
-    iterations: '',
+    iterations: ''
     // oppurtunityName: ''
   });
   const [quotationPriceErrors, setQuotationPriceErrors] = useState([
@@ -167,8 +163,10 @@ export const Quotation = ({ selectedRow }) => {
   };
   useEffect(() => {
     getQuotationDocId();
+    getKPIDetails();
     getAllQuotation();
     getClientName();
+    getCompanyDetails();
   }, []);
   useEffect(() => {
     calculateTotals();
@@ -188,33 +186,6 @@ export const Quotation = ({ selectedRow }) => {
       if (response.status === true && response.paramObjectsMap?.quotationVO?.length > 0) {
         setListViewData([...response.paramObjectsMap.quotationVO].reverse());
         setIsLoading(false);
-        const counts = {
-          New: 0,
-          Qualified: 0,
-          Unqualified: 0,
-          InProgress: 0
-        };
-        response.paramObjectsMap.quotationVO.forEach((lead) => {
-          switch (lead.status) {
-            case 'NEW':
-            case 'REVICE':
-              counts.InProgress += 1;
-              break;
-            case 'APPROVED':
-              counts.Qualified += 1;
-              break;
-            case 'REJECTED':
-              counts.Unqualified += 1;
-              break;
-            default:
-              break;
-          }
-        });
-        setSummaryCounts(counts);
-        setSummaryCounts((prev) => ({
-          ...prev,
-          New: response.paramObjectsMap.quotationVO.length
-        }));
       } else {
         setIsLoading(false);
         showToast('error', response.message);
@@ -280,6 +251,7 @@ export const Quotation = ({ selectedRow }) => {
       setEditId(row.original.id);
       if (response.status === true) {
         const lead = response.paramObjectsMap.quotationVO;
+        setQuotaionById(response.paramObjectsMap.quotationVO);
         setListView(false);
         getBranch(lead.clientName);
         getOpportunityName(lead.branchName, lead.clientName);
@@ -417,6 +389,7 @@ export const Quotation = ({ selectedRow }) => {
       if (response.status === true) {
         showToast('success', editId ? 'Quotation updated successfully' : 'Quotation created successfully');
         getAllQuotation();
+        getKPIDetails();
         handleClear();
       } else {
         showToast('error', response.paramObjectsMap.errorMessage || 'Quotation creation failed');
@@ -544,6 +517,9 @@ export const Quotation = ({ selectedRow }) => {
   const handleClear = () => {
     getQuotationDocId();
     setOpportunityList([]);
+    setDownloadPdf(false);
+    setPdfData([]);
+    setQuotaionById([]);
     setBranchList([]);
     setProductList([]);
     setFormData({
@@ -664,8 +640,8 @@ export const Quotation = ({ selectedRow }) => {
     setFormData((prev) => ({ ...prev, [field]: formattedDate }));
   };
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc ID', size: 120 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 120 },
+    { accessorKey: 'docId', header: 'Quote ID', size: 120 },
+    { accessorKey: 'docDate', header: 'Date', size: 120 },
     { accessorKey: 'clientName', header: 'Client', size: 180 },
     { accessorKey: 'mobileNumber', header: 'Contact', size: 150 },
     { accessorKey: 'email', header: 'Email', size: 200 }
@@ -697,6 +673,49 @@ export const Quotation = ({ selectedRow }) => {
       amtInWords: numberToWordsIndian(net) + ' ONLY'
     }));
   };
+  const [summaryCounts, setSummaryCounts] = useState({
+    totalCount: 0,
+    approved: 0,
+    inprocess: 0,
+    rejected: 0
+  });
+  const getKPIDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getQuotationCount?branchCode=${branchCode}&orgId=${orgId}`);
+      if (response.status === true) {
+        const quality = response.paramObjectsMap.quotationCounts[0];
+        setSummaryCounts({
+          totalCount: quality.totalCount || 0,
+          approved: quality.approved || 0,
+          inprocess: quality.inprocess || 0,
+          rejected: quality.rejected || 0
+        });
+      } else {
+        summaryCounts([]);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      showToast('error', 'Failed to fetch leads');
+      setIsLoading(false);
+    }
+  };
+  const GeneratePdf = () => {
+    setPdfData(quotaionById);
+    setDownloadPdf(!downloadPdf);
+  };
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      if (response.status === true) {
+        setCompanyDetails(response.paramObjectsMap.companyVO[0]);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching company details:', error);
+    }
+  };
   return (
     <>
       {isLoading && (
@@ -704,9 +723,10 @@ export const Quotation = ({ selectedRow }) => {
           <FullScreenLoader />
         </div>
       )}
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-          {/* <div className="row d-flex ml"> */}
+      <ToastContainer />
+      {/* <LocalizationProvider dateAdapter={AdapterDayjs}> */}
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+        <div className="row d-flex ml">
           {!selectedRow && (
             <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
               {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
@@ -717,20 +737,61 @@ export const Quotation = ({ selectedRow }) => {
                   <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                 </>
               )}
+              {!listView && quotaionById && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />}
             </div>
           )}
-          {/* </div> */}
-
           {listView && !isLoading ? (
-            <div>
-              <CommonTableWithStatus
-                data={listViewData}
-                columns={listViewColumns}
-                blockEdit={true}
-                toEdit={getQuotationById}
-                summaryCounts={summaryCounts}
-              />
-            </div>
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Total',
+                      count: summaryCounts.totalCount,
+                      color: '#fbc02d',
+                      icon: <SummarizeIcon />
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Approved',
+                      count: summaryCounts.approved,
+                      color: '#4caf50',
+                      icon: <CheckCircleIcon />
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'In Progress',
+                      count: summaryCounts.inprocess,
+                      color: '#039be5',
+                      icon: <AutorenewIcon />
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPIBox
+                    summaryData={{
+                      label: 'Rejected',
+                      count: summaryCounts.rejected,
+                      color: '#e53935',
+                      icon: <CancelIcon />
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getQuotationById} />
+                </Grid>
+              </Grid>
+            </>
           ) : (
             <div className="row">
               <div className="col-md-3 mb-3">
@@ -780,6 +841,7 @@ export const Quotation = ({ selectedRow }) => {
                       setFieldErrors((prev) => ({ ...prev, clientName: 'Client Name is required' }));
                     }
                   }}
+                  disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -819,6 +881,7 @@ export const Quotation = ({ selectedRow }) => {
                       setFieldErrors((prev) => ({ ...prev, branchName: 'Branch is required' }));
                     }
                   }}
+                  disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -900,6 +963,7 @@ export const Quotation = ({ selectedRow }) => {
                       }));
                     }
                   }}
+                  disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -990,6 +1054,7 @@ export const Quotation = ({ selectedRow }) => {
                     onChange={handleInputChange}
                     label="Status"
                     error={!!fieldErrors.status}
+                    disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                   >
                     <MenuItem value="NEW">NEW</MenuItem>
                     <MenuItem value="REVICE">REVICE</MenuItem>
@@ -1034,27 +1099,7 @@ export const Quotation = ({ selectedRow }) => {
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
-                            <Box
-                            // sx={{
-                            //     '&::-webkit-scrollbar': {
-                            //         height: '8px',
-                            //     },
-                            //     '&::-webkit-scrollbar-track': {
-                            //         backgroundColor: 'transparent',
-                            //     },
-                            //     '&::-webkit-scrollbar-thumb': {
-                            //         backgroundColor: '#555',
-                            //         borderRadius: '10px',
-                            //     },
-                            //     '&::-webkit-scrollbar-thumb:hover': {
-                            //         backgroundColor: '#888',
-                            //     },
-                            //     borderRadius: '8px',
-                            //     backgroundColor: '#1c1f3a',
-                            //     boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.4)',
-                            //     overflowX: 'auto',
-                            // }}
-                            >
+                            <Box>
                               <table className="table table-bordered">
                                 <thead>
                                   <tr style={{ background: '#374151', color: '#ede7f6' }}>
@@ -1086,6 +1131,7 @@ export const Quotation = ({ selectedRow }) => {
                                               setQuotationPriceErrors
                                             )
                                           }
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                         />
                                       </td>
                                       <td className="text-center">
@@ -1127,6 +1173,7 @@ export const Quotation = ({ selectedRow }) => {
                                                 setQuotationPrice(updatedRows);
                                               }
                                             }}
+                                            disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                             renderInput={(params) => <TextField {...params} size="small" fullWidth />}
                                           />
                                         </Box>
@@ -1162,7 +1209,7 @@ export const Quotation = ({ selectedRow }) => {
                                           type="number"
                                           sx={{ minWidth: '100px' }}
                                           value={row.sellingPrice}
-                                          // disabled
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                           onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                           error={!!quotationPriceErrors[index]?.sellingPrice}
                                           helperText={quotationPriceErrors[index]?.sellingPrice}
@@ -1176,7 +1223,7 @@ export const Quotation = ({ selectedRow }) => {
                                           value={row.qty}
                                           sx={{ minWidth: '100px' }}
                                           onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                           error={!!quotationPriceErrors[index]?.qty}
                                           helperText={quotationPriceErrors[index]?.qty}
                                         />
@@ -1189,7 +1236,7 @@ export const Quotation = ({ selectedRow }) => {
                                           sx={{ minWidth: '100px' }}
                                           value={row.price}
                                           onChange={(e) => handleDetailChange(index, 'price', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                         />
                                       </td>
                                       <td>
@@ -1200,7 +1247,7 @@ export const Quotation = ({ selectedRow }) => {
                                           sx={{ minWidth: '100px' }}
                                           value={row.discountPer}
                                           onChange={(e) => handleDetailChange(index, 'discountPer', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                         />
                                       </td>
                                       <td>
@@ -1211,7 +1258,7 @@ export const Quotation = ({ selectedRow }) => {
                                           value={row.amount}
                                           sx={{ minWidth: '100px' }}
                                           onChange={(e) => handleDetailChange(index, 'amount', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'amount', e.target.value)}
+                                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                                           error={!!quotationPriceErrors[index]?.amount}
                                           helperText={quotationPriceErrors[index]?.amount}
                                         />
@@ -1287,6 +1334,7 @@ export const Quotation = ({ selectedRow }) => {
                           name="narration"
                           value={formData.narration}
                           onChange={handleInputChange}
+                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                         />
                       </div>
                     </div>
@@ -1296,8 +1344,9 @@ export const Quotation = ({ selectedRow }) => {
             </div>
           )}
         </div>
-        <ToastContainer />
-      </LocalizationProvider>
+      </div>
+      {/* </LocalizationProvider> */}
+      {downloadPdf && <QuotationPDF row={pdfData} companyDetails={companyDetails} modalClose={() => setDownloadPdf(false)} />}
     </>
   );
 };

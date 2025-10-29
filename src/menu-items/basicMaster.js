@@ -1,4 +1,4 @@
-// assets 
+// assets
 import {
   IconKey,
   IconUser,
@@ -154,23 +154,30 @@ const basicMasterChildren = [
     url: '/basicMaster/warehouse',
     icon: Inventory2Icon
   },
+  hasScreenAccess('RN') && {
+    id: 'roleName',
+    title: 'RoleName',
+    type: 'item',
+    url: '/basicMaster/roleName',
+    icon: IconShieldLock
+  }
 ].filter(Boolean);
 
 const basicMaster =
   basicMasterChildren.length > 0
     ? {
-      id: 'basicMasters',
-      type: 'group',
-      children: [
-        {
-          id: 'basicMastersCollapse',
-          title: 'Basic Master',
-          type: 'collapse',
-          icon: IconKey,
-          children: basicMasterChildren
-        }
-      ]
-    }
+        id: 'basicMasters',
+        type: 'group',
+        children: [
+          {
+            id: 'basicMastersCollapse',
+            title: 'Basic Master',
+            type: 'collapse',
+            icon: IconKey,
+            children: basicMasterChildren
+          }
+        ]
+      }
     : null;
 
 export default basicMaster;

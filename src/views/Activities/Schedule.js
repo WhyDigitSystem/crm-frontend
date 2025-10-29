@@ -87,20 +87,15 @@ const Schedule = ({ selectedRow }) => {
 
   // Column definitions for list view
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Task ID', size: 120 },
-    { accessorKey: 'docDate', header: 'Task Date', size: 120 },
-    { accessorKey: 'taskName', header: 'Task Name', size: 180 },
+    { accessorKey: 'docId', header: 'Task ID', size: 100 },
+    { accessorKey: 'docDate', header: 'Date', size: 100 },
+    { accessorKey: 'taskName', header: 'Details', size: 100 },
     { accessorKey: 'taskType', header: 'Type', size: 100 },
     { accessorKey: 'priority', header: 'Priority', size: 100 },
-    { accessorKey: 'startDate', header: 'Start Date', size: 120 },
-    { accessorKey: 'status', header: 'Status', size: 120 },
-    { accessorKey: 'assignedName', header: 'Assigned To', size: 150 },
-    {
-      accessorKey: 'active',
-      header: 'Active',
-      size: 100,
-      Cell: ({ cell }) => (cell.getValue() === 'Active' || cell.getValue() === true ? 'Active' : 'Inactive')
-    }
+    { accessorKey: 'startDate', header: 'Start Date', size: 100 },
+    { accessorKey: 'status', header: 'Status', size: 100 },
+    { accessorKey: 'assignedName', header: 'Assigned To', size: 100 },
+    { accessorKey: 'active', header: 'Active', size: 100 },
   ];
 
   useEffect(() => {
