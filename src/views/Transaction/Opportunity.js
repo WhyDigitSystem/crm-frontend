@@ -820,11 +820,11 @@ const Opportunity = ({ selectedRow }) => {
       } else {
         summaryCounts([]);
       }
-      setIsLoading(false);
+      // setIsLoading(false);
     } catch (error) {
       console.error('Error fetching leads:', error);
       showToast('error', 'Failed to fetch leads');
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
   return (

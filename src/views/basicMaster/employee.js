@@ -64,8 +64,10 @@ const EmployeeDetails = () => {
     panNo: '',
     reportingDesignation: '',
     reportingPerson: '',
+    reportingPersonCode: '',
     team: '',
-    uanNo: ''
+    uanNo: '',
+    roleName: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
     aadhaarNumber: '',
@@ -87,8 +89,10 @@ const EmployeeDetails = () => {
     panNo: '',
     reportingDesignation: '',
     reportingPerson: '',
+    reportingPersonCode: '',
     team: '',
-    uanNo: ''
+    uanNo: '',
+    roleName: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [logo, setLogo] = useState(null);
@@ -299,14 +303,14 @@ const EmployeeDetails = () => {
     }
 
     // ✅ Reporting Person auto-fill
-    if (name === 'reportingPerson') {
-      const selectedEmployee = allReportingPerson.find((emp) => emp.employeeName === value);
-      setFormData((prev) => ({
-        ...prev,
-        reportingPerson: value,
-        reportingDesignation: selectedEmployee?.role || selectedEmployee?.designation || ''
-      }));
-    }
+    // if (name === 'reportingPerson') {
+    //   const selectedEmployee = allReportingPerson.find((emp) => emp.employeeName === value);
+    //   setFormData((prev) => ({
+    //     ...prev,
+    //     reportingPerson: value,
+    //     reportingDesignation: selectedEmployee?.role || selectedEmployee?.designation || ''
+    //   }));
+    // }
 
     // ✅ Keep cursor position
     if (type === 'text' || type === 'textarea') {
@@ -340,8 +344,10 @@ const EmployeeDetails = () => {
       panNo: '',
       reportingDesignation: '',
       reportingPerson: '',
+      reportingPersonCode: '',
       team: '',
-      uanNo: ''
+      uanNo: '',
+      roleName: ''
     });
     setFieldErrors({});
     setEditId('');
@@ -397,8 +403,10 @@ const EmployeeDetails = () => {
         panNo: formData.panNo,
         reportingDesignation: formData.reportingDesignation,
         reportingPerson: formData.reportingPerson,
+        reportingPersonCode: formData.reportingPersonCode,
         team: formData.team,
-        uanNo: formData.uanNo
+        uanNo: formData.uanNo,
+        roleName: formData.roleName,
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -455,6 +463,7 @@ const EmployeeDetails = () => {
           designation: employeeDetailsVO.designation || '',
           uanNo: employeeDetailsVO.uanNo || '',
           reportingPerson: employeeDetailsVO.reportingPerson || '',
+          reportingPersonCode: employeeDetailsVO.reportingPersonCode || '',
           reportingDesignation: employeeDetailsVO.reportingDesignation || '',
           dateOfBirth: employeeDetailsVO.dateOfBirth || '',
           bloodGroup: employeeDetailsVO.bloodGroup || '',
@@ -466,7 +475,8 @@ const EmployeeDetails = () => {
           bankName: employeeDetailsVO.bankName || '',
           ifscCode: employeeDetailsVO.ifscCode || '',
           active: employeeDetailsVO.active === 'Active' ? true : false,
-          id: employeeDetailsVO.id || ''
+          id: employeeDetailsVO.id || '',
+          roleName: employeeDetailsVO.roleName || '',
         });
         // const profileImageBlob = result.paramObjectsMap.Employee.profileImage;
         setLogo(result.paramObjectsMap.Employee.passportphoto);
@@ -660,7 +670,7 @@ const EmployeeDetails = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.employeeName}
                   helperText={fieldErrors.employeeName}
-                  // disabled={isViewMode}
+                // disabled={isViewMode}
                 />
               </div>
 
@@ -827,8 +837,63 @@ const EmployeeDetails = () => {
                   )}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
+                <TextField
+                  label="Role"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="roleName"
+                  value={formData.roleName}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.roleName}
+                  helperText={fieldErrors.roleName}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  options={allReportingPerson || []}
+                  getOptionLabel={(option) =>
+                    option?.employeeCode && option?.employeeName
+                      ? `${option.employeeCode} - ${option.employeeName}`
+                      : ''
+                  }
+                  value={
+                    allReportingPerson.find(
+                      (item) => item.employeeCode === formData.reportingPersonCode
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        reportingPerson: newValue.employeeName || '',
+                        reportingPersonCode: newValue.employeeCode || '',
+                        reportingDesignation: newValue.role || '', // ✅ auto-fill designation from API
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        reportingPerson: '',
+                        reportingPersonCode: '',
+                        reportingDesignation: '',
+                      }));
+                    }
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.employeeCode === value.employeeCode
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Reporting Person"
+                      size="small"
+                      fullWidth
+                    />
+                  )}
+                />
+              </div>
+              {/* <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={allReportingPerson}
                   getOptionLabel={(option) => option.employeeName || ''}
@@ -852,7 +917,7 @@ const EmployeeDetails = () => {
                     />
                   )}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Reporting Designation"

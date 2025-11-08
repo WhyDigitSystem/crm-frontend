@@ -22,7 +22,8 @@ export const Designation = () => {
   const [formData, setFormData] = useState({
     active: true,
     designationCode: '',
-    designationName: ''
+    designationName: '',
+    expenseLimit: '',
   });
   const [editId, setEditId] = useState('');
 
@@ -31,7 +32,8 @@ export const Designation = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     designationName: '',
-    designationCode: ''
+    designationCode: '',
+    expenseLimit: '',
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -42,6 +44,7 @@ export const Designation = () => {
       header: 'Name',
       size: 140
     },
+    { accessorKey: 'expenseLimit', header: 'Expense Limit', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
@@ -71,6 +74,7 @@ export const Designation = () => {
         setFormData({
           designationCode: particularCountry.designationCode,
           designationName: particularCountry.designationName,
+          expenseLimit: particularCountry.expenseLimit,
           active: particularCountry.active === 'Active' ? true : false
         });
         setListView(false);
@@ -111,10 +115,12 @@ export const Designation = () => {
     setFormData({
       designationName: '',
       designationCode: '',
+      expenseLimit: '',
       active: true
     });
     setFieldErrors({
       designationName: '',
+      expenseLimit: '',
       designationCode: ''
     });
     setEditId('');
@@ -123,10 +129,13 @@ export const Designation = () => {
   const handleSave = async () => {
     const errors = {};
     if (!formData.designationCode) {
-      errors.designationCode = 'Country Code is required';
+      errors.designationCode = 'Code is required';
     }
     if (!formData.designationName) {
-      errors.designationName = 'Country is required';
+      errors.designationName = 'Designation is required';
+    }
+    if (!formData.expenseLimit) {
+      errors.expenseLimit = 'Expense Limit is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -136,6 +145,7 @@ export const Designation = () => {
         active: formData.active,
         designationCode: formData.designationCode,
         designationName: formData.designationName,
+        expenseLimit: formData.expenseLimit,
         orgId: orgId,
         createdBy: loginUserName
       };
@@ -235,6 +245,20 @@ export const Designation = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.designationName}
                   helperText={fieldErrors.designationName}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Expense Limit"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  type='number'
+                  name="expenseLimit"
+                  value={formData.expenseLimit}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.expenseLimit}
+                  helperText={fieldErrors.expenseLimit}
                 />
               </div>
               <div className="col-md-3 mb-3">

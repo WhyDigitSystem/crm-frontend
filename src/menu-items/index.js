@@ -13,6 +13,7 @@ import DealerManagement from './DealerManagement';
 import NominationEnquiries from './NominationEnquiries';
 import Reports from './Reports';
 import Tracking from './Tracking';
+import FinanceManagement from './FinanceManagement';
 
 
 
@@ -25,6 +26,7 @@ const getMenuItems = () => {
       dashboard,
       Activities,
       Transaction,
+      FinanceManagement,
       rate,
       DealerManagement,
       Tracking,

@@ -20,11 +20,10 @@ import {
   Tabs,
   Tab,
   MenuItem,
-  Select
+  Select,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import IconButton from '@mui/material/IconButton';
-import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import { DatePicker } from '@mui/x-date-pickers';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { ToastContainer } from 'react-toastify';
@@ -33,8 +32,8 @@ import { showToast } from 'utils/toast-component';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
+import FullScreenLoader from 'utils/FullScreenLoader';
 
 export const CustomerDetails = () => {
   const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -42,16 +41,15 @@ export const CustomerDetails = () => {
   const [branch] = useState(localStorage.getItem('branch'));
   const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear] = useState(localStorage.getItem('finYear'));
-  const [clientTypeOptions] = useState(['Customer', 'Individual']);
+  const [clientTypes, setclientTypes] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [open, setOpen] = useState(false);
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
-
+  const [clientNameList, setClientNameList] = useState([]);
   // Form structure for Lead
   const [formData, setFormData] = useState({
     docId: '',
@@ -101,7 +99,7 @@ export const CustomerDetails = () => {
 
   const [contactDetails, setContactDetails] = useState([
     {
-      referedContact: '',
+      preferedContact: true,
       name: '',
       branchName: '',
       mobileNo: '',
@@ -125,8 +123,11 @@ export const CustomerDetails = () => {
     getCustomerDetailsDocId();
     getAllCustomerDetails();
     getCityName();
+    getClientType();
+    getClientName();
   }, []);
   const getAllCustomerDetails = async () => {
+    setIsLoading(true);
     try {
       const response = await apiCalls(
         'get',
@@ -134,6 +135,7 @@ export const CustomerDetails = () => {
       );
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.customerDetailsVO.reverse());
+        setIsLoading(false);
       } else {
         showToast('error', response.message || 'Failed to fetch leads');
       }
@@ -142,9 +144,107 @@ export const CustomerDetails = () => {
       showToast('error', 'Failed to fetch leads');
     }
   };
+  const getClientType = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Client%20Type&orgId=${orgId}`);
+      if (response.status === true) {
+        setclientTypes(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getClientName = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAllClientNamesStatusComplete?orgId=${orgId}`);
+      if (response.status === true) {
+        setClientNameList(response.paramObjectsMap.clientNames || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getAllDetailsCN = async (clientName) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getAllclientDetails?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+      );
+
+      if (response.status === true) {
+        const customerDetails = response.paramObjectsMap?.leadVO?.[0];
+
+        if (!customerDetails) {
+          showToast('error', 'No details found for this client');
+          return;
+        }
+        setFormData((prev) => ({
+          ...prev,
+          clientType: customerDetails.clientType || '',
+          mail: customerDetails.mail || '',
+          mobileNo: customerDetails.contactNo || '',
+          industry: customerDetails.industry || '',
+          website: customerDetails.website || '',
+          city: customerDetails.city || '',
+          state: customerDetails.state || '',
+          country: customerDetails.country || '',
+          pinCode: customerDetails.pinCode || '',
+          address: customerDetails.address || '',
+          customer: customerDetails.customer || '',
+          assignTo: customerDetails.assignTo || '',
+          stage: customerDetails.stage || '',
+          probability: customerDetails.probability || '',
+          // do NOT include: docId, docDate, clientName
+        }));
+
+        // ✅ Handle branch details safely
+        setBranchDetails(
+          (customerDetails.leadBranchVO || []).map((row) => ({
+            id: row.id || '',
+            branchCode: row.branchCode || '',
+            branchName: row.branch || '',
+            city: row.city || '',
+            gstNo: row.gstNo || '',
+            state: row.state || '',
+            country: row.country || '',
+            address: row.address || '',
+          }))
+        );
+
+        // ✅ Handle contact details safely
+        setContactDetails(
+          (customerDetails.leadContactVO || []).map((row) => ({
+            id: row.id || '',
+            preferedContact: row.preferedContact || false,
+            branchName: row.branchName || '',
+            name: row.name || '',
+            mobileNo: row.mobileNo || '',
+            email: row.email || '',
+            designation: row.designation || '',
+            dob: row.dob || '',
+            anniversaryDate: row.aniversary || '',
+            workAnniversaryDate: row.workAniversaryDate || '',
+          }))
+        );
+      } else {
+        showToast('error', response.paramObjectsMap?.message || 'Failed to fetch Customer Details');
+      }
+    } catch (error) {
+      console.error('Error fetching Customer Details details:', error);
+      showToast('error', 'Failed to fetch Customer Details');
+    }
+  };
 
   const getCustomerDetailsDocId = async () => {
-    setIsDocIdLoading(true);
+    setIsLoading(true);
     try {
       const response = await apiCalls(
         'get',
@@ -156,6 +256,7 @@ export const CustomerDetails = () => {
           ...prev,
           docId: response.paramObjectsMap.customerDetailsDocId
         }));
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error getting document ID:', error);
@@ -172,7 +273,6 @@ export const CustomerDetails = () => {
         const customerDetails = response.paramObjectsMap.customerDetailsVO;
         setEditId(id);
         setListView(false);
-        setImg(response.paramObjectsMap.customerDetailsVO.photo);
         setFormData({
           docId: customerDetails.docId,
           docDate: customerDetails.docDate,
@@ -207,7 +307,7 @@ export const CustomerDetails = () => {
         setContactDetails(
           customerDetails.contactDetailsVO.map((row) => ({
             id: row.id,
-            referedContact: row.referedContact,
+            preferedContact: row.referedContact || false,
             name: row.name,
             email: row.email,
             mobileNo: row.mobileNumber,
@@ -223,7 +323,7 @@ export const CustomerDetails = () => {
       }
     } catch (error) {
       console.error('Error fetching Customer Details details:', error);
-      showToast('error', 'Failed to fetch Customer Details details');
+      showToast('error', 'Failed to fetch Customer Details');
     }
   };
   const getCityName = async () => {
@@ -265,7 +365,6 @@ export const CustomerDetails = () => {
   };
   const handleClear = () => {
     getCustomerDetailsDocId();
-    setImg(null);
     setFormData({
       docId: '',
       docDate: dayjs(),
@@ -294,7 +393,7 @@ export const CustomerDetails = () => {
     ]);
     setContactDetails([
       {
-        referedContact: '',
+        preferedContact: true,
         name: '',
         branchName: '',
         mobileNo: '',
@@ -343,7 +442,7 @@ export const CustomerDetails = () => {
       email: row.email,
       mobileNumber: row.mobileNo,
       name: row.name,
-      referedContact: row.referedContact,
+      referedContact: row.preferedContact,
       workAnniversary: row.workAnniversaryDate
     }));
     const saveFormData = {
@@ -372,10 +471,6 @@ export const CustomerDetails = () => {
       const response = await apiCalls('put', '/transaction/updateCreateCustomerDetails', saveFormData);
       if (response.status === true) {
         showToast('success', editId ? 'Customer Details Updated successfully' : 'Customer Details Created Successfully');
-        const generatedId = response.paramObjectsMap.customerDetailsVO.id;
-        if (generatedId && typeof supportingImg === 'object') {
-          handleFileUpload(generatedId);
-        }
         handleClear();
         getAllCustomerDetails();
       } else {
@@ -388,48 +483,6 @@ export const CustomerDetails = () => {
       setIsLoading(false);
     }
   };
-  const [supportingImg, setImg] = useState(null);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleImgChange = (e) => {
-    const file = e.target.files[0];
-    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
-      setImg(file);
-    } else {
-      showToast('error', 'Please upload a valid image (PNG or JPEG).');
-    }
-  };
-  const handleFileUpload = async (generatedId) => {
-    if (!generatedId) return;
-    const formData = new FormData();
-    formData.append('file', supportingImg);
-    try {
-      const response = await apiCalls(
-        'post',
-        `/transaction/uploadCustomerPhotoInBloob?id=${generatedId}`,
-        formData,
-        {},
-        { 'Content-Type': 'multipart/form-data' }
-      );
-
-      if (response.status === true) {
-        showToast('success', response.message || 'Image Uploaded successfully!');
-      } else {
-        showToast('error', 'Image upload failed');
-      }
-    } catch (error) {
-      console.error('Img Upload Error:', error);
-      showToast('error', 'Failed to upload image');
-    }
-  };
-  useEffect(() => {
-    return () => {
-      if (supportingImg && typeof supportingImg === 'object') {
-        URL.revokeObjectURL(supportingImg);
-      }
-    };
-  }, [supportingImg]);
-  const handleRemoveImg = () => setImg(null);
   const handleView = () => {
     setListView(!listView);
     handleClear();
@@ -465,7 +518,7 @@ export const CustomerDetails = () => {
   const handleAddContactDetails = () => {
     const newRow = {
       id: Date.now(),
-      referedContact: '',
+      preferedContact: true,
       name: '',
       branchName: '',
       mobileNo: '',
@@ -533,6 +586,11 @@ export const CustomerDetails = () => {
   ];
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
+      {isLoading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FullScreenLoader />
+        </div>
+      )}
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
@@ -591,35 +649,60 @@ export const CustomerDetails = () => {
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
-              <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.clientType}>
-                <InputLabel id="clientType-label">Client Type</InputLabel>
-                <Select
-                  labelId="clientType-label"
-                  label="Branch Type"
-                  value={formData.clientType}
-                  onChange={handleInputChange}
-                  name="clientType"
-                >
-                  {clientTypeOptions.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {fieldErrors.clientType && <FormHelperText>{fieldErrors.clientType}</FormHelperText>}
-              </FormControl>
+              <Autocomplete
+                options={clientNameList}
+                getOptionLabel={(option) => (option?.clientName ? `${option.clientName}` : '')}
+                value={clientNameList.find((item) => item.clientName === formData.clientName) || null}
+                onChange={(event, newValue) => {
+                  if (newValue) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientName: newValue.clientName
+                    }));
+                    setFieldErrors((prev) => ({ ...prev, clientName: '' }));
+                    getAllDetailsCN(newValue.clientName);
+                  } else {
+                    setFormData((prev) => ({ ...prev, clientName: '' }));
+                    setFieldErrors((prev) => ({ ...prev, clientName: 'Client Name is required' }));
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      <span>
+                        Client Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                    size="small"
+                    error={!!fieldErrors.clientName}
+                    helperText={fieldErrors.clientName}
+                    fullWidth
+                  />
+                )}
+              />
             </div>
             <div className="col-md-3 mb-3">
-              <TextField
-                label="Client Name"
-                variant="outlined"
-                size="small"
-                fullWidth
-                name="clientName"
-                value={formData.clientName}
-                onChange={handleInputChange}
-                error={!!fieldErrors.clientName}
-                helperText={fieldErrors.clientName}
+              <Autocomplete
+                options={clientTypes}
+                getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                value={clientTypes.find((item) => item.listOfValues === formData.clientType) || null}
+                onChange={(event, newValue) =>
+                  handleInputChange({
+                    target: { name: 'clientType', value: newValue?.listOfValues || '' }
+                  })
+                }
+                isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={<span>Client Type</span>}
+                    size="small"
+                    error={!!fieldErrors.clientType}
+                    helperText={fieldErrors.clientType}
+                    fullWidth
+                  />
+                )}
               />
             </div>
             <div className="col-md-3 mb-3">
@@ -758,91 +841,6 @@ export const CustomerDetails = () => {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="col-md-3 mb-3">
-              <Box display="flex" alignItems="center" gap={1}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  multiline
-                  startIcon={<CloudUploadIcon />}
-                  sx={{
-                    color: '#374151',
-                    borderColor: '#374151',
-                    borderRadius: '12px',
-                    '&:hover': {
-                      borderColor: '#374151',
-                      backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
-                    }
-                  }}
-                >
-                  {supportingImg ? (typeof supportingImg === 'object' && supportingImg.name ? supportingImg.name : '') : 'Upload Img'}
-
-                  <input type="file" hidden accept="image/png, image/jpeg" onChange={handleImgChange} />
-                </Button>
-
-                {supportingImg && (
-                  <IconButton
-                    variant="contained"
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      color: '#374151'
-                    }}
-                    onClick={handleOpen}
-                  >
-                    <ControlCameraIcon />
-                  </IconButton>
-                )}
-              </Box>
-              <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-                <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
-                    Attachment
-                  </Typography>
-                  {supportingImg ? (
-                    <Box>
-                      <Avatar
-                        src={
-                          typeof supportingImg === 'object' ? URL.createObjectURL(supportingImg) : `data:image/jpeg;base64,${supportingImg}`
-                        }
-                        alt="Attachment"
-                        sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
-                      />
-                      <Box display="flex" gap={2} mt={2}>
-                        <IconButton
-                          variant="contained"
-                          sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                          onClick={handleRemoveImg}
-                        >
-                          Delete
-                        </IconButton>
-                        <IconButton
-                          variant="contained"
-                          sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                          onClick={handleClose}
-                        >
-                          Close
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ) : (
-                    <Box>
-                      <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                        <Typography variant="caption">Upload Img</Typography>
-                      </Avatar>
-                      <Box display="flex" gap={2} mt={2}>
-                        <IconButton
-                          variant="contained"
-                          sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
-                          onClick={handleClose}
-                        >
-                          Close
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  )}
-                </DialogContent>
-              </Dialog>
-            </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
                 <Tabs value={tabValue} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
@@ -868,8 +866,8 @@ export const CustomerDetails = () => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   #
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Br Code *</th>
-                                <th className="px-2 py-2 text-white text-center">Br Name *</th>
+                                {/* <th className="px-2 py-2 text-white text-center">Br Code *</th> */}
+                                <th className="px-2 py-2 text-white text-center">Branch *</th>
                                 <th className="px-2 py-2 text-white text-center">Reg No *</th>
                                 <th className="px-2 py-2 text-white text-center">City *</th>
                                 <th className="px-2 py-2 text-white text-center">State *</th>
@@ -896,7 +894,7 @@ export const CustomerDetails = () => {
                                     />
                                   </td>
                                   <td className="text-center pt-3">{index + 1}</td>
-                                  <td>
+                                  {/* <td>
                                     <TextField
                                       fullWidth
                                       size="small"
@@ -906,14 +904,14 @@ export const CustomerDetails = () => {
                                       error={!!branchDetailsErrors[index]?.branch}
                                       helperText={branchDetailsErrors[index]?.branch}
                                     />
-                                  </td>
+                                  </td> */}
                                   <td>
                                     <TextField
                                       fullWidth
                                       size="small"
                                       value={branch.branchName}
                                       onChange={(e) => handleBranchChange(index, 'branchName', e.target.value)}
-                                      // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
+                                    // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
                                     />
                                   </td>
                                   <td>
@@ -1022,7 +1020,7 @@ export const CustomerDetails = () => {
                                   #
                                 </th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                  Referred Contact
+                                  Pref. Cont
                                 </th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
                                   Name *
@@ -1063,14 +1061,15 @@ export const CustomerDetails = () => {
                                     />
                                   </td>
                                   <td className="text-center pt-3">{index + 1}</td>
-                                  <td>
-                                    <TextField
-                                      sx={{ minWidth: 130, flexGrow: 1 }}
-                                      fullWidth
-                                      size="small"
-                                      value={contact.referedContact}
-                                      onChange={(e) => handleContactChange(index, 'referedContact', e.target.value)}
-                                      // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                  <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
+                                    <FormControlLabel
+                                      sx={{ m: 0 }}
+                                      control={
+                                        <Checkbox
+                                          checked={contact.preferedContact}
+                                          onChange={(e) => handleContactChange(index, 'preferedContact', e.target.checked)}
+                                        />
+                                      }
                                     />
                                   </td>
                                   <td>
@@ -1092,7 +1091,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={contact.branchName}
                                       onChange={(e) => handleContactChange(index, 'branchName', e.target.value)}
-                                      // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                    // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
                                     />
                                   </td>
 

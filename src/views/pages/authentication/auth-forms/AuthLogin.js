@@ -93,6 +93,7 @@ const FirebaseLogin = ({ ...others }) => {
           screenAccessMap[screen.screenId] = {
             screenName: screen.screenName,
             canRead: screen.canRead,
+            canApprove: screen.canApprove,
             canWrite: screen.canWrite,
             canDelete: screen.canDelete
           };

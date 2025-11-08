@@ -87,7 +87,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             sx={{
               fontSize: 11,
               height: 22,
-              backgroundColor: '#1976d2',
+              backgroundColor: '#00bfa6',
               color: '#fff'
             }}
           />

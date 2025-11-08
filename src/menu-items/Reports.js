@@ -141,7 +141,7 @@ const Reports =
             id: 'Reports',
             title: 'Reports',
             type: 'collapse',
-            icon: () => <IconArrowsExchange color="#009688" />, // teal
+            icon: () => <IconArrowsExchange />,
             children: reportChildren
           }
         ]

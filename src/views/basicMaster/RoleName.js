@@ -184,7 +184,6 @@ const RoleName = () => {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    disabled
                     name="roleName"
                     value={formData.roleName}
                     onChange={handleInputChange}

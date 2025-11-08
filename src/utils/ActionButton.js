@@ -17,12 +17,16 @@ const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = 
             width: '35px',
             height: '35px',
             transition: 'all .2s ease-in-out',
-            background: theme.palette.primary.light, // light tone
-            color: theme.palette.primary.main, // main tone
+            background: '#00bfa6',
+            color: '#ffffff',
+            // background: theme.palette.primary.light, // light tone
+            // color: theme.palette.primary.main, // main tone
             borderRadius: '10px',
             '&:hover': {
-              background: theme.palette.primary.main, // main tone on hover
-              color: theme.palette.primary.contrastText // auto contrast text
+              background: '#00bfa6',
+              color: '#ffffff',
+              // background: theme.palette.primary.main, // main tone on hover
+              // color: theme.palette.primary.contrastText // auto contrast text
             }
           }}
           ref={anchorRef}

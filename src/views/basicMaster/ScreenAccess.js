@@ -71,6 +71,7 @@ const ScreenAccess = () => {
         module: screen.screenName,
         screenCode: screen.screenCode,
         canRead: false,
+        canApprove: false,
         canWrite: false,
         canDelete: false
       }));
@@ -130,6 +131,7 @@ const ScreenAccess = () => {
       rolesPermissionDTO: permissions.map((item) => ({
         canDelete: item.canDelete,
         canRead: item.canRead,
+        canApprove: item.canApprove,
         canWrite: item.canWrite,
         screenId: item.screenCode,
         screenName: item.module
@@ -170,6 +172,7 @@ const ScreenAccess = () => {
         permissionList.forEach(perm => {
           permissionMap.set(perm.screenId, {
             canRead: !!perm.canRead,
+            canApprove: !!perm.canApprove,
             canWrite: !!perm.canWrite,
             canDelete: !!perm.canDelete
           });
@@ -182,6 +185,7 @@ const ScreenAccess = () => {
             module: screen.screenName,
             screenCode: screen.screenCode,
             canRead: apiPerm ? apiPerm.canRead : false,
+            canApprove: apiPerm ? apiPerm.canApprove : false,
             canWrite: apiPerm ? apiPerm.canWrite : false,
             canDelete: apiPerm ? apiPerm.canDelete : false
           };
@@ -192,6 +196,7 @@ const ScreenAccess = () => {
           module: screen.screenName,
           screenCode: screen.screenCode,
           canRead: false,
+          canApprove: false,
           canWrite: false,
           canDelete: false
         }));
@@ -217,6 +222,7 @@ const ScreenAccess = () => {
     const resetPermissions = permissions.map((item) => ({
       ...item,
       canRead: false,
+      canApprove: false,
       canWrite: false,
       canDelete: false
     }));
@@ -291,13 +297,13 @@ const ScreenAccess = () => {
                     <TableCell sx={{ py: 0.5, backgroundColor: '#12162e', color: 'white' }}>
                       <strong>Screen Name</strong>
                     </TableCell>
-                    {['canRead', 'canWrite', 'canDelete'].map((type) => (
+                    {['canRead', 'canWrite', 'canDelete', 'canApprove'].map((type) => (
                       <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#12162e', color: 'white' }}>
                         <Checkbox
                           size="small"
                           checked={filteredPermissions.length > 0 && filteredPermissions.every((p) => p[type])}
                           onChange={() => handleSelectAll(type)}
-                          sx={{color:'white'}}
+                          sx={{ color: 'white' }}
                         />
                         <strong>{type.replace('can', '')}</strong>
                       </TableCell>
@@ -308,11 +314,19 @@ const ScreenAccess = () => {
                   {filteredPermissions.map((item) => (
                     <TableRow key={item.screenCode} hover>
                       <TableCell sx={{ py: 0.3 }}>{item.module}</TableCell>
-                      {['canRead', 'canWrite', 'canDelete'].map((type) => (
+                      {['canRead', 'canWrite', 'canDelete', 'canApprove'].map((type) => (
                         <TableCell key={type} align="center" sx={{ py: 0.3 }}>
                           <Checkbox
                             size="small"
-                            color={type === 'canRead' ? 'primary' : type === 'canWrite' ? 'success' : 'error'}
+                            color={
+                              type === 'canRead'
+                                ? 'info'        // blue shade — for read/view access
+                                : type === 'canWrite'
+                                  ? 'success'     // green shade — for edit/create
+                                  : type === 'canApprove'
+                                    ? 'warning'     // amber shade — for review/approval
+                                    : 'secondary'   // neutral gray/purple for others
+                            }
                             checked={item[type]}
                             onChange={() => handleCheckboxChange(item.screenCode, type)}
                           />

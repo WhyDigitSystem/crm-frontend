@@ -100,11 +100,14 @@ const Active = ({ selectedRow }) => {
           `/transaction/getMyAgreeOrNotAgree?assginedName=${loginUserName}&branchCode=${branchCode}&orgId=${orgId}&status=${tab}`
         );
         setRowData(response?.paramObjectsMap?.myAgreeOrNotAgree || []);
+      } else if (tab === 'Scheduled') {
+        response = await apiCalls(
+          'get',
+          `/transaction/getMyAgreeOrNotAgree?assginedName=${loginUserName}&branchCode=${branchCode}&orgId=${orgId}&status=${tab}`
+        );
+        setRowData(response?.paramObjectsMap?.myAgreeOrNotAgree || []);
       }
-      // else if (tab === 'NotAgreed') {
-      //     response = await apiCalls('get', `/transaction/getMyLeads?assginedName=${loginUserName}&branchCode=${branchCode}&orgId=${orgId}`);
-      //     setRowData(response?.paramObjectsMap?.myLeads || []);
-      // }
+      
     } catch (error) {
       console.error('Error:', error);
       setRowData([]);
@@ -563,14 +566,6 @@ const Active = ({ selectedRow }) => {
       : []),
     { accessorKey: 'address', header: 'Address', size: 100 }
   ];
-  //     const handleMyLeads = () => {
-  //     setLoading(true);
-  //     setTimeout(() => {
-  //         setLoading(false);
-  //         setMyLeads(!myLeads);
-  //         handleAllMyLeads();
-  //     }, 300);
-  // };
   const handleMyLeads = async (tab) => {
     setMyLeads(true);
     fetchTabData(tab);
@@ -615,9 +610,11 @@ const Active = ({ selectedRow }) => {
                     position: 'relative',
                     overflow: 'hidden',
                     transition: 'all 0.3s ease',
+                    background: '#00bfa6',
                     '&:hover': {
                       transform: loading ? 'none' : 'scale(1.08)',
-                      boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)'
+                      boxShadow: loading ? 'none' : '0px 6px 15px rgba(0,0,0,0.2)',
+                      background: '#00bfa6',
                     }
                   }}
                 >
@@ -1159,6 +1156,7 @@ const Active = ({ selectedRow }) => {
                   variant="fullWidth"
                 >
                   <Tab value="Pending" label="Leads" />
+                  <Tab value="Scheduled" label="Scheduled" />
                   <Tab value="ExistCust" label="Exist-Cust" />
                   <Tab value="FollowUps" label="Follow-Up's" />
                   <Tab value="Agreed" label="Agreed" />

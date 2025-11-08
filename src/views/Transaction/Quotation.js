@@ -693,7 +693,7 @@ export const Quotation = ({ selectedRow }) => {
       } else {
         summaryCounts([]);
       }
-      setIsLoading(false);
+      // setIsLoading(false);
     } catch (error) {
       console.error('Error fetching leads:', error);
       showToast('error', 'Failed to fetch leads');

@@ -226,6 +226,7 @@ const Lead = ({ selectedRow }) => {
   };
 
   const getAllLeads = async () => {
+    setIsLoading(true);
     try {
       const response = await apiCalls('get', `/transaction/getAllLeadByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       console.log('getAll Leads', response.status);
@@ -853,11 +854,11 @@ const Lead = ({ selectedRow }) => {
       } else {
         summaryCounts([]);
       }
-      setIsLoading(false);
+      // setIsLoading(false);
     } catch (error) {
       console.error('Error fetching leads:', error);
       showToast('error', 'Failed to fetch leads');
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 

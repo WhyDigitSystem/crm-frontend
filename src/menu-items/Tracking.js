@@ -31,6 +31,13 @@ const TrackingChilder = [
         type: 'item',
         url: '/Tracking/DealerGeoView',
         icon: icons.IconMapPin
+    },
+    hasScreenAccess('RT') && {
+        id: 'routeTracking',
+        title: 'Route Tracking',
+        type: 'item',
+        url: '/Tracking/RouteTracking',
+        icon: icons.IconMapPin
     }
 ].filter(Boolean);
 
