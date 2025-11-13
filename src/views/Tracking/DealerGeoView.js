@@ -8,6 +8,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import { useGoogleMapLoader } from 'utils/googleMapLoader';
 
 const containerStyle = { width: '100%', height: '80vh' };
 const defaultCenter = { lat: 20.5937, lng: 78.9629 };
@@ -28,10 +29,11 @@ const DealerGeoView = () => {
   const mapRef = useRef(null);
   const autocompleteRef = useRef(null);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyDpZlwlIVN_z5uJwMey404fA19Qn3c8fyI', // ⚠️ Replace with your real key or env variable
-    libraries: ['places']
-  });
+  // const { isLoaded } = useJsApiLoader({
+  //   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+  //   libraries: ['places']
+  // });
+  const { isLoaded } = useGoogleMapLoader();
 
   // 📦 Fetch Dealer + Distributor data
   useEffect(() => {

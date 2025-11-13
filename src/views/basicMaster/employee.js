@@ -174,7 +174,7 @@ const EmployeeDetails = () => {
   const getAllEmployees = async () => {
     try {
       setLoading(true);
-      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchCode}&orgId=${orgId}`);
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.employeeVO);
       }

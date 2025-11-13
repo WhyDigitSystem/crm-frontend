@@ -205,7 +205,7 @@ const Schedule = ({ selectedRow }) => {
     try {
       const response = await apiCalls(
         'get',
-        `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}`
+        `/activities/getAllScheduleByOrgId?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&createdBy=${loginUserName}`
       );
 
       if (response.status === true) {

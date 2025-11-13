@@ -239,7 +239,7 @@ const UserCreation = () => {
 
   const getAllUsers = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchcode}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchcode}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {

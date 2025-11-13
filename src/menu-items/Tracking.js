@@ -18,13 +18,13 @@ const icons = {
 // ==============================|| Tracking MANAGEMENT MENU ITEMS ||============================== //
 
 const TrackingChilder = [
-    hasScreenAccess('LST') && {
-        id: 'tracking',
-        title: 'Tracking',
-        type: 'item',
-        url: '/Tracking/LiveStaffTracker',
-        icon: icons.IconMapSearch
-    },
+    // hasScreenAccess('LST') && {
+    //     id: 'tracking',
+    //     title: 'Tracking',
+    //     type: 'item',
+    //     url: '/Tracking/LiveStaffTracker',
+    //     icon: icons.IconMapSearch
+    // },
     hasScreenAccess('DGV') && {
         id: 'dealerGeoView',
         title: 'Dealer GeoView',
@@ -38,7 +38,14 @@ const TrackingChilder = [
         type: 'item',
         url: '/Tracking/RouteTracking',
         icon: icons.IconMapPin
-    }
+    },
+    hasScreenAccess('FSL') && {
+        id: 'fieldStaffLive',
+        title: 'Field Staff Live',
+        type: 'item',
+        url: '/Tracking/FieldStaffLive',
+        icon: icons.IconMapPin
+    },
 ].filter(Boolean);
 
 const Tracking =

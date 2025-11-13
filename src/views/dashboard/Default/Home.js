@@ -56,7 +56,7 @@ const Home = ({ isLoading }) => {
   };
 
   return (
-    <Box sx={{ px: 3, py: 2 }}>
+    <Box sx={{ px: 2, py: 1 }}>
       {/* Dashboard Header */}
       <Grid container justifyContent="space-between" alignItems="center">
         <Grid item>

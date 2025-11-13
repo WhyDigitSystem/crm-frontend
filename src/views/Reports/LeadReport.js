@@ -40,6 +40,7 @@ function LeadReport() {
   const [listViewData, setListViewData] = useState([]);
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [finYear] = useState(localStorage.getItem('finYear'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [clientNameList, setClientNameList] = useState([]);
@@ -169,12 +170,12 @@ function LeadReport() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/transaction/getLeadReport?finYear=${finYear}&orgId=${orgId}&clientName=${encodeURIComponent(formData.clientName)}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
+            `/transaction/getLeadReport?finYear=${finYear}&orgId=${orgId}&clientName=${encodeURIComponent(formData.clientName)}&branchCode=${branchCode}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/transaction/getLeadReport?finYear=${finYear}&orgId=${orgId}&clientName=${encodeURIComponent(formData.clientName)}`
+            `/transaction/getLeadReport?finYear=${finYear}&orgId=${orgId}&clientName=${encodeURIComponent(formData.clientName)}&branchCode=${branchCode}`
           );
         }
         if (response.status === true) {

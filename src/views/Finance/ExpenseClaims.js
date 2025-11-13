@@ -57,7 +57,13 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import { AddCircle, Delete } from '@mui/icons-material';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import KPIBox from 'views/basicMaster/KPIBox';
-export const ExpenseClaims = () => {
+export const ExpenseClaims = ({ selectedRow }) => {
+    useEffect(() => {
+        if (selectedRow) {
+            setIsLoading(true);
+            getExpenseClaimsById({ original: selectedRow });
+        }
+    }, [selectedRow]);
     const [orgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName] = useState(localStorage.getItem('userName'));
     const [branch] = useState(localStorage.getItem('branch'));
@@ -400,6 +406,7 @@ export const ExpenseClaims = () => {
                         console.log('handle Img Upload failed');
                     }
                     handleClear();
+                    getExpenseClaimsDocId();
                     await getAllExpenseClaims();
                 } else {
                     showToast('error', result.paramObjectsMap?.errorMessage || 'Save failed');
@@ -653,7 +660,7 @@ export const ExpenseClaims = () => {
                                                 onChange={handleInputChange}
                                                 required
                                                 size="small"
-                                                disabled={isLoading}
+                                            // disabled={isLoading}
                                             // helperText={isEditing ? "From Place Required" : ""}
                                             />
                                         </Grid>
@@ -666,7 +673,7 @@ export const ExpenseClaims = () => {
                                                 onChange={handleInputChange}
                                                 required
                                                 size="small"
-                                                disabled={isLoading}
+                                            // disabled={isLoading}
                                             // helperText={isEditing ? "To Place Required" : ""}
                                             />
                                         </Grid>
@@ -679,7 +686,7 @@ export const ExpenseClaims = () => {
                                                 onChange={handleInputChange}
                                                 required
                                                 size="small"
-                                                disabled={isLoading}
+                                            // disabled={isLoading}
                                             // helperText={isEditing ? "To Place Required" : ""}
                                             />
                                         </Grid>
@@ -696,7 +703,7 @@ export const ExpenseClaims = () => {
                                                         }
                                                     })
                                                 }
-                                                slotProps={{ textField: { size: 'small', fullWidth: true, disabled: isLoading } }}
+                                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={3}>
@@ -712,7 +719,7 @@ export const ExpenseClaims = () => {
                                                         }
                                                     })
                                                 }
-                                                slotProps={{ textField: { size: 'small', fullWidth: true, disabled: isLoading } }}
+                                                slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={3}>

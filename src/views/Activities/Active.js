@@ -258,7 +258,7 @@ const Active = ({ selectedRow }) => {
   };
   const getAllActives = async () => {
     try {
-      const response = await apiCalls('get', `/activities/getAllActiveByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`);
+      const response = await apiCalls('get', `/activities/getAllActiveByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}&createdBy=${loginUserName}`);
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.activeVO.reverse() || []);
       } else {

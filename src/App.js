@@ -10,15 +10,18 @@ import { useJsApiLoader } from '@react-google-maps/api'; // ✅ add this
 
 import SessionExpiredPopup from 'utils/SessionExpiredPopup';
 import ToastComponent from './utils/toast-component';
+import { useGoogleMapLoader } from 'utils/googleMapLoader';
 
 const App = () => {
   const customization = useSelector((state) => state.customization);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  const { isLoaded } = useJsApiLoader({  // ✅ initialize loader here
-    googleMapsApiKey: 'AIzaSyDpZlwlIVN_z5uJwMey404fA19Qn3c8fyI',
-    libraries: ['places'],
-  });
+  // const { isLoaded } = useJsApiLoader({  // ✅ initialize loader here
+  //   googleMapsApiKey: 'AIzaSyDpZlwlIVN_z5uJwMey404fA19Qn3c8fyI',
+  //   libraries: ['places'],
+  // });
+
+  const { isLoaded } = useGoogleMapLoader();
 
   useEffect(() => {
     const handleSessionExpiredEvent = () => setSessionExpired(true);
@@ -31,7 +34,7 @@ const App = () => {
       <ThemeProvider theme={themes(customization)}>
         <CssBaseline />
         <NavigationScroll>
-          {isLoaded ? <Routes /> : <div style={{ textAlign: 'center', marginTop: 100 }}>Loading Maps...</div>}
+          {isLoaded ? <Routes /> : <div style={{ textAlign: 'center', marginTop: 100 }}>Loading...</div>}
           <ToastComponent />
           {/* <SessionExpiredPopup open={sessionExpired} /> */}
         </NavigationScroll>

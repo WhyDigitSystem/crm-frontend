@@ -84,11 +84,11 @@ export const getAllActiveCurrency = async (orgId) => {
 
 export const getAllActiveEmployees = async (orgId) => {
   try {
-    const response = await apiCalls('get', `warehousemastercontroller/getAllEmployeeByOrgId?orgId=${orgId}`);
+    const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
     if (response.status === true) {
       const empData = response.paramObjectsMap.employeeVO
         .filter((row) => row.active === 'Active')
-        .map(({ id, employeeName, employeeCode }) => ({ id, employeeName, employeeCode }));
+        .map(({ id, employeeName, employeeCode, designation, passportphoto }) => ({ id, employeeName, employeeCode, designation, passportphoto }));
       return empData;
     } else {
       console.error('API Error:');

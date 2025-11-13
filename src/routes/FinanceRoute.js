@@ -21,7 +21,6 @@ const InventoryManagement = Loadable(lazy(() => import('views/Transaction/Invent
 const ProductionManagement = Loadable(lazy(() => import('views/Transaction/ProductionManagement')));
 const StaticReport = Loadable(lazy(() => import('views/Reports/StaticReport')));
 const StaticReport2 = Loadable(lazy(() => import('views/Reports/StaticReport2')));
-// import LiveStaffTracker from 'views/Tracking/LiveStaffTracker';
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
 //Report
@@ -34,7 +33,7 @@ const ScheduleReport = Loadable(lazy(() => import('views/Reports/ScheduleReport'
 const DealerReport = Loadable(lazy(() => import('views/Reports/DealerReport')));
 const UnAssignedLeads = Loadable(lazy(() => import('views/Reports/UnAssignedLeads')));
 const LeadJourney = Loadable(lazy(() => import('views/Reports/LeadJourney')));
-
+const ExpenseReport = Loadable(lazy(() => import('views/Reports/ExpenseReport')));
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // Calendar
@@ -91,7 +90,7 @@ const Rate = Loadable(lazy(() => import('views/RateManagement/Rate')));
 const Dealer = Loadable(lazy(() => import('views/Dealers/Dealers')));
 
 //Location Tracking
-const LiveStaffTracker = Loadable(lazy(() => import('views/Tracking/LiveStaffTracker')));
+const FieldStaffLiveMap = Loadable(lazy(() => import('views/Tracking/FieldStaffLiveMap')));
 
 // NominationEnquiries
 const NominationEnquiries = Loadable(lazy(() => import('views/NominationEnquiries/AllNominationEnquiries')));
@@ -336,16 +335,16 @@ const FinanceRoute = {
       element: <BulkEmail />
     },
     {
-      path: '/Tracking/LiveStaffTracker',
-      element: <LiveStaffTracker />
-    },
-    {
       path: '/Tracking/DealerGeoView',
       element: <DealerGeoView />
     },
     {
       path: '/Tracking/RouteTracking',
       element: <RouteTracking />
+    },
+    {
+      path: '/Tracking/FieldStaffLive',
+      element: <FieldStaffLiveMap />
     },
     {
       path: '/Report/LeadJourney',
@@ -366,6 +365,10 @@ const FinanceRoute = {
     {
       path: '/Report/SupplierManagementReport',
       element: <SupplierManagementReport />
+    },
+    {
+      path: '/Report/ExpenseReport',
+      element: <ExpenseReport />
     },
     {
       path: '/Report/StaticReport',

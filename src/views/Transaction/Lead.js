@@ -408,7 +408,8 @@ const Lead = ({ selectedRow }) => {
 
     if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       newErrors[field] = 'Invalid email format';
-    } else if (field === 'contactNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
+    } 
+    else if (field === 'contactNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
       newErrors[field] = 'Invalid contact number';
     } else if (!value) {
       newErrors[field] = 'This field is required';
@@ -465,9 +466,9 @@ const Lead = ({ selectedRow }) => {
       errors.email = 'Invalid email format';
     }
 
-    if (String(formData.contactNo).trim() && !/^[0-9+\-\s]{10,15}$/.test(String(formData.contactNo))) {
-      errors.contactNo = 'Invalid contact number';
-    }
+    // if (String(formData.contactNo).trim() && !/^[0-9+\-\s]{10,15}$/.test(String(formData.contactNo))) {
+    //   errors.contactNo = 'Invalid contact number';
+    // }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;

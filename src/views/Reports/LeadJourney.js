@@ -25,7 +25,8 @@ function PaperComponent(props) {
 function LeadJourney() {
   const [listViewData, setListViewData] = useState([]);
   const [orgId] = useState(localStorage.getItem('orgId'));
-  const [finYear] = useState(localStorage.getItem('finYear'));
+  const [finYear] = useState(localStorage.getItem('finYear')); 
+  const [branchCode] = useState(localStorage.getItem('branchcode')); 
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [clientNameList, setClientNameList] = useState([]);
@@ -74,7 +75,7 @@ function LeadJourney() {
       setIsLoading(true);
       setListView(false);
       try {
-        let response = await apiCalls('get', `/transaction/getAllClientNameBasedHistory?clientName=${formData.clientName}&orgId=${orgId}`);
+        let response = await apiCalls('get', `/transaction/getAllClientNameBasedHistory?clientName=${formData.clientName}&orgId=${orgId}&branchCode=${branchCode}`);
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.clientInformation || []);

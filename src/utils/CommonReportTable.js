@@ -81,7 +81,30 @@ const CommonReportTable = ({
         }
       };
     }
-
+    if (column.accessorKey?.toLowerCase().includes('amount')) {
+      return {
+        ...column,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          if (value == null || value === '') return '';
+          const formattedValue = Number(value).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+          return (
+            <div style={{ textAlign: 'right', width: '100%' }}>
+              {formattedValue}
+            </div>
+          );
+        },
+        muiTableBodyCellProps: {
+          sx: { textAlign: 'right', pr: 2 }, // padding right for spacing
+        },
+        muiTableHeadCellProps: {
+          sx: { textAlign: 'right', pr: 2 },
+        },
+      };
+    }
     if (column.accessorKey === 'active') {
       return {
         ...column,
