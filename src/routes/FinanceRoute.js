@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import { element } from 'prop-types';
+const KmSummaryList = Loadable(lazy(() => import('views/Reports/KmSummaryList')));
 const ExpenseApproval = Loadable(lazy(() => import('views/Finance/ExpenseApproval')));
 const ExpenseClaims = Loadable(lazy(() => import('views/Finance/ExpenseClaims')));
 const RouteTracking = Loadable(lazy(() => import('views/Tracking/RouteTracking')));
@@ -369,6 +370,10 @@ const FinanceRoute = {
     {
       path: '/Report/ExpenseReport',
       element: <ExpenseReport />
+    },
+    {
+      path: '/Report/KmSummaryList',
+      element: <KmSummaryList />
     },
     {
       path: '/Report/StaticReport',

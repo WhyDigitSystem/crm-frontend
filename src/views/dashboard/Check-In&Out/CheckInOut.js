@@ -185,7 +185,7 @@ const CheckInOut = () => {
                         coords.longitude
                     );
 
-                    if (distance > 5) {
+                    if (distance > 50) {
                         try {
                             await apiCalls('post', '/checkin/createUpdateLiveLocationCapture', {
                                 branch,

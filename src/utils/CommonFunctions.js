@@ -82,9 +82,9 @@ export const getAllActiveCurrency = async (orgId) => {
   }
 };
 
-export const getAllActiveEmployees = async (orgId) => {
+export const getAllActiveEmployees = async (orgId, branchCode) => {
   try {
-    const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
+    const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?branchCode=${branchCode}&orgId=${orgId}`);
     if (response.status === true) {
       const empData = response.paramObjectsMap.employeeVO
         .filter((row) => row.active === 'Active')

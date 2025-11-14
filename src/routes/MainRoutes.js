@@ -4,6 +4,7 @@ import Loadable from 'ui-component/Loadable';
 import MainLayout from 'layout/MainLayout';
 import MinimalLayout from 'layout/MinimalLayout';
 import PrivateRoute from '../routes/PrivateRoute';
+const FeedbackComplianceForm = Loadable(lazy(() => import('views/FeedbackAndCompliance/FeedbackAndCompliance')));
 
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
@@ -22,6 +23,10 @@ const MainRoutes = {
       path: '/',
       element: <AuthLogin3 />
     },
+    // <Route />,
+    {
+      path: "/feedback", element: <FeedbackComplianceForm />
+    },
     {
       path: 'dashboard',
       element: <PrivateRoute><MainLayout /></PrivateRoute>,
@@ -32,52 +37,52 @@ const MainRoutes = {
         }
       ]
     },
-    {
-      path: 'utils',
-      element: <PrivateRoute><MainLayout /></PrivateRoute>,
-      children: [
-        {
-          path: 'util-typography',
-          element: <UtilsTypography />
-        },
-        {
-          path: 'util-color',
-          element: <UtilsColor />
-        },
-        {
-          path: 'util-shadow',
-          element: <UtilsShadow />
-        }
-      ]
-    },
-    {
-      path: 'icons',
-      element: <PrivateRoute><MainLayout /></PrivateRoute>,
-      children: [
-        {
-          path: 'tabler-icons',
-          element: <UtilsTablerIcons />
-        },
-        {
-          path: 'material-icons',
-          element: <UtilsMaterialIcons />
-        }
-      ]
-    },
-    {
-      path: 'sample-page',
-      element: <PrivateRoute><MainLayout /></PrivateRoute>,
-      children: [
-        {
-          path: '',
-          element: <SamplePage />
-        }
-      ]
-    },
-    {
-      path: '*',
-      element: <Navigate to="/" />
-    }
+    // {
+    //   path: 'utils',
+    //   element: <PrivateRoute><MainLayout /></PrivateRoute>,
+    //   children: [
+    //     {
+    //       path: 'util-typography',
+    //       element: <UtilsTypography />
+    //     },
+    //     {
+    //       path: 'util-color',
+    //       element: <UtilsColor />
+    //     },
+    //     {
+    //       path: 'util-shadow',
+    //       element: <UtilsShadow />
+    //     }
+    //   ]
+    // },
+    // {
+    //   path: 'icons',
+    //   element: <PrivateRoute><MainLayout /></PrivateRoute>,
+    //   children: [
+    //     {
+    //       path: 'tabler-icons',
+    //       element: <UtilsTablerIcons />
+    //     },
+    //     {
+    //       path: 'material-icons',
+    //       element: <UtilsMaterialIcons />
+    //     }
+    //   ]
+    // },
+    // {
+    //   path: 'sample-page',
+    //   element: <PrivateRoute><MainLayout /></PrivateRoute>,
+    //   children: [
+    //     {
+    //       path: '',
+    //       element: <SamplePage />
+    //     }
+    //   ]
+    // },
+    // {
+    //   path: '*',
+    //   element: <Navigate to="/" />
+    // }
   ]
 };
 

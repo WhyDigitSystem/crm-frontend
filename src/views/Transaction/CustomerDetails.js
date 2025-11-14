@@ -584,6 +584,20 @@ export const CustomerDetails = () => {
     { accessorKey: 'industry', header: 'Industry', size: 120 },
     // { accessorKey: 'website', header: 'Website', size: 150 }
   ];
+  const handleShareLink = (customer) => {
+    const encodedName = encodeURIComponent(customer.clientName);
+
+    const link = `${process.env.REACT_APP_FRONT_URL}/feedback?name=${encodedName}&mobile=${customer.mobileNumber}`;
+
+    const whatsappMessage =
+      `Hello ${customer.clientName},\n\n` +
+      `We value your feedback. Please submit your Feedback / Complaints here:\n${link}`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${customer.mobileNumber}&text=${encodeURIComponent(whatsappMessage)}`;
+
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       {isLoading && (
@@ -612,6 +626,8 @@ export const CustomerDetails = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={(row) => getCustomerDetailsById(row.original.id)}
+              onShare={handleShareLink}
+              isShare={true}
             />
           </div>
         ) : (

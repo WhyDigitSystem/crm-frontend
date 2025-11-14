@@ -137,6 +137,13 @@ const reportChildren = [
     url: '/Report/ExpenseReport',
     icon: () => <IconReportMoney />
   },
+    hasScreenAccess('KML') && {
+    id: 'KmSummaryList',
+    title: 'KM Summary',
+    type: 'item',
+    url: '/Report/KmSummaryList',
+    icon: () => <IconReportMoney />
+  },
 ].filter(Boolean);
 
 const Reports =

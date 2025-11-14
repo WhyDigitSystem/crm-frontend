@@ -6,8 +6,9 @@ import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
 import dayjs from 'dayjs';
+import ShareIcon from '@mui/icons-material/Share';
 
-const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf, enableEditing }) => {
+const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf, onShare, isShare }) => {
   const [tableData, setTableData] = useState(data || []);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
@@ -98,6 +99,11 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
     <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
       {isPdf && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={() => GeneratePdf(row)} />}
       {!disableEditIcon && <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />}
+      {isShare && <ActionButton
+      title="Share FeedBack"
+      icon={ShareIcon}
+      onClick={() => onShare(row.original)} 
+    />}
     </Box>
   );
   // const customLocalization = {
