@@ -187,9 +187,9 @@ const GlobalSection = () => {
       <Box
         sx={{
           ml: 2,
-          mr: 2,
+          // mr: 2,
           [theme.breakpoints.down('md')]: {
-            mr: 2
+            // mr: 2
           }
         }}
       >
@@ -200,12 +200,18 @@ const GlobalSection = () => {
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
               transition: 'all .2s ease-in-out',
-              background: theme.palette.primary.light, // ✅ use theme instead of hex
-              color: theme.palette.primary.main, // ✅ theme primary
+              // background: theme.palette.primary.light, 
+              // color: theme.palette.primary.main, 
+               backgroundColor: '#3B82F6',
+               color: 'white',
               '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.primary.main, // ✅ main on hover
-                color: theme.palette.primary.contrastText // ✅ auto contrast text
-              }
+                // background: theme.palette.primary.main, 
+                // color: theme.palette.primary.contrastText 
+                 backgroundColor: "#1D4ED8",
+              },
+               '&:hover .menu-icon': {
+                      transform: 'rotate(360deg)',
+                    }
             }}
             ref={anchorRef}
             aria-controls={open ? 'menu-list-grow' : undefined}
@@ -213,7 +219,9 @@ const GlobalSection = () => {
             onClick={handleToggle}
             color="inherit"
           >
-            <IconWorld stroke={1.5} size="1.3rem" />
+            <IconWorld  className="menu-icon" stroke={1.5} size="1.3rem"   style={{
+        transition: 'transform 0.3s ease'
+      }} />
           </Avatar>
         </ButtonBase>
       </Box>

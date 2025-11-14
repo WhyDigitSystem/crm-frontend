@@ -46,7 +46,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
         display: 'flex',
         alignItems: 'center',
         padding: '5px 20px',
-        background: 'linear-gradient(90deg, #0f172a, #1e293b)',
+        // background: 'linear-gradient(90deg, #0f172a, #1e293b)',
+        background: 'linear-gradient(to right, #F0F7FF, #1E3A8A)',
+        // background: 'linear-gradient(to right, #FFFDF8, #3E2723)',
+        // background: 'linear-gradient(to right, #F8FAFC, #1E293B)',
         borderBottom: '1px solid #374151',
         color: '#fff',
         gap: 2
@@ -55,18 +58,22 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 200, height: 65 }}>
         <LogoSection />
       </Box>
-      <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+      {/* <ButtonBase sx={{ borderRadius: '12px'}}>
         <Avatar
           variant="rounded"
           sx={{
             ...theme.typography.commonAvatar,
             ...theme.typography.mediumAvatar,
             transition: 'all .2s ease-in-out',
-            background: theme.palette.secondary.light,
-            color: theme.palette.secondary.dark,
+            // background: theme.palette.secondary.light,
+            backgroundColor:'#3B82F6',
+            // color: theme.palette.secondary.dark,
+            color:'white',
             '&:hover': {
-              background: theme.palette.secondary.dark,
+              // background: theme.palette.secondary.dark,
+              backgroundColor:"#1D4ED8",
               color: theme.palette.secondary.light
+             
             }
           }}
           onClick={handleLeftDrawerToggle}
@@ -74,40 +81,112 @@ const Header = ({ handleLeftDrawerToggle }) => {
         >
           <IconMenu2 stroke={1.5} size="1.3rem" />
         </Avatar>
-      </ButtonBase>
+      </ButtonBase> */}
+      <ButtonBase sx={{ borderRadius: '12px' }}>
+  <Avatar
+    variant="rounded"
+    sx={{
+      ...theme.typography.commonAvatar,
+      ...theme.typography.mediumAvatar,
+      transition: 'all .2s ease-in-out',
+      backgroundColor: '#3B82F6',
+      color: 'white',
+      
+      '&:hover': {
+        backgroundColor: "#1D4ED8",
+      },
+
+      // rotate the icon on hover
+      '&:hover .menu-icon': {
+        transform: 'rotate(360deg)',
+      }
+    }}
+    onClick={handleLeftDrawerToggle}
+  >
+    <IconMenu2
+      className="menu-icon"
+      stroke={1.5}
+      size="1.3rem"
+      style={{
+        transition: 'transform 0.3s ease'
+      }}
+    />
+  </Avatar>
+</ButtonBase>
+
       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
         <SearchSection />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Avatar
+        {/* <Avatar
           sx={{
             fontSize: '16px',
             width: 60,
             height: 60,
-            backgroundColor: 'transparent'
+            // backgroundColor: 'transparent'
+            backgroundColor: 'white',
+            margin:'2px',
           }}
         >
           {logo && logo[0]?.companyLogo ? (
             <img
               src={`data:image/png;base64,${logo[0].companyLogo}`}
               alt="Company Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }}
+              style={{ width: '120%', height: '100%', objectFit: 'contain', borderRadius: '50%' }}
             />
           ) : (
             'Upload Logo'
           )}
-        </Avatar>
+        </Avatar> */}
+        <Avatar
+  sx={{
+    fontSize: '16px',
+    width: 60,
+    height: 60,
+    backgroundColor: 'white',
+    margin: '2px',
+    overflow: 'hidden',
+       border: '3px solid #6366F1', 
+    // Hover: rotate image
+    '&:hover .rotate-img': {
+      transform: 'rotate(360deg)',
+    }
+  }}
+>
+  {logo && logo[0]?.companyLogo ? (
+    <img
+      src={`data:image/png;base64,${logo[0].companyLogo}`}
+      alt="Company Logo"
+      className="rotate-img"
+      style={{
+        width: '120%',
+        height: '100%',
+        objectFit: 'contain',
+        borderRadius: '50%',
+     
+        transition: 'transform 0.8s ease',   // smooth rotation
+      }}
+    />
+  ) : (
+    'Upload Logo'
+  )}
+</Avatar>
+
 
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column' }}>
-          <Box sx={{ fontWeight: 700, fontSize: 13, color: '#fff' }}>{localStorage.getItem('companyName')}</Box>
+          <Box sx={{ fontWeight: 700, fontSize: 13, color: '#fff', wordSpacing: '2px' }}>{localStorage.getItem('companyName')}</Box>
           <Chip
             label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`}
             size="small"
             sx={{
               fontSize: 11,
               height: 22,
-              backgroundColor: '#00bfa6',
-              color: '#fff'
+              // backgroundColor: '#00bfa6',
+              // color: '#fff'
+              backgroundColor:'white',
+              color:'black',
+              fontWeight: 'bold',
+              border: '3px solid #6366F1',  
             }}
           />
         </Box>

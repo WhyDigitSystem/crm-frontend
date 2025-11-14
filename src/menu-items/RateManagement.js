@@ -33,7 +33,7 @@ const rate =
             children: [
                 {
                     id: 'rateCollapse',
-                    title: 'Rate Management',
+                    title: 'Rate Mgmt',
                     type: 'collapse',
                     icon: icons.IconCurrencyRupee, 
                     children: rateChildren

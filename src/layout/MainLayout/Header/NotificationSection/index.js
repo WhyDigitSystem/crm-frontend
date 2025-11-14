@@ -102,7 +102,9 @@ const NotificationSection = () => {
 
   return (
     <>
-      <Box sx={{ ml: 2, [theme.breakpoints.down('md')]: { mr: 2 } }}>
+      {/* <Box sx={{ ml: 2, [theme.breakpoints.down('md')]: { mr: 2 } }}> */}
+      <Box>
+
         <Tooltip title="Notifications">
           <ButtonBase sx={{ borderRadius: '12px' }}>
             <Badge badgeContent={notifications.length} color="error">
@@ -112,12 +114,18 @@ const NotificationSection = () => {
                   ...theme.typography.commonAvatar,
                   ...theme.typography.mediumAvatar,
                   transition: 'all .3s ease-in-out',
-                  backgroundColor: theme.palette.primary.light,
-                  color: theme.palette.primary.dark,
+                  // backgroundColor: theme.palette.primary.light,
+                  // color: theme.palette.primary.dark,
+                   backgroundColor: '#3B82F6',
+                   color: 'white',
                   '&:hover': {
-                    backgroundColor: theme.palette.primary.dark,
-                    color: theme.palette.primary.light
-                  }
+                    // backgroundColor: theme.palette.primary.dark,
+                    // color: theme.palette.primary.light
+                       backgroundColor: "#1D4ED8",
+                  },
+                    '&:hover .menu-icon': {
+                    transform: 'rotate(360deg)',
+      }
                 }}
                 ref={anchorRef}
                 aria-controls={open ? 'menu-list-grow' : undefined}
@@ -125,7 +133,9 @@ const NotificationSection = () => {
                 onClick={handleToggle}
                 color="inherit"
               >
-                <IconBell stroke={1.5} size="1.3rem" />
+                <IconBell  className="menu-icon" stroke={1.5} size="1.3rem"   style={{
+                transition: 'transform 0.3s ease'
+      }} />
               </Avatar>
             </Badge>
           </ButtonBase>

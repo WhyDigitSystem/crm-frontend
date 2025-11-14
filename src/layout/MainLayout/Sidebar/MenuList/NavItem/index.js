@@ -35,6 +35,8 @@ const NavItem = ({ item, level }) => {
     />
   );
 
+  // 
+
   let itemTarget = '_self';
   if (item.target) {
     itemTarget = '_blank';
@@ -73,13 +75,16 @@ const NavItem = ({ item, level }) => {
         mb: 0.1,
         alignItems: 'flex-start',
         backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-        py: level > 1 ? 0.30 : 0.30,
-        pl: `${level * 20}px`,
-        color: 'white'
+        py: level > 1 ? 0.30 : 0.30, 
+        // pl: `${level * 20}px`,
+        pl: `${level * 15}px`,
+
+       color: 'white'
       }}
       selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
       onClick={() => itemHandler(item.id)}
     >
+     
       <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36, color: 'white' }}>{itemIcon}</ListItemIcon>
       <ListItemText
         primary={

@@ -21,7 +21,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && pr
     duration: theme.transitions.duration.enteringScreen
   }),
   [theme.breakpoints.up('md')]: {
-    marginLeft: open ? 0 : -(drawerWidth - 20),
+    marginLeft: open ? 0 : -(drawerWidth - 70),
     width: `calc(100% - ${drawerWidth}px)`
   },
   [theme.breakpoints.down('md')]: {
@@ -77,7 +77,6 @@ const MainLayout = () => {
         <Breadcrumbs separator={IconChevronRight} navigation={navigation} icon title rightAlign />
         <Outlet />
       </Main>
-
       <Customization />
     </Box>
   );

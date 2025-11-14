@@ -57,28 +57,28 @@ const transactionChildren = [
   },
   hasScreenAccess('PM') && {
     id: 'ProductionManagement',
-    title: 'Production Management',
+    title: 'Production',
     type: 'item',
     url: '/Transaction/ProductionManagement',
     icon: IconBuildingFactory
   },
   hasScreenAccess('IM') && {
     id: 'InventoryManagement',
-    title: 'Inventory Management',
+    title: 'Inventory',
     type: 'item',
     url: '/Transaction/InventoryManagement',
     icon: IconBuildingWarehouse
   },
   hasScreenAccess('SM') && {
     id: 'SupplierManagement',
-    title: 'Supplier Management',
+    title: 'Supplier',
     type: 'item',
     url: '/Transaction/SupplierManagement',
     icon: IconTruckDelivery
   },
   hasScreenAccess('QM') && {
     id: 'QualityManagement',
-    title: 'Quality Management',
+    title: 'Quality',
     type: 'item',
     url: '/Transaction/QualityManagement',
     icon: IconCertificate

@@ -140,9 +140,9 @@ const NavCollapse = ({ menu, level }) => {
           }
         />
         {open ? (
-          <IconChevronUp stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto' }} />
+          <IconChevronUp stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto',color:'black' }} />
         ) : (
-          <IconChevronDown stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto' }} />
+          <IconChevronDown stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto',color:'black' }} />
         )}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
@@ -151,16 +151,16 @@ const NavCollapse = ({ menu, level }) => {
           disablePadding
           sx={{
             position: 'relative',
-            '&:after': {
-              content: "''",
-              position: 'absolute',
-              left: '32px',
-              top: 0,
-              height: '100%',
-              width: '1px',
-              opacity: 1,
-              background: theme.palette.primary.light
-            }
+            // '&:after': {
+            //   content: "''",
+            //   position: 'absolute',
+            //   left: '32px',
+            //   top: 0,
+            //   height: '100%',
+            //   width: '1px',
+            //   opacity: 1,
+            //   background: theme.palette.primary.light
+            // }
           }}
         >
           {menus}

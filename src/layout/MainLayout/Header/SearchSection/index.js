@@ -1,6 +1,285 @@
+// // SearchSection.jsx
+// import PropTypes from 'prop-types';
+// import { useEffect, useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+
+// // MUI
+// import {
+//   Avatar,
+//   Box,
+//   ButtonBase,
+//   Card,
+//   Grid,
+//   InputAdornment,
+//   List,
+//   ListItem,
+//   ListItemButton,
+//   ListItemText,
+//   OutlinedInput,
+//   Paper,
+//   Popper
+// } from '@mui/material';
+// import { styled, useTheme } from '@mui/material/styles';
+// import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
+// import menu from 'menu-items/index'; // adjust path if needed
+
+// // Icons
+// import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-react';
+
+// // Transitions
+// import Transitions from 'ui-component/extended/Transitions';
+
+// // === Styled Components ===
+
+// const PopperStyle = styled(Popper)(({ theme }) => ({
+//   zIndex: 1300, // Higher than default to ensure it overlays other components
+//   width: '100%',
+//   marginTop: theme.spacing(1),
+//   [theme.breakpoints.down('sm')]: {
+//     width: '100%',
+//     marginTop: theme.spacing(1)
+//   },
+//   position: 'absolute'
+// }));
+
+// const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
+//   width: 300,
+//   height: 40,
+//   marginLeft: 16,
+//   paddingLeft: 16,
+//   paddingRight: 16,
+//   // backgroundColor: '#374151', // darker gray, matches header
+//   // borderRadius: theme.shape.borderRadius,
+//    borderRadius: '10px',
+//    transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
+//   // '& .MuiOutlinedInput-notchedOutline': {
+//   //   border: 'none' // remove the white border
+//   // },
+//   '&:hover .MuiOutlinedInput-notchedOutline': {
+//     border: '3px solid #6366F1',     // modern indigo highlight
+//   },
+//   '& input': {
+//     background: 'transparent !important',
+//     paddingLeft: '4px !important',
+//     // color: '#fff',
+//      color:'black',
+//     '&::placeholder': {
+//       color: 'black' // light gray placeholder
+//     }
+//   },
+//   [theme.breakpoints.down('lg')]: {
+//     width: 250
+//   },
+//   [theme.breakpoints.down('md')]: {
+//     width: '100%',
+//     marginLeft: 4,
+//     // background: '#374151'
+//   }
+// }));
+
+// const HeaderAvatarStyle = styled(Avatar)(({ theme }) => ({
+//   ...theme.typography.commonAvatar,
+//   ...theme.typography.mediumAvatar,
+//   background: theme.palette.secondary.light,
+//   color: theme.palette.secondary.dark,
+//   '&:hover': {
+//     background: theme.palette.secondary.dark,
+//     color: theme.palette.secondary.light
+//   }
+// }));
+
+// const SearchResultsPaper = styled(Paper)(({ theme }) => ({
+//   maxHeight: 300,
+//   overflowY: 'auto',
+//   boxShadow: theme.shadows[5],
+//   borderRadius: theme.shape.borderRadius
+// }));
+
+// // === Mobile Search ===
+// const MobileSearch = ({ value, setValue, popupState, screens }) => {
+//   const theme = useTheme();
+//   const navigate = useNavigate();
+
+//   const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
+
+//   const handleSearch = (screen) => {
+//     navigate(screen.path);
+//     setValue('');
+//     popupState.close();
+//   };
+
+//   return (
+//     <>
+//       <OutlineInputStyle
+//         value={value}
+//         onChange={(e) => setValue(e.target.value)}
+//         placeholder="Search"
+//         startAdornment={
+//           <InputAdornment position="start">
+//             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
+//           </InputAdornment>
+//         }
+//         fullWidth
+//       />
+//       {value && (
+//         <SearchResultsPaper sx={{ mt: 1 }}>
+//           <List>
+//             {filteredScreens.length > 0 ? (
+//               filteredScreens.map((screen) => (
+//                 <ListItem key={screen.path} disablePadding>
+//                   <ListItemButton onClick={() => handleSearch(screen)}>
+//                     <ListItemText primary={screen.name} />
+//                   </ListItemButton>
+//                 </ListItem>
+//               ))
+//             ) : (
+//               <ListItem>
+//                 <ListItemText primary="No results found" />
+//               </ListItem>
+//             )}
+//           </List>
+//         </SearchResultsPaper>
+//       )}
+//     </>
+//   );
+// };
+
+// MobileSearch.propTypes = {
+//   value: PropTypes.string.isRequired,
+//   setValue: PropTypes.func.isRequired,
+//   popupState: PropTypes.object.isRequired,
+//   screens: PropTypes.array.isRequired
+// };
+
+// // === Desktop Search ===
+// const DesktopSearch = ({ value, setValue, screens }) => {
+//   const theme = useTheme();
+//   const navigate = useNavigate();
+
+//   const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
+
+//   const handleSearch = (screen) => {
+//     navigate(screen.path);
+//     setValue('');
+//     window.location.reload();
+//   };
+
+//   return (
+//     <Box sx={{ position: 'relative' }}>
+//       <OutlineInputStyle
+//         value={value}
+//         onChange={(e) => setValue(e.target.value)}
+//         placeholder="Search"
+//         startAdornment={
+//           <InputAdornment position="start">
+//             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
+//           </InputAdornment>
+//         }
+//       />
+//       {value && (
+//         <SearchResultsPaper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, ml: 2, zIndex: 1600 }}>
+//           <List>
+//             {filteredScreens.length > 0 ? (
+//               filteredScreens.map((screen) => (
+//                 <ListItem key={screen.path} disablePadding>
+//                   <ListItemButton onClick={() => handleSearch(screen)}>
+//                     <ListItemText primary={screen.name} />
+//                   </ListItemButton>
+//                 </ListItem>
+//               ))
+//             ) : (
+//               <ListItem>
+//                 <ListItemText primary="No results found" />
+//               </ListItem>
+//             )}
+//           </List>
+//         </SearchResultsPaper>
+//       )}
+//     </Box>
+//   );
+// };
+
+// DesktopSearch.propTypes = {
+//   value: PropTypes.string.isRequired,
+//   setValue: PropTypes.func.isRequired,
+//   screens: PropTypes.array.isRequired
+// };
+
+// // === Main Component ===
+// const SearchSection = () => {
+//   const [value, setValue] = useState('');
+//   const [screenList, setScreenList] = useState([]);
+//   const theme = useTheme();
+
+//   useEffect(() => {
+//     const extractSearchableItems = (menuItems) => {
+//       const result = [];
+
+//       const traverse = (items) => {
+//         items.forEach((item) => {
+//           if (!item) return;
+//           if (item.type === 'item' && item.title && item.url) {
+//             result.push({ name: item.title, path: item.url });
+//           }
+//           if (item.children) {
+//             traverse(item.children);
+//           }
+//         });
+//       };
+
+//       traverse(menuItems);
+//       return result;
+//     };
+
+//     const allMenuItems = menu.items || [];
+//     const screens = extractSearchableItems(allMenuItems);
+//     setScreenList(screens);
+//   }, []);
+
+//   return (
+//     <>
+//       {/* Mobile */}
+//       <Box sx={{ display: { xs: 'block', md: 'none' }, width: '100%' }}>
+//         <PopupState variant="popper" popupId="mobile-search-popper">
+//           {(popupState) => (
+//             <>
+//               <Box sx={{ ml: 2 }}>
+//                 <ButtonBase>
+//                   <HeaderAvatarStyle variant="rounded" {...bindToggle(popupState)} >
+//                     <IconSearch stroke={1.5} size="1.2rem" />
+//                   </HeaderAvatarStyle>
+//                 </ButtonBase>
+//               </Box>
+//               <PopperStyle {...bindPopper(popupState)} transition placement="bottom-start">
+//                 {({ TransitionProps }) => (
+//                   <Transitions type="zoom" {...TransitionProps}>
+//                     <Card sx={{ width: '100%' }}>
+//                       <Box sx={{ p: 1 }}>
+//                         <MobileSearch value={value} setValue={setValue} popupState={popupState} screens={screenList} />
+//                       </Box>
+//                     </Card>
+//                   </Transitions>
+//                 )}
+//               </PopperStyle>
+//             </>
+//           )}
+//         </PopupState>
+//       </Box>
+
+//       {/* Desktop */}
+//       <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'relative' }}>
+//         <DesktopSearch value={value} setValue={setValue} screens={screenList} />
+//       </Box>
+
+//     </>
+//   );
+// };
+
+// export default SearchSection;
+
 // SearchSection.jsx
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // MUI
@@ -9,35 +288,35 @@ import {
   Box,
   ButtonBase,
   Card,
-  Grid,
-  InputAdornment,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
   OutlinedInput,
   Paper,
+  InputAdornment,
   Popper
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
-import menu from 'menu-items/index'; // adjust path if needed
 
 // Icons
-import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-react';
+import { IconSearch } from '@tabler/icons-react';
 
 // Transitions
 import Transitions from 'ui-component/extended/Transitions';
 
-// === Styled Components ===
+// Menu items
+import menu from 'menu-items/index'; // adjust path if needed
 
+// === Styled Components ===
 const PopperStyle = styled(Popper)(({ theme }) => ({
-  zIndex: 1300, // Higher than default to ensure it overlays other components
+  zIndex: 1300,
   width: '100%',
   marginTop: theme.spacing(1),
   [theme.breakpoints.down('sm')]: {
     width: '100%',
-    marginTop: theme.spacing(1)
+    marginTop: theme.spacing(1),
   },
   position: 'absolute'
 }));
@@ -45,41 +324,35 @@ const PopperStyle = styled(Popper)(({ theme }) => ({
 const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   width: 300,
   height: 40,
-  marginLeft: 16,
-  paddingLeft: 16,
-  paddingRight: 16,
-  backgroundColor: '#374151', // darker gray, matches header
-  borderRadius: theme.shape.borderRadius,
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none' // remove the white border
+  borderRadius: '10px',
+  transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    border: '3px solid #6366F1',
   },
   '& input': {
     background: 'transparent !important',
     paddingLeft: '4px !important',
-    color: '#fff',
+    color: 'black',
     '&::placeholder': {
-      color: '#d1d5db' // light gray placeholder
+      color: 'black',
     }
   },
-  [theme.breakpoints.down('lg')]: {
-    width: 250
-  },
-  [theme.breakpoints.down('md')]: {
-    width: '100%',
-    marginLeft: 4,
-    background: '#374151'
-  }
+  [theme.breakpoints.down('lg')]: { width: 250 },
+  [theme.breakpoints.down('sm')]: { width: '100%' },
 }));
 
 const HeaderAvatarStyle = styled(Avatar)(({ theme }) => ({
   ...theme.typography.commonAvatar,
   ...theme.typography.mediumAvatar,
-  background: theme.palette.secondary.light,
-  color: theme.palette.secondary.dark,
+  backgroundColor: '#3B82F6',
+  color: 'white',
+  transition: 'all 0.3s ease-in-out',
   '&:hover': {
-    background: theme.palette.secondary.dark,
-    color: theme.palette.secondary.light
-  }
+    backgroundColor: '#1D4ED8',
+  },
+  '&:hover .menu-icon': {
+    transform: 'rotate(360deg)',
+  },
 }));
 
 const SearchResultsPaper = styled(Paper)(({ theme }) => ({
@@ -91,10 +364,12 @@ const SearchResultsPaper = styled(Paper)(({ theme }) => ({
 
 // === Mobile Search ===
 const MobileSearch = ({ value, setValue, popupState, screens }) => {
-  const theme = useTheme();
   const navigate = useNavigate();
 
-  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
+  const filteredScreens = useMemo(
+    () => screens.filter(screen => screen.name.toLowerCase().includes(value.toLowerCase())),
+    [screens, value]
+  );
 
   const handleSearch = (screen) => {
     navigate(screen.path);
@@ -110,7 +385,7 @@ const MobileSearch = ({ value, setValue, popupState, screens }) => {
         placeholder="Search"
         startAdornment={
           <InputAdornment position="start">
-            <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
+            <IconSearch stroke={1.5} size="1rem" />
           </InputAdornment>
         }
         fullWidth
@@ -119,7 +394,7 @@ const MobileSearch = ({ value, setValue, popupState, screens }) => {
         <SearchResultsPaper sx={{ mt: 1 }}>
           <List>
             {filteredScreens.length > 0 ? (
-              filteredScreens.map((screen) => (
+              filteredScreens.map(screen => (
                 <ListItem key={screen.path} disablePadding>
                   <ListItemButton onClick={() => handleSearch(screen)}>
                     <ListItemText primary={screen.name} />
@@ -147,15 +422,16 @@ MobileSearch.propTypes = {
 
 // === Desktop Search ===
 const DesktopSearch = ({ value, setValue, screens }) => {
-  const theme = useTheme();
   const navigate = useNavigate();
 
-  const filteredScreens = screens.filter((screen) => screen.name.toLowerCase().includes(value.toLowerCase()));
+  const filteredScreens = useMemo(
+    () => screens.filter(screen => screen.name.toLowerCase().includes(value.toLowerCase())),
+    [screens, value]
+  );
 
   const handleSearch = (screen) => {
     navigate(screen.path);
     setValue('');
-    window.location.reload();
   };
 
   return (
@@ -166,15 +442,15 @@ const DesktopSearch = ({ value, setValue, screens }) => {
         placeholder="Search"
         startAdornment={
           <InputAdornment position="start">
-            <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
+            <IconSearch stroke={1.5} size="1rem" />
           </InputAdornment>
         }
       />
       {value && (
-        <SearchResultsPaper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, ml: 2, zIndex: 1600 }}>
+        <SearchResultsPaper sx={{ position: 'absolute', top: '100%', left: 0, right: 0, mt: 1, zIndex: 1600 }}>
           <List>
             {filteredScreens.length > 0 ? (
-              filteredScreens.map((screen) => (
+              filteredScreens.map(screen => (
                 <ListItem key={screen.path} disablePadding>
                   <ListItemButton onClick={() => handleSearch(screen)}>
                     <ListItemText primary={screen.name} />
@@ -203,31 +479,24 @@ DesktopSearch.propTypes = {
 const SearchSection = () => {
   const [value, setValue] = useState('');
   const [screenList, setScreenList] = useState([]);
-  const theme = useTheme();
 
+  // Extract screens from menu
   useEffect(() => {
     const extractSearchableItems = (menuItems) => {
       const result = [];
-
       const traverse = (items) => {
         items.forEach((item) => {
           if (!item) return;
           if (item.type === 'item' && item.title && item.url) {
             result.push({ name: item.title, path: item.url });
           }
-          if (item.children) {
-            traverse(item.children);
-          }
+          if (item.children) traverse(item.children);
         });
       };
-
-      traverse(menuItems);
+      traverse(menu.items || []);
       return result;
     };
-
-    const allMenuItems = menu.items || [];
-    const screens = extractSearchableItems(allMenuItems);
-    setScreenList(screens);
+    setScreenList(extractSearchableItems(menu.items || []));
   }, []);
 
   return (
@@ -240,7 +509,7 @@ const SearchSection = () => {
               <Box sx={{ ml: 2 }}>
                 <ButtonBase>
                   <HeaderAvatarStyle variant="rounded" {...bindToggle(popupState)}>
-                    <IconSearch stroke={1.5} size="1.2rem" />
+                    <IconSearch stroke={1.5} size="1.2rem" className="menu-icon" style={{ transition: 'transform 0.3s ease' }} />
                   </HeaderAvatarStyle>
                 </ButtonBase>
               </Box>
@@ -269,3 +538,4 @@ const SearchSection = () => {
 };
 
 export default SearchSection;
+

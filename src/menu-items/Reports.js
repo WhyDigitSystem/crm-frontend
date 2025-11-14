@@ -34,49 +34,49 @@ const reportChildren = [
   },
   hasScreenAccess('LDR') && {
     id: 'LeadReport',
-    title: 'Lead Report',
+    title: 'Lead',
     type: 'item',
     url: '/Report/LeadReport',
     icon: () => <IconPhone />
   },
   hasScreenAccess('OPR') && {
     id: 'OpportunityReport',
-    title: 'Opportunity Report',
+    title: 'Opportunity',
     type: 'item',
     url: '/Report/OpportunityReport',
     icon: () => <IconWorld />
   },
   hasScreenAccess('QR') && {
     id: 'QuotationReport',
-    title: 'Quotation Report',
+    title: 'Quotation',
     type: 'item',
     url: '/Report/QuotationReport',
     icon: () => <IconFileText />
   },
   hasScreenAccess('SOR') && {
     id: 'SaleOrderReport',
-    title: 'Sales Order Report',
+    title: 'Sales Order',
     type: 'item',
     url: '/Report/SalesOrderReport',
     icon: () => <IconShoppingCart />
   },
   hasScreenAccess('ACR') && {
     id: 'ActiveReport',
-    title: 'Active Report',
+    title: 'Active',
     type: 'item',
     url: '/Report/ActiveReport',
     icon: () => <IconUsers />
   },
   hasScreenAccess('SDR') && {
     id: 'ScheduleReport',
-    title: 'Schedule Report',
+    title: 'Schedule',
     type: 'item',
     url: '/Report/ScheduleReport',
     icon: () => <IconClipboardText />
   },
   hasScreenAccess('DLR') && {
     id: 'DealerReport',
-    title: 'Dealer Report',
+    title: 'Dealer',
     type: 'item',
     url: '/Report/DealerReport',
     icon: () => <IconWorld />
@@ -90,49 +90,49 @@ const reportChildren = [
   },
   hasScreenAccess('PMR') && {
     id: 'ProductionManagementReport',
-    title: 'Production Report',
+    title: 'Production',
     type: 'item',
     url: '/Report/ProductionManagementReport',
     icon: () => <IconBuildingFactory2 />
   },
   hasScreenAccess('IMR') && {
     id: 'InventoryManagementReport',
-    title: 'Inventory Report',
+    title: 'Inventory',
     type: 'item',
     url: '/Report/InventoryManagementReport',
     icon: () => <IconPackages />
   },
   hasScreenAccess('QTR') && {
     id: 'QualityTestReport',
-    title: 'Quality Report',
+    title: 'Quality',
     type: 'item',
     url: '/Report/QualityTestReport',
     icon: () => <IconFlask />
   },
   hasScreenAccess('SMR') && {
     id: 'SupplierManagementReport',
-    title: 'Supplier Report',
+    title: 'Supplier',
     type: 'item',
     url: '/Report/SupplierManagementReport',
     icon: () => <IconTruckDelivery />
   },
   hasScreenAccess('SR') && {
     id: 'StaticReport',
-    title: 'Static Report',
+    title: 'Static',
     type: 'item',
     url: '/Report/StaticReport',
     icon: () => <IconTimeline />
   },
   hasScreenAccess('SRT') && {
     id: 'StaticReportT',
-    title: 'Static Report 2',
+    title: 'Static 2',
     type: 'item',
     url: '/Report/StaticReportT',
     icon: () => <IconTimeline />
   },
   hasScreenAccess('EXR') && {
     id: 'ExpenseReport',
-    title: 'Expense Report',
+    title: 'Expense',
     type: 'item',
     url: '/Report/ExpenseReport',
     icon: () => <IconReportMoney />

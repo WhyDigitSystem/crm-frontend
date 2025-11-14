@@ -37,7 +37,7 @@ const FinanceManagement =
             children: [
                 {
                     id: 'financeManagement',
-                    title: 'Finance Management',
+                    title: 'Finance Mgmt',
                     type: 'collapse',
                     icon: IconCurrencyRupee,
                     children: FinanceChildren
