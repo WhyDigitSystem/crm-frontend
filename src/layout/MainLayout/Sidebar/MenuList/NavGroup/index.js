@@ -42,7 +42,8 @@ const NavGroup = ({ item }) => {
                 gutterBottom: false, // Remove bottom margin
                 py: 0, // Reduce vertical padding
                 mt: 0, // Adjust spacing
-                mb: 0
+                mb: 0,
+               
               }}
               display="block"
               gutterBottom

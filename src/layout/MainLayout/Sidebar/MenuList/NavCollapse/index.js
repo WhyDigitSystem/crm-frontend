@@ -119,21 +119,21 @@ const NavCollapse = ({ menu, level }) => {
           backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
           py: level > 1 ? 0.3 : 0.5, // Reduce vertical padding
           pl: `${level * 20}px`, // Reduce left padding
-          color: 'white'
+          // color: 'white'
         }}
         selected={selected === menu.id}
         onClick={handleClick}
       >
-        <ListItemIcon sx={{ my: 'auto', minWidth: !menu.icon ? 18 : 36, color: 'white' }}>{menuIcon}</ListItemIcon>
+        <ListItemIcon sx={{ my: 'auto', minWidth: !menu.icon ? 18 : 36, color: 'black' }}>{menuIcon}</ListItemIcon>
         <ListItemText
           primary={
-            <Typography variant={selected === menu.id ? 'h5' : 'body1'} color="inherit" sx={{ my: 'auto' }}>
+            <Typography variant={selected === menu.id ? 'h5' : 'body1'} color="black" sx={{ my: 'auto' }}>
               {menu.title}
             </Typography>
           }
           secondary={
             menu.caption && (
-              <Typography variant="caption" sx={{ ...theme.typography.subMenuCaption }} display="block" gutterBottom>
+              <Typography variant="caption" sx={{ ...theme.typography.subMenuCaption }}  color="black" display="block" gutterBottom>
                 {menu.caption}
               </Typography>
             )

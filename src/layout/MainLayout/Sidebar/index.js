@@ -181,7 +181,8 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
               borderRadius: '8px',
               margin: '6px 8px',
               justifyContent: drawerOpen ? 'flex-start' : 'center',
-              transition: 'all 0.2s ease-in-out'
+              transition: 'all 0.2s ease-in-out',
+              
             },
 
             '& .MuiListItem-root:hover': {
