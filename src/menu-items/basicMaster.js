@@ -160,7 +160,14 @@ const basicMasterChildren = [
     type: 'item',
     url: '/basicMaster/roleName',
     icon: IconShieldLock
-  }
+  },
+  hasScreenAccess('RPS') && {
+    id: 'rewardPolicySetup',
+    title: 'Reward Policy Setup',
+    type: 'item',
+    url: '/basicMaster/RewardPolicySetup',
+    icon: IconShieldLock
+  },
 ].filter(Boolean);
 
 const basicMaster =

@@ -13,7 +13,9 @@ import {
   IconFlask,
   IconTruckDelivery,
   IconUsers,
-  IconReportMoney
+  IconReportMoney,
+  IconRoute,
+  IconAward
 } from '@tabler/icons-react';
 
 // screen access utility
@@ -137,13 +139,20 @@ const reportChildren = [
     url: '/Report/ExpenseReport',
     icon: () => <IconReportMoney />
   },
-    hasScreenAccess('KML') && {
+  hasScreenAccess('KML') && {
     id: 'KmSummaryList',
     title: 'KM Summary',
     type: 'item',
     url: '/Report/KmSummaryList',
-    icon: () => <IconReportMoney />
+    icon: () => <IconRoute />
   },
+  hasScreenAccess('RD') && {
+    id: 'Rewards',
+    title: 'Rewards',
+    type: 'item',
+    url: '/Report/Rewards',
+    icon: () => <IconAward />
+  }
 ].filter(Boolean);
 
 const Reports =

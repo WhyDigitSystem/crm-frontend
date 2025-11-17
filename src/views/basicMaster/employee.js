@@ -39,6 +39,7 @@ const EmployeeDetails = () => {
   const [departmentList, setDepartmentList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [allReportingPerson, setAllReportingPerson] = useState([]);
+  const [rewardNameList, setRewardNameList] = useState([]);
   const [listViewData, setListViewData] = useState([]);
   const [loading, setLoading] = useState(true);
   const maxDate = dayjs().subtract(18, 'years');
@@ -67,7 +68,8 @@ const EmployeeDetails = () => {
     reportingPersonCode: '',
     team: '',
     uanNo: '',
-    roleName: ''
+    roleName: '',
+    rewardName: '',
   });
   const [fieldErrors, setFieldErrors] = useState({
     aadhaarNumber: '',
@@ -92,7 +94,8 @@ const EmployeeDetails = () => {
     reportingPersonCode: '',
     team: '',
     uanNo: '',
-    roleName: ''
+    roleName: '',
+    rewardName: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [logo, setLogo] = useState(null);
@@ -134,6 +137,7 @@ const EmployeeDetails = () => {
     getAllDepartment();
     getAllReportingPerson();
     getEmployeeCode();
+    getAllRewardName();
   }, []);
   const getAllBranches = async () => {
     try {
@@ -189,6 +193,18 @@ const EmployeeDetails = () => {
       const response = await apiCalls('get', `master/getReportingNameForEmployee?orgId=${orgId}&branchCode=${branchCode}`);
       if (response.status === true) {
         setAllReportingPerson(response.paramObjectsMap.employeeVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getAllRewardName = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllRewardNames?orgId=${orgId}`);
+      if (response.status === true) {
+        setRewardNameList(response.paramObjectsMap.rewardNames);
       } else {
         console.error('API Error:', response);
       }
@@ -347,7 +363,8 @@ const EmployeeDetails = () => {
       reportingPersonCode: '',
       team: '',
       uanNo: '',
-      roleName: ''
+      roleName: '',
+      rewardName: '',
     });
     setFieldErrors({});
     setEditId('');
@@ -407,6 +424,7 @@ const EmployeeDetails = () => {
         team: formData.team,
         uanNo: formData.uanNo,
         roleName: formData.roleName,
+        rewardName: formData.rewardName,
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -477,6 +495,7 @@ const EmployeeDetails = () => {
           active: employeeDetailsVO.active === 'Active' ? true : false,
           id: employeeDetailsVO.id || '',
           roleName: employeeDetailsVO.roleName || '',
+          rewardName: employeeDetailsVO.rewardName || '',
         });
         // const profileImageBlob = result.paramObjectsMap.Employee.profileImage;
         setLogo(result.paramObjectsMap.Employee.passportphoto);
@@ -948,7 +967,45 @@ const EmployeeDetails = () => {
                   helperText={fieldErrors.address}
                 />
               </div>
-
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  options={rewardNameList || []}
+                  getOptionLabel={(option) =>
+                    option?.rewardName
+                      ? `${option.rewardName}`
+                      : ''
+                  }
+                  value={
+                    rewardNameList.find(
+                      (item) => item.rewardName === formData.rewardName
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        rewardName: newValue.rewardName || '',
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        rewardName: '',
+                      }));
+                    }
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.rewardName === value.rewardName
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Reward Name"
+                      size="small"
+                      fullWidth
+                    />
+                  )}
+                />
+              </div>
               {/* Image Upload Section */}
               <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>

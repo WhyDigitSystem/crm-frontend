@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import { element } from 'prop-types';
+const Rewards = Loadable(lazy(() => import('views/Reports/Rewards')));
 const KmSummaryList = Loadable(lazy(() => import('views/Reports/KmSummaryList')));
 const ExpenseApproval = Loadable(lazy(() => import('views/Finance/ExpenseApproval')));
 const ExpenseClaims = Loadable(lazy(() => import('views/Finance/ExpenseClaims')));
@@ -47,6 +48,7 @@ const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
 const Region = Loadable(lazy(() => import('views/basicMaster/RegionMaster')));
 const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
+const RewardPolicySetup = Loadable(lazy(() => import('views/basicMaster/RewardPolicySetup')));
 // const Branch = Loadable(lazy(() => import('views/company/branch')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames')));
@@ -228,6 +230,10 @@ const FinanceRoute = {
       path: '/basicMaster/warehouse',
       element: <Warehouse />
     },
+    {
+      path: '/basicMaster/RewardPolicySetup',
+      element: <RewardPolicySetup />
+    },
     // Document
     {
       path: '/Documents/documentType',
@@ -374,6 +380,10 @@ const FinanceRoute = {
     {
       path: '/Report/KmSummaryList',
       element: <KmSummaryList />
+    },
+    {
+      path: '/Report/Rewards',
+      element: <Rewards />
     },
     {
       path: '/Report/StaticReport',
