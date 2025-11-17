@@ -31,7 +31,8 @@ const Login = () => {
     <AuthWrapper1>
       <style>{`
         .login-background {
-          background: linear-gradient(to right, #3f51b5, #9c27b0);
+          // background: linear-gradient(to right, #3f51b5, #9c27b0);
+          background: linear-gradient(to right, #673ab7, #512da8);
           overflow: hidden;
         }
         .bubble-container {
@@ -100,15 +101,16 @@ const Login = () => {
             zIndex: 1,
             width: '100%',
             maxWidth: 430,
-            px: matchDownSM ? 2 : 3,
-            py: matchDownSM ? 3 : 4,
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+            px: matchDownSM ? 0 : 0,
+            py: matchDownSM ? 0: 0,
+            // background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             transform: 'scale(1)',
             '&:hover': {
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08))',
+              // background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08))',
               transform: 'scale(1.02)',
+              boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)"
             },
           }}
         >
@@ -130,9 +132,13 @@ const Login = () => {
               style={{
                 ...bevanRegularStyle,
                 fontSize: matchDownSM ? 20 : 25,
-                color: 'white',
+                // color: '#4286f4',
+                // fontSize: matchDownSM ? 20 : 25,
+               background: "linear-gradient(to right, #232526, #414345)", 
+               WebkitBackgroundClip: "text",
+               WebkitTextFillColor: "transparent",
               }}
-              gutterBottom
+              // gutterBottom
               variant={matchDownSM ? 'h6' : 'h4'}
             >
               CRM
@@ -153,14 +159,14 @@ const Login = () => {
                 size="small"
                 sx={{
                   cursor: 'pointer',
-                  color: 'white',
+                  color: 'black',
                   backgroundColor: 'transparent',
-                  border: '1px solid white',
+                  border: '1px solid black',
                   '& .MuiChip-label': {
-                    color: 'white',
+                    color: 'black',
                     fontSize: matchDownSM ? '0.65rem' : '0.75rem',
                   },
-                  opacity: 1,
+                  opacity: 0,
                 }}
               />
             </Stack>

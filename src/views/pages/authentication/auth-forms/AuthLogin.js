@@ -192,7 +192,7 @@ const FirebaseLogin = ({ ...others }) => {
     <Paper
       elevation={3}
       sx={{
-        p: 4,
+        p: 1,
         maxWidth: 400,
         margin: 'auto',
         borderRadius: 3,
@@ -232,7 +232,7 @@ const FirebaseLogin = ({ ...others }) => {
         {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit} {...others}>
             <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ mb: 2 }} variant="standard">
-              <InputLabel htmlFor="standard-adornment-email-login" sx={{ color: 'white' }}>
+              <InputLabel htmlFor="standard-adornment-email-login" sx={{ color: 'black' }}>
                 Email Address / Username
               </InputLabel>
               <Input
@@ -250,7 +250,7 @@ const FirebaseLogin = ({ ...others }) => {
             </FormControl>
 
             <FormControl fullWidth error={Boolean(touched.password && errors.password)} sx={{ mb: 2 }} variant="standard">
-              <InputLabel htmlFor="standard-adornment-password-login" sx={{ color: 'white' }}>
+              <InputLabel htmlFor="standard-adornment-password-login" sx={{ color: 'black' }}>
                 Password
               </InputLabel>
               <Input
@@ -280,18 +280,18 @@ const FirebaseLogin = ({ ...others }) => {
                     onChange={(event) => setChecked(event.target.checked)}
                     name="checked"
                     sx={{
-                      color: 'white',
+                      color: 'black',
                       '&.Mui-checked': {
-                        color: 'white'
+                        color: 'black'
                       }
                     }}
                   />
                 }
                 label="Remember me"
-                sx={{ color: 'white' }}
+                sx={{ color: 'black' }}
               />
 
-              <Typography variant="subtitle2" color="primary" sx={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" color="black" sx={{ cursor: 'pointer' }}>
                 Forgot Password?
               </Typography>
             </Stack>

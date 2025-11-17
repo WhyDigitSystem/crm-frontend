@@ -190,20 +190,37 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                 color: 'black',
                 backgroundColor: "#1D4ED8",
             },
+            
+        
+// 
+            // '& .Mui-selected': {            
+            //   // backgroundColor: '#00bfa6',
+            //   // color: '#ffffffff',  
+            //    backgroundColor: '#3B82F6',
+            //    color:'black'          
+            // },
 
-            '& .Mui-selected': {            
-              // backgroundColor: '#00bfa6',
-              // color: '#ffffffff',  
-               backgroundColor: '#3B82F6',
-               color:'black'          
-            },
+            '& .Mui-selected': {
+            backgroundColor: '#3B82F6',
+            color: 'black !important',
+           '& .MuiListItemIcon-root': {
+            color: 'black !important'
+           },
+          '& svg': {
+           color: 'black !important',
+           fill: 'black !important',
+           strokeWidth: 2.5,      // << BOLD EFFECT
+           transform: 'scale(1.1)',
+  }
+},
+
 
             // Icon size & alignment
             '& .MuiListItemIcon-root': {
               minWidth: drawerOpen ? '40px' : '0px',
               justifyContent: 'center',
               // color: 'inherit'
-              // color:'white'
+              color:'black'
             },
 
             // Text hide/show
