@@ -326,9 +326,9 @@ const OutlineInputStyle = styled(OutlinedInput)(({ theme }) => ({
   height: 40,
   borderRadius: '10px',
   transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
-  '&:hover .MuiOutlinedInput-notchedOutline': {
-    border: '3px solid #6366F1',
-  },
+  // '&:hover .MuiOutlinedInput-notchedOutline': {
+  //   border: '3px solid #6366F1',
+  // },
   '& input': {
     background: 'transparent !important',
     paddingLeft: '4px !important',

@@ -139,14 +139,15 @@ const Header = ({ handleLeftDrawerToggle }) => {
           )}
         </Avatar> */}
         <Avatar
-  sx={{
+     sx={{
     fontSize: '16px',
     width: 60,
     height: 60,
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
+       backgroundColor: 'transparent', 
     margin: '2px',
     overflow: 'hidden',
-       border: '3px solid #6366F1', 
+    // border: '3px solid #6366F1', 
     // Hover: rotate image
     '&:hover .rotate-img': {
       transform: 'rotate(360deg)',
@@ -162,7 +163,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
         width: '120%',
         height: '100%',
         objectFit: 'contain',
-        borderRadius: '50%',
+        // borderRadius: '50%',
      
         transition: 'transform 0.8s ease',   // smooth rotation
       }}
