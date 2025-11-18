@@ -315,6 +315,7 @@ const FirebaseLogin = ({ ...others }) => {
                   color="primary"
                   sx={{
                     background: 'linear-gradient(135deg, #1d1b34 0%, #322f55 100%)',
+                    // background: 'linear-gradient(to Right, #1d1b34 0%, #322f55 100%)',
                     borderRadius: '20px',
                     transition: 'all 0.4s ease',
                     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',

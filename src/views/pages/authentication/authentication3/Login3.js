@@ -32,7 +32,8 @@ const Login = () => {
       <style>{`
         .login-background {
           // background: linear-gradient(to right, #3f51b5, #9c27b0);
-          background: linear-gradient(to right, #673ab7, #512da8);
+          // background: linear-gradient(to right, #e0eafc, #cfdef3);
+           background: linear-gradient(to right, #2980b9, #6dd5fa, #ffffff);
           overflow: hidden;
         }
         .bubble-container {
@@ -110,7 +111,8 @@ const Login = () => {
             '&:hover': {
               // background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08))',
               transform: 'scale(1.02)',
-              boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)"
+              // boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)"
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15), 0 15px 35px rgba(0, 0, 0, 0.25)'
             },
           }}
         >

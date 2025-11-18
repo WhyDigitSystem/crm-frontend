@@ -50,7 +50,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
         background: 'linear-gradient(to right, #F0F7FF, #1E3A8A)',
         // background: 'linear-gradient(to right, #FFFDF8, #3E2723)',
         // background: 'linear-gradient(to right, #F8FAFC, #1E293B)',
-        borderBottom: '1px solid #374151',
+        // borderBottom: '1px solid #374151',
         color: '#fff',
         gap: 2
       }}
