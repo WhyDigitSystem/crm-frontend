@@ -114,14 +114,13 @@ export default function RewardPolicySetup() {
     const getAllRewardPolicy = async () => {
         try {
             const limit = pagination.pageSize;
-            const offset = pagination.pageIndex * pagination.pageSize;
+            const offset = pagination.pageIndex + 1;
 
             const result = await apiCalls("get",
-                `/master/getAllRewardPolicyByOrgId?limit=${limit}&offset=${offset}&orgId=${orgId}`
+                `/master/getAllRewardPolicyByOrgId?count=${limit}&page=${offset}&orgId=${orgId}`
             );
-
-            const rows = result?.paramObjectsMap?.data?.rewardPolicyVO || [];
-            const total = result?.paramObjectsMap?.data?.totalCount || 0;
+            const rows = result?.paramObjectsMap?.rewardPolicyVO?.data || [];
+            const total = result?.paramObjectsMap?.rewardPolicyVO?.totalCount || 0;
 
             setListViewData(rows);
 

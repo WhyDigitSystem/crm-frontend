@@ -238,3 +238,13 @@ export const numToWords = (num) => {
 
   return numberToWords(num);
 };
+export const getPermissions = (screenId) => {
+  try {
+    // return JSON.parse(localStorage.getItem("screenAccess")) || {};
+    const screens = JSON.parse(localStorage.getItem("screenAccess") || "{}");
+    return screens[screenId] || {};
+  } catch (error) {
+    console.error("Permission read error:", error);
+    return {};
+  }
+};

@@ -14,6 +14,7 @@ import NominationEnquiries from './NominationEnquiries';
 import Reports from './Reports';
 import Tracking from './Tracking';
 import FinanceManagement from './FinanceManagement';
+import announcement from './announcement';
 
 
 
@@ -24,6 +25,7 @@ const getMenuItems = () => {
   return {
     items: filterValid([
       dashboard,
+      announcement,
       Activities,
       Transaction,
       FinanceManagement,

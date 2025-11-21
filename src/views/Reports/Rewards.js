@@ -5,111 +5,102 @@ import {
     Paper,
     Typography,
     TextField,
-    MenuItem,
     Autocomplete,
+    Button,
+    CircularProgress
 } from "@mui/material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { MaterialReactTable } from "material-react-table";
 import dayjs from "dayjs";
 import apiCalls from "apicall";
+import CommonReportTable from "utils/CommonReportTable";
 
 export default function Reward() {
     const [rewardNameList, setRewardNameList] = useState([]);
-    const [orgId] = useState(localStorage.getItem("orgId"));
-    const [loginUserName] = useState(localStorage.getItem("userName"));
-    const [branch] = useState(localStorage.getItem("branch"));
-    const [branchCode] = useState(localStorage.getItem("branchcode"));
+    const [rewardDetails, setRewardDetails] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [listView] = useState(false);
+
+    const orgId = localStorage.getItem('orgId');
+    const branchCode = localStorage.getItem('branchcode');
+
     const [filters, setFilters] = useState({
         rewardName: "",
         fromDate: "",
         toDate: "",
-        employee: "",
     });
+
     useEffect(() => {
         getAllRewardName();
-    }, [])
+    }, []);
+
     const getAllRewardName = async () => {
         try {
             const response = await apiCalls('get', `/master/getAllRewardNames?orgId=${orgId}`);
-            if (response.status === true) {
+            if (response.status) {
                 setRewardNameList(response.paramObjectsMap.rewardNames);
-            } else {
-                console.error('API Error:', response);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error("Reward Name API Error", error);
         }
     };
+
+    const loadRewardDetails = async () => {
+        if (!filters.rewardName) return;
+
+        setLoading(true);
+        try {
+            let response;
+            if (filters.fromDate && filters.toDate) {
+                response = await apiCalls(
+                    'get',
+                    `/master/getAllRewardPoints?branchCode=${branchCode}&fromDate=${filters.fromDate}&orgId=${orgId}&rewardName=${encodeURIComponent(filters.rewardName)}&toDate=${filters.toDate}`
+                );
+            } else {
+                response = await apiCalls(
+                    'get',
+                    `/master/getAllRewardPoints?branchCode=${branchCode}&orgId=${orgId}&rewardName=${encodeURIComponent(filters.rewardName)}`
+                );
+            }
+
+            if (response.status) {
+                setRewardDetails(response.paramObjectsMap.rewardPoints || []);
+            } else {
+                setRewardDetails([]);
+            }
+        } catch (error) {
+            console.error("Reward Points API Error", error);
+        }
+        setLoading(false);
+    };
+
     const handleInputChange = (e) => {
-        // works with native events and synthetic custom event shapes
-        const target = e?.target || {};
-        const name = target.name;
-        const value = target.value;
-
+        const name = e?.target?.name;
+        const value = e?.target?.value;
         if (!name) return;
-
         setFilters((prev) => ({ ...prev, [name]: value }));
-        // setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     };
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
-
-    // Sample static data (replace with API data)
-    const data = useMemo(
-        () => [
-            {
-                employee: "Divesh",
-                rewardName: "Sales Performer Reward",
-                achievement: "12,000",
-                slab: "10,000 – 15,000",
-                earned: "₹ 1,000",
-                status: "Credited",
-                date: "15-11-2025",
-            },
-            {
-                employee: "Arun",
-                rewardName: "Silver Sales Reward",
-                achievement: "8,000",
-                slab: "5,000 – 10,000",
-                earned: "₹ 500",
-                status: "Pending",
-                date: "—",
-            },
-            {
-                employee: "Kiran",
-                rewardName: "Production Efficiency Bonus",
-                achievement: "90%",
-                slab: "90% – 95%",
-                earned: "₹ 1,000",
-                status: "Failed",
-                date: "—",
-            },
-        ],
-        []
-    );
 
     const columns = useMemo(
         () => [
-            { accessorKey: "employee", header: "Employee" },
+            { accessorKey: "employeeName", header: "Employee" },
             { accessorKey: "rewardName", header: "Reward Name" },
-            { accessorKey: "achievement", header: "Achievement" },
-            { accessorKey: "slab", header: "Slab" },
-            { accessorKey: "earned", header: "Earned" },
+            { accessorKey: "fixedTarget", header: "Target" },
+            { accessorKey: "points", header: "Earned Points" },
+            { accessorKey: "netAmount", header: "Reward Amount" },
             {
                 accessorKey: "status",
                 header: "Status",
                 Cell: ({ cell }) => {
                     const val = cell.getValue();
                     const colors = {
-                        Credited: "#2e7d32",
+                        Completed: "#2e7d32",
                         Pending: "#b58900",
                         Failed: "#c0392b",
                     };
                     const bg = {
-                        Credited: "#d4edda",
+                        Completed: "#d4edda",
                         Pending: "#fff3cd",
                         Failed: "#f8d7da",
                     };
@@ -129,154 +120,181 @@ export default function Reward() {
                     );
                 },
             },
-            { accessorKey: "date", header: "Reward Date" },
+            { accessorKey: "createdOn", header: "Reward Date" },
         ],
         []
     );
 
+    const topPerformer =
+        rewardDetails.length > 0
+            ? rewardDetails.reduce((max, item) =>
+                item.netAmount > max.netAmount ? item : max
+            )
+            : null;
+
     return (
-        <Box p={3} sx={{ background: "#f5f6fa", minHeight: "100vh" }}>
+        <Box p={3} sx={{ background: "#f1f3f6", minHeight: "100vh" }}>
             <Typography variant="h4" fontWeight={700} mb={3}>
-                🎉 Rewards
+                🎉 Reward Dashboard
             </Typography>
 
             {/* Filters */}
-            <Grid
-                container
-                spacing={2}
-                sx={{
-                    background: "#fff",
-                    p: 2,
-                    borderRadius: 2,
-                    mb: 3,
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-                }}
-            >
-                <Grid item xs={12} sm={3}>
-                    <Autocomplete
-                        options={rewardNameList || []}
-                        getOptionLabel={(option) =>
-                            option?.rewardName
-                                ? `${option.rewardName}`
-                                : ''
-                        }
-                        value={
-                            rewardNameList.find(
-                                (item) => item.rewardName === filters.rewardName
-                            ) || null
-                        }
-                        onChange={(event, newValue) => {
-                            if (newValue) {
-                                setFilters((prev) => ({
-                                    ...prev,
-                                    rewardName: newValue.rewardName || '',
-                                }));
-                            } else {
-                                setFilters((prev) => ({
-                                    ...prev,
-                                    rewardName: '',
-                                }));
-                            }
-                        }}
-                        isOptionEqualToValue={(option, value) =>
-                            option.rewardName === value.rewardName
-                        }
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Reward Name"
-                                size="small"
-                                fullWidth
-                            />
-                        )}
-                    />
-                </Grid>
-
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <Grid item xs={12} sm={3}>
-                        <DatePicker
-                            label="From"
-                            format="DD-MM-YYYY"
-                            value={filters.fromDate ? dayjs(filters.fromDate) : null}
-                            onChange={(newValue) =>
-                                handleInputChange({
-                                    target: { name: "fromDate", value: newValue ? newValue.format("YYYY-MM-DD") : "" }
-                                })
-                            }
-                            slotProps={{
-                                textField: {
-                                    size: "small",
-                                    fullWidth: true,
-                                },
-                            }}
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} sm={3}>
-                        <DatePicker
-                            label="To"
-                            format="DD-MM-YYYY"
-                            value={filters.toDate ? dayjs(filters.toDate) : null}
-                            onChange={(newValue) =>
-                                handleInputChange({
-                                    target: { name: "toDate", value: newValue ? newValue.format("YYYY-MM-DD") : "" }
-                                })
-                            }
-                            slotProps={{
-                                textField: {
-                                    size: "small",
-                                    fullWidth: true,
-                                },
-                            }}
-                        />
-                    </Grid>
-                </LocalizationProvider>
-                {/* 
-                <Grid item xs={12} sm={3}>
-                    <TextField
-                        fullWidth
-                        label="Employee"
-                        placeholder="Search employee"
-                        name="employee"
-                        value={filters.employee}
-                        onChange={handleFilterChange}
-                        size="small"
-                    />
-                </Grid> */}
-            </Grid>
-
-            {/* Top Performer */}
             <Paper
-                elevation={3}
                 sx={{
-                    p: 2,
+                    p: 3,
+                    borderRadius: 3,
                     mb: 3,
-                    borderRadius: 2,
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                    boxShadow: "0px 4px 14px rgba(0,0,0,0.08)",
                 }}
             >
-                <Typography variant="h6" mb={1}>
-                    🏆 Top Performer
-                </Typography>
-                <Typography variant="h5" fontWeight={700}>
-                    Divesh – ₹ 1,000 Earned
-                </Typography>
+                <Grid container spacing={2} alignItems="center">
+
+                    {/* Reward Name */}
+                    <Grid item xs={12} md={4}>
+                        <Autocomplete
+                            options={rewardNameList || []}
+                            getOptionLabel={(option) => option.rewardName || ""}
+                            value={rewardNameList.find(
+                                (item) => item.rewardName === filters.rewardName
+                            ) || null}
+                            onChange={(e, val) =>
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    rewardName: val ? val.rewardName : "",
+                                }))
+                            }
+                            renderInput={(params) => (
+                                <TextField {...params} label="Reward Name" size="small" fullWidth />
+                            )}
+                        />
+                    </Grid>
+
+                    {/* Dates */}
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <Grid item xs={12} md={3}>
+                            <DatePicker
+                                label="From Date"
+                                format="DD-MM-YYYY"
+                                value={filters.fromDate ? dayjs(filters.fromDate) : null}
+                                onChange={(newValue) =>
+                                    handleInputChange({
+                                        target: {
+                                            name: "fromDate",
+                                            value: newValue ? newValue.format("YYYY-MM-DD") : "",
+                                        },
+                                    })
+                                }
+                                slotProps={{ textField: { size: "small", fullWidth: true } }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={3}>
+                            <DatePicker
+                                label="To Date"
+                                format="DD-MM-YYYY"
+                                value={filters.toDate ? dayjs(filters.toDate) : null}
+                                onChange={(newValue) =>
+                                    handleInputChange({
+                                        target: {
+                                            name: "toDate",
+                                            value: newValue ? newValue.format("YYYY-MM-DD") : "",
+                                        },
+                                    })
+                                }
+                                slotProps={{ textField: { size: "small", fullWidth: true } }}
+                            />
+                        </Grid>
+                    </LocalizationProvider>
+
+                    {/* GO Button */}
+                    <Grid item xs={12} md={2}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            onClick={loadRewardDetails}
+                            sx={{
+                                height: "40px",
+                                fontWeight: 700,
+                                borderRadius: "10px",
+                                background: "#1976d2",
+                                "&:hover": { background: "#0d47a1" },
+                            }}
+                        >
+                            GO
+                        </Button>
+                    </Grid>
+                </Grid>
             </Paper>
 
-            {/* Table */}
-            <MaterialReactTable
-                columns={columns}
-                data={data}
-                enableStickyHeader
-                initialState={{ density: "comfortable" }}
-                muiTableProps={{
-                    sx: {
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        boxShadow: "0px 4px 12px rgba(0,0,0,0.08)",
-                    },
-                }}
-            />
+            {/* Top Performer Card */}
+            {topPerformer && (
+                <Paper
+                    sx={{
+                        p: 3,
+                        mb: 3,
+                        borderRadius: 3,
+                        background: "linear-gradient(135deg,#d1e9ff,#e8f4ff)",
+                        boxShadow: "0px 6px 16px rgba(0,0,0,0.12)",
+                    }}
+                >
+                    <Typography variant="h6" fontWeight={700} mb={1}>
+                        🏆 Top Performer
+                    </Typography>
+
+                    <Typography variant="h4" fontWeight={800}>
+                        {topPerformer.employeeName} – ₹ {topPerformer.netAmount}
+                    </Typography>
+
+                    <Typography mt={1} color="text.secondary" fontSize={16}>
+                        Reward: {topPerformer.rewardName}
+                    </Typography>
+                </Paper>
+            )}
+
+            {/* Loader or Table */}
+            {loading ? (
+                <Box textAlign="center" mt={5}>
+                    <CircularProgress />
+                    <Typography mt={2}>Fetching reward details...</Typography>
+                </Box>
+            ) : (
+                <CommonReportTable
+                    data={rewardDetails}
+                    columns={columns}
+                    isListView={listView}
+                    fileName="Rewards"
+                    isExcel={false}
+                    isPdf={false}
+                    muiTablePaperProps={{
+                        elevation: 0,
+                        sx: {
+                            borderRadius: "16px",
+                            overflow: "hidden",
+                            boxShadow: "0px 4px 14px rgba(0,0,0,0.07)",
+                        },
+                    }}
+                    muiTableHeadCellProps={{
+                        sx: {
+                            background: "#eaf4ff",
+                            fontWeight: "700",
+                            fontSize: "14px",
+                            borderBottom: "2px solid #d0e3ff",
+                        }
+                    }}
+                    muiTableBodyRowProps={{
+                        sx: {
+                            "&:nth-of-type(odd)": {
+                                backgroundColor: "#fafafa"
+                            },
+                            "&:hover": {
+                                backgroundColor: "#eef7ff",
+                                transition: "0.2s",
+                            },
+                        }
+                    }}
+                />
+            )}
         </Box>
     );
 }

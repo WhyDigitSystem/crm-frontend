@@ -152,6 +152,13 @@ const reportChildren = [
     type: 'item',
     url: '/Report/Rewards',
     icon: () => <IconAward />
+  },
+  hasScreenAccess('AR') && {
+    id: 'AdvertisingReport',
+    title: 'Advertising Report',
+    type: 'item',
+    url: '/Report/AdvertisingReport',
+    icon: () => <IconAward />
   }
 ].filter(Boolean);
 

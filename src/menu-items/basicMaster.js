@@ -168,6 +168,13 @@ const basicMasterChildren = [
     url: '/basicMaster/RewardPolicySetup',
     icon: IconShieldLock
   },
+  hasScreenAccess('AM') && {
+    id: 'advertisement',
+    title: 'Advertisement',
+    type: 'item',
+    url: '/basicMaster/Advertisement',
+    icon: IconShieldLock
+  },
 ].filter(Boolean);
 
 const basicMaster =

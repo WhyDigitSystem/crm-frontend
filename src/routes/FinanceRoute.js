@@ -5,6 +5,9 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import { element } from 'prop-types';
+import AnnouncementList from 'views/Announcement/AnnouncementList';
+const AdvertisingReport = Loadable(lazy(() => import('views/Reports/AdvertisingReport')));
+const AdvertisingMaster = Loadable(lazy(() => import('views/basicMaster/AdvertisingMaster')));
 const Rewards = Loadable(lazy(() => import('views/Reports/Rewards')));
 const KmSummaryList = Loadable(lazy(() => import('views/Reports/KmSummaryList')));
 const ExpenseApproval = Loadable(lazy(() => import('views/Finance/ExpenseApproval')));
@@ -115,6 +118,10 @@ const FinanceRoute = {
     {
       path: '/',
       element: <DashboardDefault />
+    },
+    {
+      path: '/dashboard/announcement',
+      element: <AnnouncementList />
     },
     // Calendar
     {
@@ -234,6 +241,10 @@ const FinanceRoute = {
       path: '/basicMaster/RewardPolicySetup',
       element: <RewardPolicySetup />
     },
+    {
+      path: '/basicMaster/Advertisement',
+      element: <AdvertisingMaster />
+    },
     // Document
     {
       path: '/Documents/documentType',
@@ -308,6 +319,10 @@ const FinanceRoute = {
     {
       path: '/Report/UnAssignedLeads',
       element: <UnAssignedLeads />
+    },
+    {
+      path: '/Report/AdvertisingReport',
+      element: <AdvertisingReport />
     },
     {
       path: '/Report/LeadReport',
