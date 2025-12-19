@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Box,
     Grid,
@@ -7,294 +7,473 @@ import {
     TextField,
     Autocomplete,
     Button,
-    CircularProgress
+    Chip
 } from "@mui/material";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { MaterialReactTable } from "material-react-table";
 import dayjs from "dayjs";
 import apiCalls from "apicall";
-import CommonReportTable from "utils/CommonReportTable";
+import { showToast } from "utils/toast-component";
 
-export default function Reward() {
-    const [rewardNameList, setRewardNameList] = useState([]);
-    const [rewardDetails, setRewardDetails] = useState([]);
+export default function RewardReport() {
+    const [orgId] = useState(localStorage.getItem("orgId"));
+    const [loginUserName] = useState(localStorage.getItem("userName"));
+    const [branch] = useState(localStorage.getItem("branch"));
+    const [branchCode] = useState(localStorage.getItem("branchcode"));
     const [loading, setLoading] = useState(false);
-    const [listView] = useState(false);
-
-    const orgId = localStorage.getItem('orgId');
-    const branchCode = localStorage.getItem('branchcode');
-
+    const [data, setData] = useState([]);
+    const [durationTypeList, setDurationTypeList] = useState([]);
+    const [employees, setEmployee] = useState([]);
+    const [departmentList, setDepartmentList] = useState([]);
+    const [rewardNameList, setRewardNameList] = useState([]);
+    const [targetBasisList, setTargetBasisList] = useState([]);
     const [filters, setFilters] = useState({
-        rewardName: "",
-        fromDate: "",
-        toDate: "",
+        periodType: "MONTHLY",
+        employeeName: 'All',
+        employeeCode: 'All',
+        departmentId: 'All',
+        rewardPolicyId: 'All',
+        targetBasis: 'All'
     });
-
     useEffect(() => {
+        getEmployeeDetails();
+        getAllDepartment();
+        getDurationType();
+        getTargetBasis();
         getAllRewardName();
     }, []);
+    const handleInputChange = (e) => {
+        // works with native events and synthetic custom event shapes
+        const target = e?.target || {};
+        const name = target.name;
+        const value = target.value;
 
+        if (!name) return;
+
+        setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+    const handleSearch = async () => {
+        if (!filters.periodType) {
+            showToast("Period Type is mandatory");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await apiCalls("get", `/commonmaster/getEmployeeRewardDetails?branchCode=${branchCode}&department=${filters.departmentId}&orgId=${orgId}&periodType=${filters.periodType}&rewardName=${filters.rewardPolicyId}&type=${filters.targetBasis}&userName=${filters.employeeName}`);
+            if (response?.status) {
+                setData(response.paramObjectsMap.rewardInformation || []);
+            } else {
+                setData([]);
+            }
+        } catch (error) {
+            console.error(error);
+            setData([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const columns = useMemo(() => [
+        {
+            header: "Employee",
+            size: 200,
+            Cell: ({ row }) => (
+                <Box>
+                    <Typography fontWeight={600}>
+                        {row.original.employeeName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {row.original.employeeCode}
+                    </Typography>
+                </Box>
+            )
+        },
+        {
+            accessorKey: "periodType",
+            header: "Period",
+            size: 100,
+            Cell: ({ cell }) => (
+                <Chip
+                    label={cell.getValue()}
+                    size="small"
+                    sx={{
+                        backgroundColor: "#E3F2FD",
+                        color: "#1565C0",
+                        fontWeight: 500
+                    }}
+                />
+            )
+        },
+        {
+            accessorKey: "clientName",
+            header: "Client",
+            size: 160,
+            Cell: ({ cell }) => (
+                <Typography fontWeight={500}>
+                    {cell.getValue()}
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "targetValue",
+            header: "Target",
+            size: 120,
+            Cell: ({ cell }) => (
+                <Typography fontWeight={600} color="text.secondary">
+                    {cell.getValue() != null
+                        ? Number(cell.getValue()).toLocaleString("en-IN")
+                        : "-"}
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "totalAmount",
+            header: "Achieved",
+            size: 120,
+            Cell: ({ row }) => {
+                const achieved = Number(row.original.totalAmount) || 0;
+                const target = Number(row.original.targetValue) || 0;
+
+                const color =
+                    achieved >= target ? "#2E7D32" : "#C62828"; // green / red
+
+                return (
+                    <Typography fontWeight={700} sx={{ color }}>
+                        {achieved.toLocaleString("en-IN")}
+                    </Typography>
+                );
+            }
+        },
+        {
+            accessorKey: "percentage",
+            header: "Achievement %",
+            size: 150,
+            Cell: ({ cell }) => {
+                const value = Number(cell.getValue()) || 0;
+
+                const chipStyle =
+                    value >= 100
+                        ? { bg: "#E8F5E9", color: "#2E7D32" }
+                        : value >= 80
+                            ? { bg: "#FFF8E1", color: "#EF6C00" }
+                            : { bg: "#FDECEA", color: "#C62828" };
+
+                return (
+                    <Chip
+                        label={`${value}%`}
+                        size="small"
+                        sx={{
+                            backgroundColor: chipStyle.bg,
+                            color: chipStyle.color,
+                            fontWeight: 600,
+                            minWidth: 70,
+                            textAlign: "center"
+                        }}
+                    />
+                );
+            }
+        },
+        {
+            accessorKey: "rewardName",
+            header: "Reward Policy",
+            size: 180,
+            Cell: ({ cell }) => (
+                <Typography fontWeight={500}>
+                    {cell.getValue()}
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "rewardAmount",
+            header: "Reward",
+            size: 140,
+            Cell: ({ row }) => {
+                const isAmount = row.original.type === "Amount";
+                const value = row.original.rewardAmount;
+
+                return (
+                    <Typography
+                        fontWeight={700}
+                        color={isAmount ? "primary.main" : "info.main"}
+                    >
+                        {isAmount
+                            ? `₹ ${Number(value).toLocaleString("en-IN")}`
+                            : value}
+                    </Typography>
+                );
+            }
+        }
+    ], []);
+    const getDurationType = async () => {
+        try {
+            const response = await apiCalls(
+                "get",
+                `/master/getAllListValues?listDescription=DurationType&orgId=${orgId}`
+            );
+            if (response?.status === true) {
+                setDurationTypeList(response.paramObjectsMap?.listValues || []);
+            } else {
+                console.error("API Error:", response);
+            }
+        } catch (error) {
+            console.error("Error fetching duration types:", error);
+        }
+    };
+    const getEmployeeDetails = async () => {
+        try {
+            const response = await apiCalls('get', `/activities/getAssignedUserName?orgId=${orgId}`);
+            setEmployee(response.paramObjectsMap.assginedUserName);
+        } catch (error) {
+            console.error('Error fetching assignees:', error);
+            showToast('error', 'Failed to load assignees');
+        }
+    };
+    const getAllDepartment = async () => {
+        try {
+            const response = await apiCalls('get', `commonmaster/getDepartmentByOrgId?orgId=${orgId}`);
+            console.log('API Response:', response);
+
+            if (response.status === true) {
+                setDepartmentList(response.paramObjectsMap.departmentVO);
+            } else {
+                console.error('API Error:', response);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
     const getAllRewardName = async () => {
         try {
             const response = await apiCalls('get', `/master/getAllRewardNames?orgId=${orgId}`);
-            if (response.status) {
+            if (response.status === true) {
                 setRewardNameList(response.paramObjectsMap.rewardNames);
+            } else {
+                console.error('API Error:', response);
             }
         } catch (error) {
-            console.error("Reward Name API Error", error);
+            console.error('Error fetching data:', error);
         }
     };
-
-    const loadRewardDetails = async () => {
-        if (!filters.rewardName) return;
-
-        setLoading(true);
+    const getTargetBasis = async () => {
         try {
-            let response;
-            if (filters.fromDate && filters.toDate) {
-                response = await apiCalls(
-                    'get',
-                    `/master/getAllRewardPoints?branchCode=${branchCode}&fromDate=${filters.fromDate}&orgId=${orgId}&rewardName=${encodeURIComponent(filters.rewardName)}&toDate=${filters.toDate}`
-                );
+            const response = await apiCalls(
+                "get",
+                `/master/getAllListValues?listDescription=targetBasis&orgId=${orgId}`
+            );
+            if (response?.status === true) {
+                setTargetBasisList(response.paramObjectsMap?.listValues || []);
             } else {
-                response = await apiCalls(
-                    'get',
-                    `/master/getAllRewardPoints?branchCode=${branchCode}&orgId=${orgId}&rewardName=${encodeURIComponent(filters.rewardName)}`
-                );
-            }
-
-            if (response.status) {
-                setRewardDetails(response.paramObjectsMap.rewardPoints || []);
-            } else {
-                setRewardDetails([]);
+                console.error("API Error:", response);
             }
         } catch (error) {
-            console.error("Reward Points API Error", error);
+            console.error("Error fetching duration types:", error);
         }
-        setLoading(false);
     };
-
-    const handleInputChange = (e) => {
-        const name = e?.target?.name;
-        const value = e?.target?.value;
-        if (!name) return;
-        setFilters((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const columns = useMemo(
-        () => [
-            { accessorKey: "employeeName", header: "Employee" },
-            { accessorKey: "rewardName", header: "Reward Name" },
-            { accessorKey: "fixedTarget", header: "Target" },
-            { accessorKey: "points", header: "Earned Points" },
-            { accessorKey: "netAmount", header: "Reward Amount" },
-            {
-                accessorKey: "status",
-                header: "Status",
-                Cell: ({ cell }) => {
-                    const val = cell.getValue();
-                    const colors = {
-                        Completed: "#2e7d32",
-                        Pending: "#b58900",
-                        Failed: "#c0392b",
-                    };
-                    const bg = {
-                        Completed: "#d4edda",
-                        Pending: "#fff3cd",
-                        Failed: "#f8d7da",
-                    };
-                    return (
-                        <span
-                            style={{
-                                background: bg[val],
-                                color: colors[val],
-                                padding: "6px 12px",
-                                borderRadius: "20px",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                            }}
-                        >
-                            {val}
-                        </span>
-                    );
-                },
-            },
-            { accessorKey: "createdOn", header: "Reward Date" },
-        ],
-        []
-    );
-
-    const topPerformer =
-        rewardDetails.length > 0
-            ? rewardDetails.reduce((max, item) =>
-                item.netAmount > max.netAmount ? item : max
-            )
-            : null;
-
     return (
-        <Box p={3} sx={{ background: "#f1f3f6", minHeight: "100vh" }}>
-            <Typography variant="h4" fontWeight={700} mb={3}>
-                🎉 Reward Dashboard
-            </Typography>
-
-            {/* Filters */}
-            <Paper
-                sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    mb: 3,
-                    boxShadow: "0px 4px 14px rgba(0,0,0,0.08)",
-                }}
-            >
-                <Grid container spacing={2} alignItems="center">
-
-                    {/* Reward Name */}
-                    <Grid item xs={12} md={4}>
+        <Box p={3}>
+            <Paper sx={{ p: 2, mb: 2 }}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={2}>
                         <Autocomplete
-                            options={rewardNameList || []}
-                            getOptionLabel={(option) => option.rewardName || ""}
-                            value={rewardNameList.find(
-                                (item) => item.rewardName === filters.rewardName
-                            ) || null}
-                            onChange={(e, val) =>
-                                setFilters((prev) => ({
-                                    ...prev,
-                                    rewardName: val ? val.rewardName : "",
-                                }))
+                            options={durationTypeList}
+                            getOptionLabel={(option) => (option?.listOfValues ? option.listOfValues : "")}
+                            value={durationTypeList.find((item) => item.listOfValues === filters.periodType) || null}
+                            onChange={(_, newValue) =>
+                                handleInputChange({
+                                    target: { name: "periodType", value: newValue?.listOfValues || "" },
+                                })
                             }
+                            isOptionEqualToValue={(option, value) => option?.listOfValues === value?.listOfValues}
                             renderInput={(params) => (
-                                <TextField {...params} label="Reward Name" size="small" fullWidth />
+                                <TextField {...params} label="Duration Type" size="small" fullWidth />
+                            )}
+                            fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <Autocomplete
+                            options={[
+                                { assignedUser: "All", assignedTo: "" }, // 👈 ALL option
+                                ...employees
+                            ]}
+                            getOptionLabel={(option) =>
+                                option.assignedUser === "All"
+                                    ? "All"
+                                    : `${option.assignedUser} - ${option.assignedTo}`
+                            }
+                            value={
+                                filters.employeeName
+                                    ? employees.find(
+                                        (item) => item.assignedUser === filters.employeeName
+                                    )
+                                    : { assignedUser: "All", assignedTo: "" } // 👈 default ALL
+                            }
+                            onChange={(event, newValue) => {
+                                if (!newValue || newValue.assignedUser === "All") {
+                                    // ALL selected
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        employeeName: "",
+                                        employeeCode: ""
+                                    }));
+                                } else {
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        employeeName: newValue.assignedUser,
+                                        employeeCode: newValue.assignedTo
+                                    }));
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Employee"
+                                    size="small"
+                                    fullWidth
+                                />
                             )}
                         />
                     </Grid>
-
-                    {/* Dates */}
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <Grid item xs={12} md={3}>
-                            <DatePicker
-                                label="From Date"
-                                format="DD-MM-YYYY"
-                                value={filters.fromDate ? dayjs(filters.fromDate) : null}
-                                onChange={(newValue) =>
+                    <Grid item xs={12} sm={2}>
+                        <Autocomplete
+                            options={[
+                                { departmentName: "All" }, // 👈 ALL option
+                                ...departmentList
+                            ]}
+                            getOptionLabel={(option) => option.departmentName || ""}
+                            size="small"
+                            value={
+                                filters.departmentId
+                                    ? departmentList.find(
+                                        (d) => d.departmentName === filters.departmentId
+                                    )
+                                    : { departmentName: "All" } // 👈 default ALL
+                            }
+                            onChange={(event, newValue) => {
+                                if (!newValue || newValue.departmentName === "All") {
+                                    handleInputChange({
+                                        target: { name: "departmentId", value: "" }
+                                    });
+                                } else {
+                                    handleInputChange({
+                                        target: { name: "departmentId", value: newValue.departmentName }
+                                    });
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Department"
+                                    size="small"
+                                    fullWidth
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        style: { height: 40 }
+                                    }}
+                                />
+                            )}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <Autocomplete
+                            options={[
+                                { rewardName: "All" }, // 👈 ALL option
+                                ...(rewardNameList || [])
+                            ]}
+                            getOptionLabel={(option) => option.rewardName || ""}
+                            size="small"
+                            value={
+                                filters.rewardPolicyId
+                                    ? rewardNameList.find(
+                                        (r) => r.rewardName === filters.rewardPolicyId
+                                    )
+                                    : { rewardName: "All" } // 👈 default ALL
+                            }
+                            onChange={(event, newValue) => {
+                                if (!newValue || newValue.rewardName === "All") {
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        rewardPolicyId: ""
+                                    }));
+                                } else {
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        rewardPolicyId: newValue.rewardName
+                                    }));
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Reward Policy"
+                                    size="small"
+                                    fullWidth
+                                />
+                            )}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <Autocomplete
+                            options={[
+                                { listOfValues: "All" }, // 👈 ALL option
+                                ...targetBasisList
+                            ]}
+                            getOptionLabel={(option) => option.listOfValues || ""}
+                            size="small"
+                            value={
+                                filters.targetBasis
+                                    ? targetBasisList.find(
+                                        (t) => t.listOfValues === filters.targetBasis
+                                    )
+                                    : { listOfValues: "All" } // 👈 default ALL
+                            }
+                            onChange={(event, newValue) => {
+                                if (!newValue || newValue.listOfValues === "All") {
+                                    handleInputChange({
+                                        target: { name: "targetBasis", value: "" }
+                                    });
+                                } else {
                                     handleInputChange({
                                         target: {
-                                            name: "fromDate",
-                                            value: newValue ? newValue.format("YYYY-MM-DD") : "",
-                                        },
-                                    })
+                                            name: "targetBasis",
+                                            value: newValue.listOfValues
+                                        }
+                                    });
                                 }
-                                slotProps={{ textField: { size: "small", fullWidth: true } }}
-                            />
-                        </Grid>
-
-                        <Grid item xs={12} md={3}>
-                            <DatePicker
-                                label="To Date"
-                                format="DD-MM-YYYY"
-                                value={filters.toDate ? dayjs(filters.toDate) : null}
-                                onChange={(newValue) =>
-                                    handleInputChange({
-                                        target: {
-                                            name: "toDate",
-                                            value: newValue ? newValue.format("YYYY-MM-DD") : "",
-                                        },
-                                    })
-                                }
-                                slotProps={{ textField: { size: "small", fullWidth: true } }}
-                            />
-                        </Grid>
-                    </LocalizationProvider>
-
-                    {/* GO Button */}
-                    <Grid item xs={12} md={2}>
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Target Basis"
+                                    size="small"
+                                    fullWidth
+                                />
+                            )}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2} display="flex" alignItems="center">
                         <Button
                             variant="contained"
                             fullWidth
-                            size="large"
-                            onClick={loadRewardDetails}
-                            sx={{
-                                height: "40px",
-                                fontWeight: 700,
-                                borderRadius: "10px",
-                                background: "#1976d2",
-                                "&:hover": { background: "#0d47a1" },
-                            }}
+                            onClick={handleSearch}
+                            sx={{ height: 40 }}
                         >
-                            GO
+                            Search
                         </Button>
                     </Grid>
                 </Grid>
             </Paper>
 
-            {/* Top Performer Card */}
-            {topPerformer && (
-                <Paper
-                    sx={{
-                        p: 3,
-                        mb: 3,
-                        borderRadius: 3,
-                        background: "linear-gradient(135deg,#d1e9ff,#e8f4ff)",
-                        boxShadow: "0px 6px 16px rgba(0,0,0,0.12)",
-                    }}
-                >
-                    <Typography variant="h6" fontWeight={700} mb={1}>
-                        🏆 Top Performer
-                    </Typography>
-
-                    <Typography variant="h4" fontWeight={800}>
-                        {topPerformer.employeeName} – ₹ {topPerformer.netAmount}
-                    </Typography>
-
-                    <Typography mt={1} color="text.secondary" fontSize={16}>
-                        Reward: {topPerformer.rewardName}
-                    </Typography>
-                </Paper>
-            )}
-
-            {/* Loader or Table */}
-            {loading ? (
-                <Box textAlign="center" mt={5}>
-                    <CircularProgress />
-                    <Typography mt={2}>Fetching reward details...</Typography>
-                </Box>
-            ) : (
-                <CommonReportTable
-                    data={rewardDetails}
-                    columns={columns}
-                    isListView={listView}
-                    fileName="Rewards"
-                    isExcel={false}
-                    isPdf={false}
-                    muiTablePaperProps={{
-                        elevation: 0,
-                        sx: {
-                            borderRadius: "16px",
-                            overflow: "hidden",
-                            boxShadow: "0px 4px 14px rgba(0,0,0,0.07)",
-                        },
-                    }}
-                    muiTableHeadCellProps={{
-                        sx: {
-                            background: "#eaf4ff",
-                            fontWeight: "700",
-                            fontSize: "14px",
-                            borderBottom: "2px solid #d0e3ff",
-                        }
-                    }}
-                    muiTableBodyRowProps={{
-                        sx: {
-                            "&:nth-of-type(odd)": {
-                                backgroundColor: "#fafafa"
-                            },
-                            "&:hover": {
-                                backgroundColor: "#eef7ff",
-                                transition: "0.2s",
-                            },
-                        }
-                    }}
-                />
-            )}
+            {/* TABLE */}
+            <MaterialReactTable
+                columns={columns}
+                data={data}
+                state={{ isLoading: loading }}
+                enableStickyHeader
+                enableColumnActions={false}
+                enableSorting
+                initialState={{ density: "compact" }}
+            />
         </Box>
     );
 }

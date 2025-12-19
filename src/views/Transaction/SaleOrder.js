@@ -547,10 +547,10 @@ const SalesOrder = ({ selectedRow }) => {
       newErrors.branch = 'Branch name is required';
       isValid = false;
     }
-    if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNumber)) {
-      newErrors.mobileNumber = 'Invalid mobile number (10 digits required)';
-      isValid = false;
-    }
+    // if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNumber)) {
+    //   newErrors.mobileNumber = 'Invalid mobile number (10 digits required)';
+    //   isValid = false;
+    // }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Invalid email format';

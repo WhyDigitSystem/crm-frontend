@@ -168,6 +168,13 @@ const basicMasterChildren = [
     url: '/basicMaster/RewardPolicySetup',
     icon: IconShieldLock
   },
+  hasScreenAccess('ERM') && {
+    id: 'EmployeeRewardMapping',
+    title: 'Employee Reward Mapping',
+    type: 'item',
+    url: '/basicMaster/EmployeeRewardMapping',
+    icon: IconShieldLock
+  },
   hasScreenAccess('AM') && {
     id: 'advertisement',
     title: 'Advertisement',

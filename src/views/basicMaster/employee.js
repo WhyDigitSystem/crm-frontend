@@ -137,7 +137,7 @@ const EmployeeDetails = () => {
     getAllDepartment();
     getAllReportingPerson();
     getEmployeeCode();
-    getAllRewardName();
+    // getAllRewardName();
   }, []);
   const getAllBranches = async () => {
     try {
@@ -200,18 +200,18 @@ const EmployeeDetails = () => {
       console.error('Error fetching data:', error);
     }
   };
-  const getAllRewardName = async () => {
-    try {
-      const response = await apiCalls('get', `/master/getAllRewardNames?orgId=${orgId}`);
-      if (response.status === true) {
-        setRewardNameList(response.paramObjectsMap.rewardNames);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  // const getAllRewardName = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `/master/getAllRewardNames?orgId=${orgId}`);
+  //     if (response.status === true) {
+  //       setRewardNameList(response.paramObjectsMap.rewardNames);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
 
@@ -424,7 +424,7 @@ const EmployeeDetails = () => {
         team: formData.team,
         uanNo: formData.uanNo,
         roleName: formData.roleName,
-        rewardName: formData.rewardName,
+        // rewardName: formData.rewardName,
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -495,7 +495,7 @@ const EmployeeDetails = () => {
           active: employeeDetailsVO.active === 'Active' ? true : false,
           id: employeeDetailsVO.id || '',
           roleName: employeeDetailsVO.roleName || '',
-          rewardName: employeeDetailsVO.rewardName || '',
+          // rewardName: employeeDetailsVO.rewardName || '',
         });
         // const profileImageBlob = result.paramObjectsMap.Employee.profileImage;
         setLogo(result.paramObjectsMap.Employee.passportphoto);
@@ -967,7 +967,7 @@ const EmployeeDetails = () => {
                   helperText={fieldErrors.address}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={rewardNameList || []}
                   getOptionLabel={(option) =>
@@ -1005,7 +1005,7 @@ const EmployeeDetails = () => {
                     />
                   )}
                 />
-              </div>
+              </div> */}
               {/* Image Upload Section */}
               <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>

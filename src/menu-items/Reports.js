@@ -159,7 +159,14 @@ const reportChildren = [
     type: 'item',
     url: '/Report/AdvertisingReport',
     icon: () => <IconAward />
-  }
+  },
+  // hasScreenAccess('RR') && {
+  //   id: 'RewardReport',
+  //   title: 'Reward Report',
+  //   type: 'item',
+  //   url: '/Report/RewardReport',
+  //   icon: () => <IconAward />
+  // }
 ].filter(Boolean);
 
 const Reports =

@@ -408,7 +408,7 @@ export default function RewardPolicySetup() {
                                         fullWidth
                                     />
                                 </Grid>
-                                <Grid item xs={12} sm={3}>
+                                {/* <Grid item xs={12} sm={3}>
                                     <TextField
                                         fullWidth
                                         type="number"
@@ -418,7 +418,7 @@ export default function RewardPolicySetup() {
                                         value={formData.fixedTarget}
                                         onChange={handleInputChange}
                                     />
-                                </Grid>
+                                </Grid> */}
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <Grid item xs={12} sm={3}>
                                         <DatePicker
@@ -462,23 +462,22 @@ export default function RewardPolicySetup() {
                                         />
                                     </Grid>
                                 </LocalizationProvider>
-                                <Grid item xs={12} sm={3}>
-                                    <FormControlLabel
-                                        control={<Checkbox checked={!!formData.active} onChange={handleCheckboxChange} />}
-                                        label="Active"
-                                    />
-                                </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField
                                         fullWidth
                                         multiline
-                                        rows={3}
                                         label="Description"
                                         size="small"
                                         placeholder="Write details here..."
                                         name="description"
                                         value={formData.description}
                                         onChange={handleInputChange}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={3}>
+                                    <FormControlLabel
+                                        control={<Checkbox checked={!!formData.active} onChange={handleCheckboxChange} />}
+                                        label="Active"
                                     />
                                 </Grid>
                                 {/* Range / Slab Section */}
@@ -500,9 +499,9 @@ export default function RewardPolicySetup() {
                                                     <tr style={{ background: "#374151", color: "#fff" }}>
                                                         <th style={{ width: "80px" }} className="text-center">Action</th>
                                                         <th style={{ width: "40px" }} className="text-center">#</th>
-                                                        <th className="text-center">From (Range)</th>
-                                                        <th className="text-center">To (Range)</th>
-                                                        <th className="text-center">Reward Points / Amt</th>
+                                                        <th className="text-center">Achievement % From</th>
+                                                        <th className="text-center">Achievement % To</th>
+                                                        <th className="text-center">Reward</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>

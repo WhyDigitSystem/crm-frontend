@@ -440,7 +440,7 @@ export const CustomerDetails = () => {
       dateOfBirth: row.dob,
       designation: row.designation,
       email: row.email,
-      mobileNumber: row.mobileNo,
+      mobileNumber: parseInt(row.mobileNo),
       name: row.name,
       referedContact: row.preferedContact,
       workAnniversary: row.workAnniversaryDate

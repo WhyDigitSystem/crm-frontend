@@ -293,15 +293,15 @@ const Lead = ({ selectedRow }) => {
           branches.length > 0
             ? branches
             : [
-                {
-                  address: '',
-                  branch: '',
-                  city: '',
-                  country: '',
-                  gstNo: '',
-                  state: ''
-                }
-              ]
+              {
+                address: '',
+                branch: '',
+                city: '',
+                country: '',
+                gstNo: '',
+                state: ''
+              }
+            ]
         );
 
         // Map contacts
@@ -322,17 +322,17 @@ const Lead = ({ selectedRow }) => {
           contacts.length > 0
             ? contacts
             : [
-                {
-                  branchName: '',
-                  designation: '',
-                  dob: '',
-                  email: '',
-                  mobileNo: '',
-                  name: '',
-                  preferredContact: 0,
-                  workAnniversaryDate: ''
-                }
-              ]
+              {
+                branchName: '',
+                designation: '',
+                dob: '',
+                email: '',
+                mobileNo: '',
+                name: '',
+                preferredContact: 0,
+                workAnniversaryDate: ''
+              }
+            ]
         );
       }
       setIsLoading(false);
@@ -408,7 +408,7 @@ const Lead = ({ selectedRow }) => {
 
     if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       newErrors[field] = 'Invalid email format';
-    } 
+    }
     else if (field === 'contactNo' && value && !/^[0-9+\-\s]{10,15}$/.test(value)) {
       newErrors[field] = 'Invalid contact number';
     } else if (!value) {
@@ -513,6 +513,10 @@ const Lead = ({ selectedRow }) => {
     setContactErrors(errors);
     return errors.every((e) => Object.keys(e).length === 0);
   };
+  const toBackendDate = (ddmmyyyy) => {
+    if (!ddmmyyyy) return null;
+    return dayjs(ddmmyyyy, "DD-MM-YYYY").format("YYYY-MM-DD");
+  };
 
   const handleSave = async () => {
     const isFormValid = validateFields();
@@ -557,16 +561,15 @@ const Lead = ({ selectedRow }) => {
         state: branch.state
       })),
       leadContactDTO: leadContacts.map((contact) => ({
-        dob: contact.dob || null,
+        dob: toBackendDate(contact.dob),
         branchName: contact.branchName || '',
         designation: contact.designation,
-        dob: contact.dob || '',
         email: contact.email,
         mobileNo: contact.mobileNo,
         name: contact.name,
         preferedContact: contact.preferredContact ? 1 : 0,
-        workAniversaryDate: contact.workAnniversaryDate || null,
-        aniversary: contact.anniversaryDate || null
+        workAniversaryDate: toBackendDate(contact.workAnniversaryDate),
+        aniversary: toBackendDate(contact.anniversaryDate)
       }))
     };
 
@@ -768,6 +771,11 @@ const Lead = ({ selectedRow }) => {
     setLeadContacts(newContacts);
     setContactErrors(newErrors);
   };
+  // const formatToDDMMYYYY = (value) => {
+  //   if (!value) return '';
+  //   const [year, month, day] = value.split('-');
+  //   return `${day}-${month}-${year}`;
+  // };
 
   const handleContactChange = (index, field, value) => {
     const newContacts = [...leadContacts];
@@ -865,155 +873,156 @@ const Lead = ({ selectedRow }) => {
 
   return (
     <>
-      {isLoading && (
-        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
-          <FullScreenLoader />
-        </div>
-      )}
-      <ToastComponent />
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="row d-flex ml">
-          {!selectedRow && (
-            <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
-              {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
-              {!listView && (
-                <>
-                  <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                  <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-                </>
-              )}
-            </div>
-          )}
-          {listView && !isLoading ? (
-            <>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KPIBox
-                    summaryData={{
-                      label: 'Total',
-                      count: summaryCounts.totalCount,
-                      color: '#3f51b5',
-                      icon: <SummarizeIcon />
-                    }}
-                  />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        {isLoading && (
+          <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+            <FullScreenLoader />
+          </div>
+        )}
+        <ToastComponent />
+        <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+          <div className="row d-flex ml">
+            {!selectedRow && (
+              <div className="d-flex flex-wrap justify-content-start mb-3" style={{ marginBottom: '20px' }}>
+                {listView && <ActionButton title="New Entry" icon={AddIcon} onClick={handleView} />}
+                {!listView && (
+                  <>
+                    <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                    <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                  </>
+                )}
+              </div>
+            )}
+            {listView && !isLoading ? (
+              <>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <KPIBox
+                      summaryData={{
+                        label: 'Total',
+                        count: summaryCounts.totalCount,
+                        color: '#3f51b5',
+                        icon: <SummarizeIcon />
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <KPIBox
+                      summaryData={{
+                        label: 'Won',
+                        count: summaryCounts.won,
+                        color: '#009688',
+                        icon: <EmojiEventsIcon />
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <KPIBox
+                      summaryData={{
+                        label: 'Lost',
+                        count: summaryCounts.lost,
+                        color: 'red',
+                        icon: <CancelIcon />
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <KPIBox
+                      summaryData={{
+                        label: 'In Progress',
+                        count: summaryCounts.inprocess,
+                        color: '#ff7043',
+                        icon: <HourglassTopIcon />
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KPIBox
-                    summaryData={{
-                      label: 'Won',
-                      count: summaryCounts.won,
-                      color: '#009688',
-                      icon: <EmojiEventsIcon />
-                    }}
-                  />
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getLeadById} />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KPIBox
-                    summaryData={{
-                      label: 'Lost',
-                      count: summaryCounts.lost,
-                      color: 'red',
-                      icon: <CancelIcon />
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KPIBox
-                    summaryData={{
-                      label: 'In Progress',
-                      count: summaryCounts.inprocess,
-                      color: '#ff7043',
-                      icon: <HourglassTopIcon />
-                    }}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={1}>
-                <Grid item xs={12}>
-                  <CommonListViewTable data={listViewData} columns={listViewColumns} enableEditing toEdit={getLeadById} />
-                </Grid>
-              </Grid>
-            </>
-          ) : (
-            <>
-              <div className="row d-flex ml">
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label="Lead ID"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    disabled
-                    name="leadDocId"
-                    value={isDocIdLoading ? 'Generating...' : docId}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled" size="small">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Doc Date"
-                        value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
-                        onChange={(date) => handleDateChange('docDate', date)}
-                        slotProps={{
-                          textField: {
-                            size: 'small'
-                          }
-                        }}
-                        format="DD-MM-YYYY"
-                        disabled
-                      />
-                    </LocalizationProvider>
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    options={sources}
-                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
-                    value={sources.find((item) => item.listOfValues === formData.source) || null}
-                    onChange={(event, newValue) =>
-                      handleInputChange({
-                        target: { name: 'source', value: newValue?.listOfValues || '' }
-                      })
-                    }
-                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={<span>Source</span>}
-                        size="small"
-                        error={!!fieldErrors.source}
-                        helperText={fieldErrors.source}
-                        fullWidth
-                      />
-                    )}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    options={clientTypes}
-                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
-                    value={clientTypes.find((item) => item.listOfValues === formData.clientType) || null}
-                    onChange={(event, newValue) =>
-                      handleInputChange({
-                        target: { name: 'clientType', value: newValue?.listOfValues || '' }
-                      })
-                    }
-                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={<span>Client Type</span>}
-                        size="small"
-                        error={!!fieldErrors.clientType}
-                        helperText={fieldErrors.clientType}
-                        fullWidth
-                      />
-                    )}
-                  />
-                </div>
-                {/* <div className="col-md-3 mb-3">
+              </>
+            ) : (
+              <>
+                <div className="row d-flex ml">
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Lead ID"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      disabled
+                      name="leadDocId"
+                      value={isDocIdLoading ? 'Generating...' : docId}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <FormControl fullWidth variant="filled" size="small">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          label="Doc Date"
+                          value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                          onChange={(date) => handleDateChange('docDate', date)}
+                          slotProps={{
+                            textField: {
+                              size: 'small'
+                            }
+                          }}
+                          format="DD-MM-YYYY"
+                          disabled
+                        />
+                      </LocalizationProvider>
+                    </FormControl>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={sources}
+                      getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                      value={sources.find((item) => item.listOfValues === formData.source) || null}
+                      onChange={(event, newValue) =>
+                        handleInputChange({
+                          target: { name: 'source', value: newValue?.listOfValues || '' }
+                        })
+                      }
+                      isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={<span>Source</span>}
+                          size="small"
+                          error={!!fieldErrors.source}
+                          helperText={fieldErrors.source}
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={clientTypes}
+                      getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                      value={clientTypes.find((item) => item.listOfValues === formData.clientType) || null}
+                      onChange={(event, newValue) =>
+                        handleInputChange({
+                          target: { name: 'clientType', value: newValue?.listOfValues || '' }
+                        })
+                      }
+                      isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={<span>Client Type</span>}
+                          size="small"
+                          error={!!fieldErrors.clientType}
+                          helperText={fieldErrors.clientType}
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </div>
+                  {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.source}>
                     <InputLabel>
                       Source<span className="asterisk">*</span>
@@ -1033,7 +1042,7 @@ const Lead = ({ selectedRow }) => {
                     {fieldErrors.source && <FormHelperText style={{ color: 'red' }}>{fieldErrors.source}</FormHelperText>}
                   </FormControl>
                 </div> */}
-                {/* <div className="col-md-3 mb-3">
+                  {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.clientType}>
                     <InputLabel>
                       Client Type<span className="asterisk">*</span>
@@ -1055,75 +1064,75 @@ const Lead = ({ selectedRow }) => {
                     {fieldErrors.clientType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.clientType}</FormHelperText>}
                   </FormControl>
                 </div> */}
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label={
-                      <span>
-                        Client Name <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="clientName"
-                    value={formData.clientName}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.clientName}
-                    helperText={fieldErrors.clientName}
-                    onBlur={(e) => validateMainField('clientName', e.target.value)}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label="Email"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.email}
-                    helperText={fieldErrors.email}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label="Contact No"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="contactNo"
-                    value={formData.contactNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
-                    error={!!fieldErrors.contactNo}
-                    helperText={fieldErrors.contactNo}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    options={industries}
-                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
-                    value={industries.find((item) => item.listOfValues === formData.industry) || null}
-                    onChange={(event, newValue) =>
-                      handleInputChange({
-                        target: { name: 'industry', value: newValue?.listOfValues || '' }
-                      })
-                    }
-                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={<span>Industries</span>}
-                        size="small"
-                        error={!!fieldErrors.industry}
-                        helperText={fieldErrors.industry}
-                        fullWidth
-                      />
-                    )}
-                  />
-                </div>
-                {/* <div className="col-md-3 mb-3">
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label={
+                        <span>
+                          Client Name <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="clientName"
+                      value={formData.clientName}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.clientName}
+                      helperText={fieldErrors.clientName}
+                      onBlur={(e) => validateMainField('clientName', e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Email"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.email}
+                      helperText={fieldErrors.email}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Contact No"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="contactNo"
+                      value={formData.contactNo}
+                      onChange={handleInputChange}
+                      inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
+                      error={!!fieldErrors.contactNo}
+                      helperText={fieldErrors.contactNo}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={industries}
+                      getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                      value={industries.find((item) => item.listOfValues === formData.industry) || null}
+                      onChange={(event, newValue) =>
+                        handleInputChange({
+                          target: { name: 'industry', value: newValue?.listOfValues || '' }
+                        })
+                      }
+                      isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={<span>Industries</span>}
+                          size="small"
+                          error={!!fieldErrors.industry}
+                          helperText={fieldErrors.industry}
+                          fullWidth
+                        />
+                      )}
+                    />
+                  </div>
+                  {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel>Industry</InputLabel>
                     <Select label="Industry" name="industry" value={formData.industry} onChange={handleInputChange}>
@@ -1135,656 +1144,669 @@ const Lead = ({ selectedRow }) => {
                     </Select>
                   </FormControl>
                 </div> */}
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label="Website"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    options={cityList}
-                    getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
-                    value={cityList.find((item) => item.city === formData.city) || null}
-                    onChange={(event, newValue) => {
-                      if (newValue) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          city: newValue.city,
-                          state: newValue.state,
-                          country: newValue.country || ''
-                        }));
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          city: '',
-                          state: '',
-                          country: ''
-                        }));
-                      } else {
-                        setFormData((prev) => ({
-                          ...prev,
-                          city: '',
-                          state: '',
-                          country: ''
-                        }));
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={
-                          <span>
-                            City <span className="asterisk">*</span>
-                          </span>
-                        }
-                        size="small"
-                        fullWidth
-                        error={!!fieldErrors.city}
-                        helperText={fieldErrors.city}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label={
-                      <span>
-                        State <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    disabled
-                    error={!!fieldErrors.state}
-                    helperText={fieldErrors.state}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label={
-                      <span>
-                        Country <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    disabled
-                    error={!!fieldErrors.country}
-                    helperText={fieldErrors.country}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label={
-                      <span>
-                        Pin Code <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="pinCode"
-                    value={formData.pinCode}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 6, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
-                    error={!!fieldErrors.pinCode}
-                    helperText={fieldErrors.pinCode}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" error={!!fieldErrors.customer}>
-                    <InputLabel id="demo-simple-select-label">
-                      Customer <span style={{ color: 'red', fontSize: '20px' }}>*</span>
-                    </InputLabel>
-                    <Select
-                      labelId="customer"
-                      value={formData.customer}
-                      onChange={handleInputChange}
-                      label="Existing Customer"
-                      name="customer"
-                    >
-                      <MenuItem value="Yes">Yes</MenuItem>
-                      <MenuItem value="No">No</MenuItem>
-                    </Select>
-                    {fieldErrors.customer && <FormHelperText style={{ color: 'red' }}>{fieldErrors.customer}</FormHelperText>}
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label={
-                      <span>
-                        Address <span className="asterisk">*</span>
-                      </span>
-                    }
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="address"
-                    multiline
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.address}
-                    helperText={fieldErrors.address}
-                    onBlur={(e) => validateMainField('address', e.target.value)}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    label="Probability %"
-                    variant="outlined"
-                    type="number"
-                    size="small"
-                    fullWidth
-                    name="probability"
-                    value={formData.probability}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    options={assignToList}
-                    getOptionLabel={(option) =>
-                      option?.empoyeeCode && option?.employeeName ? `${option.empoyeeCode} - ${option.employeeName}` : ''
-                    }
-                    value={assignToList.find((item) => item.empoyeeCode === formData.assignTo) || null}
-                    onChange={(event, newValue) => {
-                      if (newValue) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          assignTo: newValue.empoyeeCode,
-                          assignName: newValue.employeeName
-                        }));
-                      } else {
-                        setFormData((prev) => ({
-                          ...prev,
-                          assignTo: '',
-                          assignName: ''
-                        }));
-                      }
-                    }}
-                    renderInput={(params) => <TextField {...params} label={<span>Assign To</span>} size="small" fullWidth />}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Stage</InputLabel>
-                    <Select
-                      labelId="stage"
-                      value={formData.stage}
-                      onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-                      label="Stage"
-                    >
-                      <MenuItem value="Progressing">Progressing</MenuItem>
-                      {/* <MenuItem value="Prospecting">Prospecting</MenuItem> */}
-                      {/* <MenuItem value="Qualification">Qualification</MenuItem> */}
-                      <MenuItem value="Proposal">Proposal</MenuItem>
-                      <MenuItem value="Negotiation">Negotiation</MenuItem>
-                      <MenuItem value="Closed Won">Closed Won</MenuItem>
-                      <MenuItem value="Closed Lost">Closed Lost</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Button
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Website"
                       variant="outlined"
-                      component="label"
-                      multiline
-                      startIcon={<CloudUploadIcon />}
-                      sx={{
-                        color: '#374151',
-                        borderColor: '#374151',
-                        borderRadius: '12px',
-                        '&:hover': {
-                          borderColor: '#374151',
-                          backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
+                      size="small"
+                      fullWidth
+                      name="website"
+                      value={formData.website}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={cityList}
+                      getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
+                      value={cityList.find((item) => item.city === formData.city) || null}
+                      onChange={(event, newValue) => {
+                        if (newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            city: newValue.city,
+                            state: newValue.state,
+                            country: newValue.country || ''
+                          }));
+                          setFieldErrors((prev) => ({
+                            ...prev,
+                            city: '',
+                            state: '',
+                            country: ''
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            city: '',
+                            state: '',
+                            country: ''
+                          }));
                         }
                       }}
-                    >
-                      {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Attachment'}
-
-                      <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
-                    </Button>
-
-                    {companyLogo && (
-                      <IconButton
-                        variant="contained"
-                        sx={{
-                          whiteSpace: 'nowrap',
-                          color: '#374151'
-                        }}
-                        onClick={handleOpen}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={
+                            <span>
+                              City <span className="asterisk">*</span>
+                            </span>
+                          }
+                          size="small"
+                          fullWidth
+                          error={!!fieldErrors.city}
+                          helperText={fieldErrors.city}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label={
+                        <span>
+                          State <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      disabled
+                      error={!!fieldErrors.state}
+                      helperText={fieldErrors.state}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label={
+                        <span>
+                          Country <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      disabled
+                      error={!!fieldErrors.country}
+                      helperText={fieldErrors.country}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label={
+                        <span>
+                          Pin Code <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="pinCode"
+                      value={formData.pinCode}
+                      onChange={handleInputChange}
+                      inputProps={{ maxLength: 6, inputMode: 'numeric', pattern: '[0-9]*' }} // <-- key
+                      error={!!fieldErrors.pinCode}
+                      helperText={fieldErrors.pinCode}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <FormControl fullWidth size="small" error={!!fieldErrors.customer}>
+                      <InputLabel id="demo-simple-select-label">
+                        Customer <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+                      </InputLabel>
+                      <Select
+                        labelId="customer"
+                        value={formData.customer}
+                        onChange={handleInputChange}
+                        label="Existing Customer"
+                        name="customer"
                       >
-                        <ControlCameraIcon />
-                      </IconButton>
+                        <MenuItem value="Yes">Yes</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                      {fieldErrors.customer && <FormHelperText style={{ color: 'red' }}>{fieldErrors.customer}</FormHelperText>}
+                    </FormControl>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label={
+                        <span>
+                          Address <span className="asterisk">*</span>
+                        </span>
+                      }
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="address"
+                      multiline
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.address}
+                      helperText={fieldErrors.address}
+                      onBlur={(e) => validateMainField('address', e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Probability %"
+                      variant="outlined"
+                      type="number"
+                      size="small"
+                      fullWidth
+                      name="probability"
+                      value={formData.probability}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={assignToList}
+                      getOptionLabel={(option) =>
+                        option?.empoyeeCode && option?.employeeName ? `${option.empoyeeCode} - ${option.employeeName}` : ''
+                      }
+                      value={assignToList.find((item) => item.empoyeeCode === formData.assignTo) || null}
+                      onChange={(event, newValue) => {
+                        if (newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            assignTo: newValue.empoyeeCode,
+                            assignName: newValue.employeeName
+                          }));
+                        } else {
+                          setFormData((prev) => ({
+                            ...prev,
+                            assignTo: '',
+                            assignName: ''
+                          }));
+                        }
+                      }}
+                      renderInput={(params) => <TextField {...params} label={<span>Assign To</span>} size="small" fullWidth />}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <FormControl fullWidth size="small">
+                      <InputLabel id="demo-simple-select-label">Stage</InputLabel>
+                      <Select
+                        labelId="stage"
+                        value={formData.stage}
+                        onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
+                        label="Stage"
+                      >
+                        <MenuItem value="Progressing">Progressing</MenuItem>
+                        {/* <MenuItem value="Prospecting">Prospecting</MenuItem> */}
+                        {/* <MenuItem value="Qualification">Qualification</MenuItem> */}
+                        <MenuItem value="Proposal">Proposal</MenuItem>
+                        <MenuItem value="Negotiation">Negotiation</MenuItem>
+                        <MenuItem value="Closed Won">Closed Won</MenuItem>
+                        <MenuItem value="Closed Lost">Closed Lost</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        multiline
+                        startIcon={<CloudUploadIcon />}
+                        sx={{
+                          color: '#374151',
+                          borderColor: '#374151',
+                          borderRadius: '12px',
+                          '&:hover': {
+                            borderColor: '#374151',
+                            backgroundColor: 'rgba(193, 86, 255, 0.08)' // light hover effect
+                          }
+                        }}
+                      >
+                        {companyLogo ? (typeof companyLogo === 'object' && companyLogo.name ? companyLogo.name : '') : 'Attachment'}
+
+                        <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                      </Button>
+
+                      {companyLogo && (
+                        <IconButton
+                          variant="contained"
+                          sx={{
+                            whiteSpace: 'nowrap',
+                            color: '#374151'
+                          }}
+                          onClick={handleOpen}
+                        >
+                          <ControlCameraIcon />
+                        </IconButton>
+                      )}
+                    </Box>
+                    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                      <DialogContent
+                        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}
+                      >
+                        <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                          Attachment
+                        </Typography>
+                        {companyLogo ? (
+                          <Box>
+                            <Avatar
+                              src={
+                                typeof companyLogo === 'object' ? URL.createObjectURL(companyLogo) : `data:image/jpeg;base64,${companyLogo}`
+                              }
+                              alt="Attachment"
+                              sx={{
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                width: 'auto',
+                                height: 'auto',
+                                borderRadius: 2,
+                                backgroundColor: 'transparent'
+                              }}
+                            />
+                            <Box display="flex" gap={2} mt={2}>
+                              <IconButton
+                                variant="contained"
+                                sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                onClick={handleRemoveLogo}
+                              >
+                                Delete
+                              </IconButton>
+                              <IconButton
+                                variant="contained"
+                                sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                onClick={handleClose}
+                              >
+                                Close
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        ) : (
+                          <Box>
+                            <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                              <Typography variant="caption">Attachment</Typography>
+                            </Avatar>
+                            <Box display="flex" gap={2} mt={2}>
+                              <IconButton
+                                variant="contained"
+                                sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                                onClick={handleClose}
+                              >
+                                Close
+                              </IconButton>
+                            </Box>
+                          </Box>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+
+                <div className="row mt-2">
+                  <Box sx={{ width: '100%' }}>
+                    <Tabs value={value} onChange={handleTabChange} textColor="secondary" indicatorColor="secondary">
+                      <Tab value={0} label="Branches" />
+                      <Tab value={1} label="Contacts" />
+                    </Tabs>
+                  </Box>
+
+                  <Box sx={{ padding: 2 }}>
+                    {value === 0 && (
+                      <>
+                        <div className="mb-1">
+                          <ActionButton title="Add Branch" icon={AddIcon} onClick={handleAddBranch} />
+                        </div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ background: '#374151', color: '#ede7f6' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      #
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Branch *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Reg No *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      City *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      State *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Country *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Address *
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {leadBranches.map((branch, index) => (
+
+                                    <tr key={index}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteBranch(index)} />
+                                      </td>
+                                      <td className="text-center pt-3">{index + 1}</td>
+                                      <td>
+                                        <TextField
+                                          fullWidth
+                                          size="small"
+                                          value={branch.branch}
+                                          onChange={(e) => handleBranchChange(index, 'branch', e.target.value)}
+                                          onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
+                                          error={!!branchErrors[index]?.branch}
+                                          helperText={branchErrors[index]?.branch}
+                                        />
+                                      </td>
+                                      <td>
+                                        <TextField
+                                          fullWidth
+                                          size="small"
+                                          value={branch.gstNo}
+                                          onChange={(e) => handleBranchChange(index, 'gstNo', e.target.value)}
+                                          error={!!branchErrors[index]?.gstNo}
+                                          helperText={branchErrors[index]?.gstNo}
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                          <Autocomplete
+                                            options={cityList}
+                                            getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
+                                            value={cityList.find((item) => item.city === branch.city) || null}
+                                            onChange={(event, newValue) => {
+                                              const updatedBranches = [...leadBranches];
+                                              const updatedBranchesErrors = [...branchErrors];
+                                              if (newValue) {
+                                                updatedBranches[index] = {
+                                                  ...updatedBranches[index],
+                                                  city: newValue.city,
+                                                  state: newValue.state,
+                                                  country: newValue.country || ''
+                                                };
+                                                updatedBranchesErrors[index] = {
+                                                  ...updatedBranchesErrors[index],
+                                                  city: '',
+                                                  state: '',
+                                                  country: ''
+                                                };
+                                              } else {
+                                                updatedBranches[index] = {
+                                                  ...updatedBranches[index],
+                                                  city: '',
+                                                  state: '',
+                                                  country: ''
+                                                };
+                                              }
+                                              setBranchErrors(updatedBranchesErrors);
+                                              setLeadBranches(updatedBranches);
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                label={
+                                                  <span>
+                                                    City
+                                                  </span>
+                                                }
+                                                size="small"
+                                                fullWidth
+                                              />
+                                            )}
+                                          />
+                                        </Box>
+                                      </td>
+                                      <td>
+                                        <TextField
+                                          fullWidth
+                                          size="small"
+                                          value={branch.state}
+                                          disabled
+                                          onChange={(e) => handleBranchChange(index, 'state', e.target.value)}
+                                          onBlur={(e) => validateBranchField(index, 'state', e.target.value)}
+                                          error={!!branchErrors[index]?.state}
+                                          helperText={branchErrors[index]?.state}
+                                        />
+                                      </td>
+                                      <td>
+                                        <TextField
+                                          fullWidth
+                                          size="small"
+                                          value={branch.country}
+                                          disabled
+                                          onChange={(e) => handleBranchChange(index, 'country', e.target.value)}
+                                          onBlur={(e) => validateBranchField(index, 'country', e.target.value)}
+                                          error={!!branchErrors[index]?.country}
+                                          helperText={branchErrors[index]?.country}
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <TextField
+                                          fullWidth
+                                          size="small"
+                                          multiline
+                                          value={branch.address}
+                                          onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
+                                          onBlur={(e) => validateBranchField(index, 'address', e.target.value)}
+                                          error={!!branchErrors[index]?.address}
+                                          helperText={branchErrors[index]?.address}
+                                        />
+                                      </td>
+                                    </tr>
+
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {value === 1 && (
+                      <>
+                        <div className="mb-1">
+                          <ActionButton title="Add Contact" icon={AddIcon} onClick={handleAddContact} />
+                        </div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ background: '#374151', color: '#ede7f6' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      #
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '80px' }}>
+                                      Pref Cont
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Branch Name *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Name *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Mobile No *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Email *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Designation *
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      DOB
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Anniversary
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                      Workiversary
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {leadContacts.map((contact, index) => (
+                                    <tr key={index}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteContact(index)} />
+                                      </td>
+                                      <td className="text-center pt-3">{index + 1}</td>
+
+                                      <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
+                                        <FormControlLabel
+                                          sx={{ m: 0 }}
+                                          control={
+                                            <Checkbox
+                                              checked={contact.preferredContact}
+                                              onChange={(e) => handleContactChange(index, 'preferredContact', e.target.checked)}
+                                            />
+                                          }
+                                        />
+                                      </td>
+                                      <td>
+                                        <Box sx={{ minWidth: 150, flexGrow: 1 }}>
+                                          <Autocomplete
+                                            options={leadBranches}
+                                            getOptionLabel={(option) => option?.branch || ''}
+                                            value={leadBranches.find((item) => item.branch === contact.branchName) || null}
+                                            onChange={(event, newValue) => {
+                                              const updatedContacts = [...leadContacts];
+                                              updatedContacts[index] = {
+                                                ...updatedContacts[index],
+                                                branchName: newValue?.branch || ''
+                                              };
+                                              setLeadContacts(updatedContacts);
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.branch === value.branch}
+                                            renderInput={(params) => <TextField {...params} size="small" fullWidth />}
+                                          />
+                                        </Box>
+                                      </td>
+                                      <td>
+                                        <TextField
+                                          sx={{ minWidth: 150, flexGrow: 1 }}
+                                          fullWidth
+                                          size="small"
+                                          value={contact.name}
+                                          onChange={(e) => handleContactChange(index, 'name', e.target.value)}
+                                          onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                          error={!!contactErrors[index]?.name}
+                                          helperText={contactErrors[index]?.name}
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <TextField
+                                          sx={{ minWidth: 150, flexGrow: 1 }}
+                                          fullWidth
+                                          size="small"
+                                          value={contact.mobileNo}
+                                          onChange={(e) => handleContactChange(index, 'mobileNo', e.target.value)}
+                                          onBlur={(e) => validateContactField(index, 'mobileNo', e.target.value)}
+                                          error={!!contactErrors[index]?.mobileNo}
+                                          helperText={contactErrors[index]?.mobileNo}
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <TextField
+                                          sx={{ minWidth: 150, flexGrow: 1 }}
+                                          fullWidth
+                                          size="small"
+                                          value={contact.email}
+                                          onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                                          onBlur={(e) => validateContactField(index, 'email', e.target.value)}
+                                          error={!!contactErrors[index]?.email}
+                                          helperText={contactErrors[index]?.email}
+                                        />
+                                      </td>
+
+                                      <td>
+                                        <TextField
+                                          sx={{ minWidth: 150, flexGrow: 1 }}
+                                          fullWidth
+                                          size="small"
+                                          value={contact.designation}
+                                          onChange={(e) => handleContactChange(index, 'designation', e.target.value)}
+                                          onBlur={(e) => validateContactField(index, 'designation', e.target.value)}
+                                          error={!!contactErrors[index]?.designation}
+                                          helperText={contactErrors[index]?.designation}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <DatePicker
+                                          format="DD-MM-YYYY"
+                                          value={contact.dob ? dayjs(contact.dob, "DD-MM-YYYY") : null}
+                                          onChange={(newValue) =>
+                                            handleContactChange(
+                                              index,
+                                              "dob",
+                                              newValue ? newValue.format("DD-MM-YYYY") : ""
+                                            )
+                                          }
+                                          slotProps={{ textField: { size: "small", fullWidth: true } }}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <DatePicker
+                                          format="DD-MM-YYYY"
+                                          value={contact.anniversaryDate ? dayjs(contact.anniversaryDate, "DD-MM-YYYY") : null}
+                                          onChange={(newValue) =>
+                                            handleContactChange(
+                                              index,
+                                              "anniversaryDate",
+                                              newValue ? newValue.format("DD-MM-YYYY") : ""
+                                            )
+                                          }
+                                          slotProps={{ textField: { size: "small", fullWidth: true } }}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <DatePicker
+                                          format="DD-MM-YYYY"
+                                          value={contact.workAnniversaryDate ? dayjs(contact.workAnniversaryDate, "DD-MM-YYYY") : null}
+                                          onChange={(newValue) =>
+                                            handleContactChange(
+                                              index,
+                                              "workAnniversaryDate",
+                                              newValue ? newValue.format("DD-MM-YYYY") : ""
+                                            )
+                                          }
+                                          slotProps={{ textField: { size: "small", fullWidth: true } }}
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </Box>
-                  <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-                    <DialogContent
-                      sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}
-                    >
-                      <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
-                        Attachment
-                      </Typography>
-                      {companyLogo ? (
-                        <Box>
-                          <Avatar
-                            src={
-                              typeof companyLogo === 'object' ? URL.createObjectURL(companyLogo) : `data:image/jpeg;base64,${companyLogo}`
-                            }
-                            alt="Attachment"
-                            sx={{
-                              maxWidth: '100%',
-                              maxHeight: '100%',
-                              width: 'auto',
-                              height: 'auto',
-                              borderRadius: 2,
-                              backgroundColor: 'transparent'
-                            }}
-                          />
-                          <Box display="flex" gap={2} mt={2}>
-                            <IconButton
-                              variant="contained"
-                              sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                              onClick={handleRemoveLogo}
-                            >
-                              Delete
-                            </IconButton>
-                            <IconButton
-                              variant="contained"
-                              sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
-                              onClick={handleClose}
-                            >
-                              Close
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      ) : (
-                        <Box>
-                          <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                            <Typography variant="caption">Attachment</Typography>
-                          </Avatar>
-                          <Box display="flex" gap={2} mt={2}>
-                            <IconButton
-                              variant="contained"
-                              sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
-                              onClick={handleClose}
-                            >
-                              Close
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      )}
-                    </DialogContent>
-                  </Dialog>
                 </div>
-              </div>
-
-              <div className="row mt-2">
-                <Box sx={{ width: '100%' }}>
-                  <Tabs value={value} onChange={handleTabChange} textColor="secondary" indicatorColor="secondary">
-                    <Tab value={0} label="Branches" />
-                    <Tab value={1} label="Contacts" />
-                  </Tabs>
-                </Box>
-
-                <Box sx={{ padding: 2 }}>
-                  {value === 0 && (
-                    <>
-                      <div className="mb-1">
-                        <ActionButton title="Add Branch" icon={AddIcon} onClick={handleAddBranch} />
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ background: '#374151', color: '#ede7f6' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    #
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Branch *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Reg No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    City *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    State *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Country *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Address *
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {leadBranches.map((branch, index) => (
-                                  <tr key={index}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteBranch(index)} />
-                                    </td>
-                                    <td className="text-center pt-3">{index + 1}</td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        value={branch.branch}
-                                        onChange={(e) => handleBranchChange(index, 'branch', e.target.value)}
-                                        onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
-                                        error={!!branchErrors[index]?.branch}
-                                        helperText={branchErrors[index]?.branch}
-                                      />
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        value={branch.gstNo}
-                                        onChange={(e) => handleBranchChange(index, 'gstNo', e.target.value)}
-                                        error={!!branchErrors[index]?.gstNo}
-                                        helperText={branchErrors[index]?.gstNo}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <Box sx={{ minWidth: 150, flexGrow: 1 }}>
-                                        <Autocomplete
-                                          options={cityList}
-                                          getOptionLabel={(option) => (option?.city ? `${option.city}` : '')}
-                                          value={cityList.find((item) => item.city === branch.city) || null}
-                                          onChange={(event, newValue) => {
-                                            const updatedBranches = [...leadBranches];
-                                            const updatedBranchesErrors = [...branchErrors];
-                                            if (newValue) {
-                                              updatedBranches[index] = {
-                                                ...updatedBranches[index],
-                                                city: newValue.city,
-                                                state: newValue.state,
-                                                country: newValue.country || ''
-                                              };
-                                              updatedBranchesErrors[index] = {
-                                                ...updatedBranchesErrors[index],
-                                                city: '',
-                                                state: '',
-                                                country: ''
-                                              };
-                                            } else {
-                                              updatedBranches[index] = {
-                                                ...updatedBranches[index],
-                                                city: '',
-                                                state: '',
-                                                country: ''
-                                              };
-                                            }
-                                            setBranchErrors(updatedBranchesErrors);
-                                            setLeadBranches(updatedBranches);
-                                          }}
-                                          renderInput={(params) => (
-                                            <TextField
-                                              {...params}
-                                              label={
-                                                <span>
-                                                  City
-                                                </span>
-                                              }
-                                              size="small"
-                                              fullWidth
-                                            />
-                                          )}
-                                        />
-                                      </Box>
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        value={branch.state}
-                                        disabled
-                                        onChange={(e) => handleBranchChange(index, 'state', e.target.value)}
-                                        onBlur={(e) => validateBranchField(index, 'state', e.target.value)}
-                                        error={!!branchErrors[index]?.state}
-                                        helperText={branchErrors[index]?.state}
-                                      />
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        value={branch.country}
-                                        disabled
-                                        onChange={(e) => handleBranchChange(index, 'country', e.target.value)}
-                                        onBlur={(e) => validateBranchField(index, 'country', e.target.value)}
-                                        error={!!branchErrors[index]?.country}
-                                        helperText={branchErrors[index]?.country}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        multiline
-                                        value={branch.address}
-                                        onChange={(e) => handleBranchChange(index, 'address', e.target.value)}
-                                        onBlur={(e) => validateBranchField(index, 'address', e.target.value)}
-                                        error={!!branchErrors[index]?.address}
-                                        helperText={branchErrors[index]?.address}
-                                      />
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {value === 1 && (
-                    <>
-                      <div className="mb-1">
-                        <ActionButton title="Add Contact" icon={AddIcon} onClick={handleAddContact} />
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ background: '#374151', color: '#ede7f6' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    #
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '80px' }}>
-                                    Pref. Cont
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Branch Name *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Name *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Mobile No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Email *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Designation *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Date of Birth
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Anniversary
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                    Work Anniversary
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {leadContacts.map((contact, index) => (
-                                  <tr key={index}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteContact(index)} />
-                                    </td>
-                                    <td className="text-center pt-3">{index + 1}</td>
-
-                                    <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
-                                      <FormControlLabel
-                                        sx={{ m: 0 }}
-                                        control={
-                                          <Checkbox
-                                            checked={contact.preferredContact}
-                                            onChange={(e) => handleContactChange(index, 'preferredContact', e.target.checked)}
-                                          />
-                                        }
-                                      />
-                                    </td>
-                                    <td>
-                                      <Box sx={{ minWidth: 150, flexGrow: 1 }}>
-                                        <Autocomplete
-                                          options={leadBranches}
-                                          getOptionLabel={(option) => option?.branch || ''}
-                                          value={leadBranches.find((item) => item.branch === contact.branchName) || null}
-                                          onChange={(event, newValue) => {
-                                            const updatedContacts = [...leadContacts];
-                                            updatedContacts[index] = {
-                                              ...updatedContacts[index],
-                                              branchName: newValue?.branch || ''
-                                            };
-                                            setLeadContacts(updatedContacts);
-                                          }}
-                                          isOptionEqualToValue={(option, value) => option.branch === value.branch}
-                                          renderInput={(params) => <TextField {...params} size="small" fullWidth />}
-                                        />
-                                      </Box>
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        sx={{ minWidth: 150, flexGrow: 1 }}
-                                        fullWidth
-                                        size="small"
-                                        value={contact.name}
-                                        onChange={(e) => handleContactChange(index, 'name', e.target.value)}
-                                        onBlur={(e) => validateContactField(index, 'name', e.target.value)}
-                                        error={!!contactErrors[index]?.name}
-                                        helperText={contactErrors[index]?.name}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <TextField
-                                        sx={{ minWidth: 150, flexGrow: 1 }}
-                                        fullWidth
-                                        size="small"
-                                        value={contact.mobileNo}
-                                        onChange={(e) => handleContactChange(index, 'mobileNo', e.target.value)}
-                                        onBlur={(e) => validateContactField(index, 'mobileNo', e.target.value)}
-                                        error={!!contactErrors[index]?.mobileNo}
-                                        helperText={contactErrors[index]?.mobileNo}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <TextField
-                                        sx={{ minWidth: 150, flexGrow: 1 }}
-                                        fullWidth
-                                        size="small"
-                                        value={contact.email}
-                                        onChange={(e) => handleContactChange(index, 'email', e.target.value)}
-                                        onBlur={(e) => validateContactField(index, 'email', e.target.value)}
-                                        error={!!contactErrors[index]?.email}
-                                        helperText={contactErrors[index]?.email}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <TextField
-                                        sx={{ minWidth: 150, flexGrow: 1 }}
-                                        fullWidth
-                                        size="small"
-                                        value={contact.designation}
-                                        onChange={(e) => handleContactChange(index, 'designation', e.target.value)}
-                                        onBlur={(e) => validateContactField(index, 'designation', e.target.value)}
-                                        error={!!contactErrors[index]?.designation}
-                                        helperText={contactErrors[index]?.designation}
-                                      />
-                                    </td>
-
-                                    <td>
-                                      <TextField
-                                        sx={{ minWidth: 150, flexGrow: 1 }}
-                                        fullWidth
-                                        size="small"
-                                        type="date"
-                                        value={contact.dob || ''}
-                                        onChange={(e) => handleContactChange(index, 'dob', e.target.value)}
-                                        InputLabelProps={{ shrink: true }}
-                                      />
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        type="date"
-                                        value={contact.anniversaryDate || ''}
-                                        onChange={(e) => handleContactChange(index, 'anniversaryDate', e.target.value)}
-                                        InputLabelProps={{ shrink: true }}
-                                      />
-                                    </td>
-                                    <td>
-                                      <TextField
-                                        fullWidth
-                                        size="small"
-                                        type="date"
-                                        value={contact.workAnniversaryDate || ''}
-                                        onChange={(e) => handleContactChange(index, 'workAnniversaryDate', e.target.value)}
-                                        InputLabelProps={{ shrink: true }}
-                                      />
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </Box>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </LocalizationProvider>
     </>
   );
 };

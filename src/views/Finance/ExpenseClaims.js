@@ -598,6 +598,7 @@ export const ExpenseClaims = ({ selectedRow }) => {
                                 <Grid item xs={12} sm={3}>
                                     <DatePicker
                                         label="Doc Date"
+                                        // disabled
                                         format="DD-MM-YYYY"
                                         value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
                                         onChange={(newValue) =>

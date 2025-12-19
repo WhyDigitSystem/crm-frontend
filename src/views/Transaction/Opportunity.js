@@ -469,10 +469,10 @@ const Opportunity = ({ selectedRow }) => {
       newErrors.contactName = 'Contact name is required';
       isValid = false;
     }
-    if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNo)) {
-      newErrors.mobileNo = 'Invalid mobile number (10 digits required)';
-      isValid = false;
-    }
+    // if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(formData.mobileNo)) {
+    //   newErrors.mobileNo = 'Invalid mobile number (10 digits required)';
+    //   isValid = false;
+    // }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Invalid email format';
       isValid = false;
@@ -525,6 +525,9 @@ const Opportunity = ({ selectedRow }) => {
     const isDetailsValid = validateDetails();
 
     if (!isFormValid || !isDetailsValid) {
+      console.log("Error",isFormValid);
+      console.log("Details Error",isDetailsValid);
+      
       showToast('error', 'Please correct the highlighted fields');
       return;
     }

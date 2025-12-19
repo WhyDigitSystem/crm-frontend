@@ -399,6 +399,7 @@ const SupplierManagement = ({ selectedRow }) => {
         handleClear();
         getAllSupplier();
         getKPIDetails();
+        getSupplierDocId();
       } else {
         showToast('error', response.message || 'Operation failed');
       }

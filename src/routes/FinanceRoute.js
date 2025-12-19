@@ -6,6 +6,7 @@ import Loadable from 'ui-component/Loadable';
 import PrivateRoute from '../routes/PrivateRoute';
 import { element } from 'prop-types';
 import AnnouncementList from 'views/Announcement/AnnouncementList';
+const EmployeeTargetAssignment = Loadable(lazy(() => import('views/basicMaster/EmployeeRewardMapping')));
 const AdvertisingReport = Loadable(lazy(() => import('views/Reports/AdvertisingReport')));
 const AdvertisingMaster = Loadable(lazy(() => import('views/basicMaster/AdvertisingMaster')));
 const Rewards = Loadable(lazy(() => import('views/Reports/Rewards')));
@@ -240,6 +241,10 @@ const FinanceRoute = {
     {
       path: '/basicMaster/RewardPolicySetup',
       element: <RewardPolicySetup />
+    },
+    {
+      path: '/basicMaster/EmployeeRewardMapping',
+      element: <EmployeeTargetAssignment />
     },
     {
       path: '/basicMaster/Advertisement',
