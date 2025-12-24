@@ -21,7 +21,7 @@ import FullScreenLoader from 'utils/FullScreenLoader';
 import KPIBox from 'views/basicMaster/KPIBox';
 
 const SalesOrder = ({ selectedRow }) => {
-  // State management
+  const [remarksList, setRemarksList] = useState([]);
   const [listViewData, setListViewData] = useState([]);
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +48,7 @@ const SalesOrder = ({ selectedRow }) => {
 
   const [formData, setFormData] = useState({
     address: '',
+    remarks:'',
     salesDate: dayjs(),
     branch: branch,
     branchCode: branchCode,
@@ -206,6 +207,7 @@ const SalesOrder = ({ selectedRow }) => {
     getKPIDetails();
     getSalesOrderDocId();
     getClientName();
+    getRemarks();
   }, []);
 
   const getClientName = async () => {
@@ -350,6 +352,7 @@ const SalesOrder = ({ selectedRow }) => {
         getProductName(salesOrder.quotationId, salesOrder.clientName);
         setFormData({
           address: salesOrder.address || '',
+          remarks: salesOrder.remarks || '',
           branch: salesOrder.branch || branch,
           branchCode: salesOrder.branchCode || branchCode,
           branchName: salesOrder.branchName || '',
@@ -378,15 +381,15 @@ const SalesOrder = ({ selectedRow }) => {
           sellingPrice: detail.sellingPrice || 0,
           subCategory: detail.subCategory || ''
         })) || [
-          {
-            category: '',
-            discount: 0,
-            productName: '',
-            qty: 1,
-            sellingPrice: 0,
-            subCategory: ''
-          }
-        ];
+            {
+              category: '',
+              discount: 0,
+              productName: '',
+              qty: 1,
+              sellingPrice: 0,
+              subCategory: ''
+            }
+          ];
 
         setSalesOrderDetails(details);
         setDetailErrors(
@@ -623,6 +626,7 @@ const SalesOrder = ({ selectedRow }) => {
       ...(editId && { id: editId }),
       docId: docId,
       address: formData.address,
+      remarks: formData.remarks,
       branch: formData.branch,
       branchName: formData.branchName || selectedBranch?.branchName || '',
       branchCode: formData.branchCode,
@@ -806,6 +810,20 @@ const SalesOrder = ({ selectedRow }) => {
       console.error('Error fetching leads:', error);
       showToast('error', 'Failed to fetch leads');
       setIsLoading(false);
+    }
+  };
+  const getRemarks = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Remarks&orgId=${orgId}`);
+      if (response.status === true) {
+        setRemarksList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
     }
   };
   return (
@@ -1208,6 +1226,27 @@ const SalesOrder = ({ selectedRow }) => {
                     </Select>
                   </FormControl>
                 </div>
+                <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={remarksList}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={remarksList.find((item) => item.listOfValues === formData.remarks) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'remarks', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Remarks</span>}
+                        size="small"
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="row mt-2">
@@ -1315,9 +1354,9 @@ const SalesOrder = ({ selectedRow }) => {
                                           value={detail.category}
                                           disabled
                                           onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
-                                          // error={!!quotationPriceErrors[index]?.category}
-                                          // helperText={quotationPriceErrors[index]?.category}
+                                        // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                        // error={!!quotationPriceErrors[index]?.category}
+                                        // helperText={quotationPriceErrors[index]?.category}
                                         />
                                       </td>
                                       <td>
@@ -1327,7 +1366,7 @@ const SalesOrder = ({ selectedRow }) => {
                                           disabled
                                           value={detail.subCategory}
                                           onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                        // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                         />
                                       </td>
                                       <td>

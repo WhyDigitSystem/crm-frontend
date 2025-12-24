@@ -51,6 +51,7 @@ const Opportunity = ({ selectedRow }) => {
   const [value, setValue] = useState(0);
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
+  const [remarksList, setRemarksList] = useState([]);
   useEffect(() => {
     if (selectedRow) {
       setIsLoading(true);
@@ -71,6 +72,7 @@ const Opportunity = ({ selectedRow }) => {
   // Form data
   const [formData, setFormData] = useState({
     address: '',
+    remarks:'',
     branchName: '',
     clientName: '',
     opportunityDate: dayjs(),
@@ -155,6 +157,7 @@ const Opportunity = ({ selectedRow }) => {
     getAllCategories();
     getClientName();
     getProductName();
+    getRemarks();
   }, []);
   const getSellingPrice = async (productName, index) => {
     if (!productName || index === undefined) return;
@@ -277,7 +280,20 @@ const Opportunity = ({ selectedRow }) => {
       setIsDocIdLoading(false);
     }
   };
-
+  const getRemarks = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Remarks&orgId=${orgId}`);
+      if (response.status === true) {
+        setRemarksList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
   const getAllOpportunities = async () => {
     setIsLoading(true);
     try {
@@ -324,6 +340,7 @@ const Opportunity = ({ selectedRow }) => {
         getContactName(opportunity.branchName, opportunity.clientName);
         setFormData({
           address: opportunity.address || '',
+          remarks: opportunity.remarks || '',
           opportunityDate: opportunity.docDate || '',
           branchCode: opportunity.branchCode || branchCode,
           branch: opportunity.branch || branch,
@@ -354,17 +371,17 @@ const Opportunity = ({ selectedRow }) => {
           status: detail.status || '',
           subCategory: detail.subCategory || ''
         })) || [
-          {
-            category: '',
-            description: '',
-            opportunityAmount: 0,
-            productName: '',
-            quantity: 1,
-            remarks: '',
-            status: '',
-            subCategory: ''
-          }
-        ];
+            {
+              category: '',
+              description: '',
+              opportunityAmount: 0,
+              productName: '',
+              quantity: 1,
+              remarks: '',
+              status: '',
+              subCategory: ''
+            }
+          ];
 
         setOpportunityDetails(details);
         setDetailErrors(
@@ -525,9 +542,9 @@ const Opportunity = ({ selectedRow }) => {
     const isDetailsValid = validateDetails();
 
     if (!isFormValid || !isDetailsValid) {
-      console.log("Error",isFormValid);
-      console.log("Details Error",isDetailsValid);
-      
+      console.log("Error", isFormValid);
+      console.log("Details Error", isDetailsValid);
+
       showToast('error', 'Please correct the highlighted fields');
       return;
     }
@@ -539,6 +556,7 @@ const Opportunity = ({ selectedRow }) => {
     const payload = {
       ...(editId && { id: editId }),
       address: formData.address,
+      remarks: formData.remarks,
       branch: branch,
       branchName: formData.branchName,
       branchCode: branchCode,
@@ -1173,6 +1191,27 @@ const Opportunity = ({ selectedRow }) => {
                     multiline
                   />
                 </div>
+                <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={remarksList}
+                    getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                    value={remarksList.find((item) => item.listOfValues === formData.remarks) || null}
+                    onChange={(event, newValue) =>
+                      handleInputChange({
+                        target: { name: 'remarks', value: newValue?.listOfValues || '' }
+                      })
+                    }
+                    isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={<span>Remarks</span>}
+                        size="small"
+                        fullWidth
+                      />
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="row mt-2">
@@ -1417,18 +1456,18 @@ const Opportunity = ({ selectedRow }) => {
                 columns={myOppColumns}
                 isListView={listView}
                 fileName={'My Opportunities'}
-                // sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']}
-                // handleDownloadPdf={() =>
-                //     handleDownloadPdf({
-                //         logo: listViewData[0]?.companyLogo,
-                //         columns: reportColumns,
-                //         data: rowData,
-                //         formData,
-                //         fileName: 'Lead Report',
-                //         loginUserName
-                //     })
-                // }
-                // handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+              // sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']}
+              // handleDownloadPdf={() =>
+              //     handleDownloadPdf({
+              //         logo: listViewData[0]?.companyLogo,
+              //         columns: reportColumns,
+              //         data: rowData,
+              //         formData,
+              //         fileName: 'Lead Report',
+              //         loginUserName
+              //     })
+              // }
+              // handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
               />
             </DialogContent>
           </Dialog>

@@ -42,6 +42,7 @@ import QuotationPDF from './QuotationPDF';
 // import FullScreenLoader from 'utils/FullScreenLoader';
 
 export const Quotation = ({ selectedRow }) => {
+  const [remarksList, setRemarksList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editId, setEditId] = useState('');
   const [orgId] = useState(localStorage.getItem('orgId'));
@@ -167,6 +168,7 @@ export const Quotation = ({ selectedRow }) => {
     getAllQuotation();
     getClientName();
     getCompanyDetails();
+    getRemarks();
   }, []);
   useEffect(() => {
     calculateTotals();
@@ -257,6 +259,7 @@ export const Quotation = ({ selectedRow }) => {
         getOpportunityName(lead.branchName, lead.clientName);
         setFormData({
           quoteId: lead.docId,
+          remarks: lead.remarks,
           quoteDate: lead.docDate,
           clientName: lead.clientName,
           branchName: lead.branchName,
@@ -364,6 +367,7 @@ export const Quotation = ({ selectedRow }) => {
       ...(editId && { id: editId }),
       active: true,
       address: formData.address,
+      remarks: formData.remarks,
       amountInWords: formData.amtInWords,
       branch: branch,
       branchCode: branchCode,
@@ -679,6 +683,20 @@ export const Quotation = ({ selectedRow }) => {
     inprocess: 0,
     rejected: 0
   });
+  const getRemarks = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Remarks&orgId=${orgId}`);
+      if (response.status === true) {
+        setRemarksList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
   const getKPIDetails = async () => {
     try {
       const response = await apiCalls('get', `/transaction/getQuotationCount?branchCode=${branchCode}&orgId=${orgId}`);
@@ -1082,6 +1100,27 @@ export const Quotation = ({ selectedRow }) => {
                   helperText={fieldErrors.iterations}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  options={remarksList}
+                  getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                  value={remarksList.find((item) => item.listOfValues === formData.remarks) || null}
+                  onChange={(event, newValue) =>
+                    handleInputChange({
+                      target: { name: 'remarks', value: newValue?.listOfValues || '' }
+                    })
+                  }
+                  isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={<span>Remarks</span>}
+                      size="small"
+                      fullWidth
+                    />
+                  )}
+                />
+              </div>
               {/* Tabs for Party State and Address */}
               <div className="row mt-2">
                 <Box sx={{ width: '100%' }}>
@@ -1199,7 +1238,7 @@ export const Quotation = ({ selectedRow }) => {
                                           disabled
                                           value={row.subCategory}
                                           onChange={(e) => handleDetailChange(index, 'subCategory', e.target.value)}
-                                          // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
+                                        // onBlur={(e) => validateDetailField(index, 'productName', e.target.value)}
                                         />
                                       </td>
                                       <td>

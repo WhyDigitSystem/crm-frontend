@@ -16,7 +16,8 @@ import {
   IconTags,
   IconTag,
   IconBox,
-  IconCurrencyRupee
+  IconCurrencyRupee,
+  IconTargetArrow
 } from '@tabler/icons-react';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 
@@ -181,6 +182,13 @@ const basicMasterChildren = [
     type: 'item',
     url: '/basicMaster/Advertisement',
     icon: IconShieldLock
+  },
+  hasScreenAccess('AM') && {
+    id: 'companyTarget',
+    title: 'CompanyTarget',
+    type: 'item',
+    url: '/basicMaster/CompanyTarget',
+    icon: IconTargetArrow
   },
 ].filter(Boolean);
 

@@ -36,6 +36,7 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import KPIBox from 'views/basicMaster/KPIBox';
 
 const Lead = ({ selectedRow }) => {
+  const [remarksList, setRemarksList] = useState([]);
   const [listViewData, setListViewData] = useState([]);
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -78,6 +79,7 @@ const Lead = ({ selectedRow }) => {
     probability: '',
     assignTo: '',
     stage: '',
+    remarks:'',
     finYear: finYear,
     orgId: orgId,
     branch: branch,
@@ -163,12 +165,27 @@ const Lead = ({ selectedRow }) => {
     getClientType();
     getIndustries();
     getAssignTo();
+    getRemarks();
   }, []);
   const getSource = async () => {
     try {
       const response = await apiCalls('get', `/master/getAllListValues?listDescription=Source&orgId=${orgId}`);
       if (response.status === true) {
         setSourceList(response.paramObjectsMap.listValues || []);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
+    }
+  };
+  const getRemarks = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllListValues?listDescription=Remarks&orgId=${orgId}`);
+      if (response.status === true) {
+        setRemarksList(response.paramObjectsMap.listValues || []);
       } else {
         console.error('API Error:', response);
         return response;
@@ -255,6 +272,7 @@ const Lead = ({ selectedRow }) => {
         // Map API fields to formData state
         setFormData({
           address: lead.address || '',
+          remarks: lead.remarks || '',
           docDate: lead.docDate || null,
           city: lead.city || '',
           clientName: lead.clientName || '',
@@ -531,6 +549,7 @@ const Lead = ({ selectedRow }) => {
     const payload = {
       ...(editId && { id: editId }),
       address: formData.address || '',
+      remarks: formData.remarks || '',
       branch: branch || '',
       branchCode: branchCode || '',
       city: formData.city || '',
@@ -623,6 +642,7 @@ const Lead = ({ selectedRow }) => {
       address: '',
       probability: '',
       assignTo: '',
+      remarks:'',
       finYear: finYear,
       orgId: orgId,
       branch: branch,
@@ -1345,6 +1365,27 @@ const Lead = ({ selectedRow }) => {
                         <MenuItem value="Closed Lost">Closed Lost</MenuItem>
                       </Select>
                     </FormControl>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <Autocomplete
+                      options={remarksList}
+                      getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
+                      value={remarksList.find((item) => item.listOfValues === formData.remarks) || null}
+                      onChange={(event, newValue) =>
+                        handleInputChange({
+                          target: { name: 'remarks', value: newValue?.listOfValues || '' }
+                        })
+                      }
+                      isOptionEqualToValue={(option, value) => option.listOfValues === value.listOfValues}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={<span>Remarks</span>}
+                          size="small"
+                          fullWidth
+                        />
+                      )}
+                    />
                   </div>
                   <div className="col-md-3 mb-3">
                     <Box display="flex" alignItems="center" gap={1}>

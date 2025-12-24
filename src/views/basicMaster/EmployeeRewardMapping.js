@@ -256,7 +256,7 @@ const EmployeeTargetAssignment = () => {
     { accessorKey: "employeeName", header: "Employee", size: 200 },
     { accessorKey: "rewardPolicy", header: "Reward Policy", size: 140 },
     { accessorKey: "periodType", header: "period Type", size: 140 },
-    { accessorKey: "targetBasis", header: "Target Basis", size: 140 },
+    { accessorKey: "type", header: "Target Basis", size: 140 },
     { accessorKey: "targetvalue", header: "Target Value", size: 140 },
     { accessorKey: "active", header: "Active", size: 80 },
   ];
