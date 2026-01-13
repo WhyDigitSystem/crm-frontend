@@ -199,11 +199,7 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
         ? ticket.status === 'Open' || ticket.status === 'InProgress'
         : ticket.status === statusFilter
   );
-  const ticketsWithIndex = filteredTicketsNew.map((t, i) => ({
-    ...t,
-    id: t.id || i + 1, // DataGrid needs a unique id
-    index: i + 1 // serial no resets after filter/search
-  }));
+
   return (
     <Box sx={{ height: 400, mt: 0 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
@@ -244,22 +240,22 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               sx={{ width: 250 }}
-              //   InputProps={{
-              //     startAdornment: (
-              //       <InputAdornment position="start">
-              //         <SearchIcon fontSize="small" />
-              //       </InputAdornment>
-              //     )
-              //   }}
+            //   InputProps={{
+            //     startAdornment: (
+            //       <InputAdornment position="start">
+            //         <SearchIcon fontSize="small" />
+            //       </InputAdornment>
+            //     )
+            //   }}
             />
           )}
         </Stack>
       </Stack>
       <DataGrid
-        rows={ticketsWithIndex}
+        rows={filteredTicketsNew}
         columns={[
           {
-            field: 'index',
+            field: 'id',
             headerName: '#',
             width: 110,
             headerAlign: 'center',
@@ -283,7 +279,7 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
             headerName: 'Status',
             width: 160,
             renderCell: (params) => {
-              if (loginUserName === 'ADMIN') {
+              if (loginUserName === 'WDS002') {
                 return (
                   <Select
                     value={params.value}
@@ -311,14 +307,14 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
               }
             }
           },
-          ...(loginUserName === 'ADMIN'
+          ...(loginUserName === 'WDS002'
             ? [
-                {
-                  field: 'userName',
-                  headerName: 'User',
-                  width: 160
-                }
-              ]
+              {
+                field: 'userName',
+                headerName: 'User',
+                width: 160
+              }
+            ]
             : []),
 
           {
@@ -345,12 +341,12 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
         sx={{
           borderRadius: 2,
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: 'black',
-            fontWeight: 'bold',
-            color: '#fff'
+            background: 'linear-gradient(145deg, #6a11cb, #2575fc)',
+            color: 'white',
+            fontWeight: 'bold'
           },
           '& .MuiDataGrid-row:hover': {
-            backgroundColor: '#fff'
+            backgroundColor: '#f0f4ff'
           },
           '& .MuiDataGrid-cell': {
             borderBottom: '1px solid #eee'

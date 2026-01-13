@@ -279,7 +279,7 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
             headerName: 'Status',
             width: 160,
             renderCell: (params) => {
-              if (loginUserName === 'EBSPL/ITADMIN') {
+              if (loginUserName === 'WDS002') {
                 return (
                   <Select
                     value={params.value}
@@ -307,7 +307,7 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
               }
             }
           },
-          ...(loginUserName === 'EBSPL/ITADMIN'
+          ...(loginUserName === 'WDS002'
             ? [
               {
                 field: 'userName',

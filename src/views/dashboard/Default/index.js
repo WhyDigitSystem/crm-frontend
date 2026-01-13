@@ -36,6 +36,7 @@ import SalesPerformance from '../SalesPerformance';
 import LeadSource from '../LeadSource';
 import CustomerGrouthDashboard from '../CustomerGrouthDashboard';
 import LoseGraph from '../LoseGraph';
+import StuckDeals from '../StuckDeals';
 
 export default function Dashboard() {
   const today = new Date().getDate();
@@ -73,49 +74,7 @@ export default function Dashboard() {
           <Grid item xs={12} md={4}>
             <Stack spacing={2}>
               {/* ================= STUCK DEALS ================= */}
-              <Card>
-                <CardContent>
-                  <Typography fontWeight={600}>
-                    ⏳ Stuck Deals
-                  </Typography>
-
-                  <Stack spacing={1} mt={1}>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="body2">
-                        Opportunities stuck &gt; 14 days
-                      </Typography>
-                      <Typography fontWeight={600}>
-                        {stuckOpp}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="body2">
-                        Quotations stuck &gt; 12 days
-                      </Typography>
-                      <Typography fontWeight={600}>
-                        {stuckOpp}
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="body2">
-                        Quotations awaiting response
-                      </Typography>
-                      <Typography fontWeight={600}>
-                        {stuckQuotes}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-
-                  <Button
-                    variant="text"
-                    size="small"
-                    sx={{ mt: 1, px: 0 }}
-                  >
-                    View Deals
-                  </Button>
-                </CardContent>
-              </Card>
+              <StuckDeals />
               {/* ================= FIELD STAFF SUMMARY ================= */}
               <SectionCard title="Field Staff Summary">
                 <Stack spacing={3}>
@@ -161,8 +120,8 @@ export default function Dashboard() {
             </Stack>
           </Grid>
         </ScreenGate>
-      </Grid>
-      <Grid container spacing={2} mt={2}>
+      {/* </Grid>
+      <Grid container spacing={2} mt={2}> */}
         <CustomerGrouthDashboard />
         <LoseGraph />
       </Grid>

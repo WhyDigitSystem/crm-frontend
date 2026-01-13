@@ -107,7 +107,7 @@ const Active = ({ selectedRow }) => {
         );
         setRowData(response?.paramObjectsMap?.myAgreeOrNotAgree || []);
       }
-      
+
     } catch (error) {
       console.error('Error:', error);
       setRowData([]);
@@ -121,7 +121,7 @@ const Active = ({ selectedRow }) => {
     docDate: dayjs(),
     active: true,
     address: '',
-    assignTo: '',
+    // assignTo: '',
     branchName: '',
     clientName: '',
     contactName: '',
@@ -151,7 +151,7 @@ const Active = ({ selectedRow }) => {
     startTime: '',
     status: '',
     type: '',
-    assignTo: ''
+    // assignTo: ''
   });
   const calculateDuration = (startTime, endTime) => {
     if (!startTime || !endTime) return '';
@@ -318,7 +318,7 @@ const Active = ({ selectedRow }) => {
           active: active.active === 'Active' ? true : false,
           venue: active.venue || '',
           address: active.address || '',
-          assignTo: active.assignTo || '',
+          // assignTo: active.assignTo || '',
           type: active.type || '',
           direction: active.direction || '',
           startDate: active.startDate ? dayjs(active.startDate) : null,
@@ -363,7 +363,29 @@ const Active = ({ selectedRow }) => {
   };
 
   const handleDateChange = (field, date) => {
-    setFormData((prev) => ({ ...prev, [field]: date }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: date };
+
+      // If Start Date changes, reset invalid dependent dates
+      if (field === 'startDate') {
+        if (prev.endDate && dayjs(prev.endDate).isBefore(date)) {
+          updated.endDate = null;
+        }
+        if (prev.followUpDate && dayjs(prev.followUpDate).isBefore(date)) {
+          updated.followUpDate = null;
+        }
+      }
+
+      return updated;
+    });
+
+    // Clear errors
+    setFieldErrors((prev) => ({
+      ...prev,
+      startDate: '',
+      endDate: '',
+      followUpDate: ''
+    }));
   };
   const handleTimeChange = (field, time) => {
     setFormData((prev) => ({ ...prev, [field]: time }));
@@ -396,7 +418,7 @@ const Active = ({ selectedRow }) => {
     setFormData({
       active: true,
       address: '',
-      assignTo: '',
+      // assignTo: '',
       branchName: '',
       clientName: '',
       contactName: '',
@@ -451,7 +473,7 @@ const Active = ({ selectedRow }) => {
       finYear: finYear,
       active: formData.active,
       address: formData.address || '',
-      assignTo: formData.assignTo || '',
+      // assignTo: formData.assignTo || '',
       branchName: formData.branchName || '',
       clientName: formData.clientName || '',
       contactName: formData.contactName || '',
@@ -895,11 +917,7 @@ const Active = ({ selectedRow }) => {
               <FormControl fullWidth variant="filled" size="small">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
-                    label={
-                      <span>
-                        Start Date <span className="asterisk">*</span>
-                      </span>
-                    }
+                    label="Start Date"
                     value={formData.startDate || null}
                     onChange={(date) => handleDateChange('startDate', date)}
                     slotProps={{
@@ -923,7 +941,14 @@ const Active = ({ selectedRow }) => {
                     label="End Date"
                     value={formData.endDate || null}
                     onChange={(date) => handleDateChange('endDate', date)}
-                    slotProps={{ textField: { size: 'small' } }}
+                    minDate={formData.startDate || undefined}
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        error: !!fieldErrors.endDate,
+                        helperText: fieldErrors.endDate
+                      }
+                    }}
                     format="DD-MM-YYYY"
                   />
                 </LocalizationProvider>
@@ -1055,7 +1080,7 @@ const Active = ({ selectedRow }) => {
                 </LocalizationProvider>
               </FormControl>
             </div>
-            <div className="col-md-3 mb-3">
+            {/* <div className="col-md-3 mb-3">
               <Autocomplete
                 options={assignToOptions}
                 getOptionLabel={(option) => (option?.assignedUser ? `${option.assignedUser} - ${option.assignedTo}` : '')}
@@ -1087,7 +1112,7 @@ const Active = ({ selectedRow }) => {
                   />
                 )}
               />
-            </div>
+            </div> */}
             {/* Description */}
             <div className="col-md-6 mb-3">
               <TextField

@@ -5,7 +5,8 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import AllTicketsTab from './AllTicketsTab';
-import RaiseTicketTab from './SupportTickets';
+import RaiseTicketTab from './RaiseTicket';
+// import RaiseTicketTab from './RaiseTicketTab';
 
 const getStatusChip = (status) => {
   switch (status) {
@@ -22,7 +23,7 @@ const getStatusChip = (status) => {
 
 const employees = ['Alice', 'Bob', 'Charlie', 'David'];
 
-const Customization = () => {
+const SupportTickets = () => {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(0);
   const [ticket, setTicket] = useState({
@@ -40,6 +41,7 @@ const Customization = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [email, setEmail] = useState(localStorage.getItem('email'));
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [detailDialog, setDetailDialog] = useState(false);
@@ -138,14 +140,15 @@ const Customization = () => {
       description: ticket.description,
       status: ticket.status,
       userName: loginUserName,
-      orgId: orgId,
-      createdBy: loginUserName
+      orgId: parseInt(orgId),
+      createdBy: loginUserName,
+      email: email,
     };
 
     try {
       setIsLoading(true);
 
-      const response = await apiCalls('put', 'ticketcontroller/createUpdateTicket', payload);
+      const response = await apiCalls('put', '/ticketcontroller/createUpdateTicket', payload);
 
       if (response.status === true && response.paramObjectsMap?.ticketVO?.id) {
         const ticketId = response.paramObjectsMap.ticketVO.id;
@@ -153,7 +156,6 @@ const Customization = () => {
         getTicketsByUser();
         getTicketsByOrgId();
 
-        // Upload image if available
         // Upload image if available
         if (ticket.image) {
           const formData = new FormData();
@@ -237,7 +239,7 @@ const Customization = () => {
       <Dialog open={open} onClose={handleToggle} maxWidth="md" fullWidth>
         <DialogTitle
           sx={{
-            background: 'black',
+            background: 'linear-gradient(145deg, #6a11cb, #2575fc)', // New gradient background
             color: '#fff',
             fontWeight: 'bold',
             textAlign: 'center',
@@ -276,7 +278,7 @@ const Customization = () => {
           {tab === 0 && <RaiseTicketTab ticket={ticket} handleChange={handleChange} handleSubmit={handleSubmit} />}
           {tab === 1 && (
             <AllTicketsTab
-              tickets={loginUserName === 'ADMIN' ? adminTickets : tickets}
+              tickets={loginUserName === 'WDS002' ? adminTickets : tickets}
               onRowClick={handleRowClick}
               getAllTickets={getTicketsByOrgId}
             />
@@ -310,4 +312,4 @@ const Customization = () => {
   );
 };
 
-export default Customization;
+export default SupportTickets;

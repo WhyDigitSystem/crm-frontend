@@ -294,6 +294,7 @@ export const Product = () => {
             <div className="col-md-3 mb-3">
               <TextField
                 label="Product Name"
+                required
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -309,6 +310,7 @@ export const Product = () => {
             <div className="col-md-3 mb-3">
               <TextField
                 label="Brand"
+                required
                 variant="outlined"
                 size="small"
                 fullWidth

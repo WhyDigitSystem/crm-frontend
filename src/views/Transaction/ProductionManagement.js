@@ -542,25 +542,6 @@ const ProductionManagement = ({ selectedRow }) => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" error={!!fieldErrors.relatedOrder}>
-                    <InputLabel>Related Order</InputLabel>
-                    <Select
-                      label="Related Order"
-                      name="relatedOrder"
-                      value={formData.relatedOrder}
-                      onChange={handleInputChange}
-                      // error={!!fieldErrors.source}
-                      // helperText={fieldErrors.source}
-                    >
-                      {relatedOrder.map((relatedOrder) => (
-                        <MenuItem key={relatedOrder} value={relatedOrder}>
-                          {relatedOrder}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={productName}
                     getOptionLabel={(option) => (option?.productName ? `${option.productName} - ${option.productCode}` : '')}

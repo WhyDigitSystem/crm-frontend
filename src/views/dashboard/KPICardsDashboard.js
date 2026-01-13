@@ -5,11 +5,14 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
-import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import CallOutlinedIcon from '@mui/icons-material/CallOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
+import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LinearProgress from '@mui/material/LinearProgress';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {
     Stack,
     Chip,
@@ -22,6 +25,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Box
 } from '@mui/material';
 import apiCalls from 'apicall';
 import SectionCard from './Default/SectionCard';
@@ -163,53 +167,110 @@ const KPICardsDashboard = () => {
             <Grid container spacing={2} mt={2}>
                 <ScreenGate screen="KPIF">
                     <Grid item xs={12} md={8}>
-                        <SectionCard title="Lead to Order Conversion">
-                            <Stack spacing={3}>
-                                {/* Pipeline Flow with Numbers */}
-                                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                                    <Stack alignItems="center">
-                                        <Typography variant="h6">{`${summaryCard.totalLeads}`}</Typography>
-                                        <Chip label="Leads" color="primary" />
-                                    </Stack>
-                                    <ArrowForwardIosOutlinedIcon fontSize="small" />
+                        <SectionCard title="Lead Journey Overview">
+                            <Stack spacing={2}>
 
-                                    <Stack alignItems="center">
-                                        <Typography variant="h6">{`${summaryCard.totalOpportunites}`}</Typography>
-                                        <Chip label="Opportunities" color="info" />
-                                    </Stack>
-                                    <ArrowForwardIosOutlinedIcon fontSize="small" />
-                                    <Stack alignItems="center">
-                                        <Typography variant="h6"><Typography variant="h6">{`${summaryCard.totalQuotations}`}</Typography></Typography>
-                                        <Chip label="Quotations" color="warning" />
-                                    </Stack>
-                                    <ArrowForwardIosOutlinedIcon fontSize="small" />
-                                    <Stack alignItems="center">
-                                        <Typography variant="h6"><Typography variant="h6">{`${summaryCard.totalSalesorder}`}</Typography></Typography>
-                                        <Chip label="Sales Orders" color="success" />
-                                    </Stack>
-                                </Stack>
-                                {/* Conversion Summary */}
+                                {/* JOURNEY STRIP */}
                                 <Stack
                                     direction="row"
-                                    spacing={2}
                                     alignItems="center"
+                                    justifyContent="space-between"
                                     sx={{
-                                        bgcolor: '#f1f5f9',
-                                        p: 2,
-                                        borderRadius: 2
+                                        px: 3,
+                                        py: 2,
+                                        borderRadius: 3,
+                                        background: 'linear-gradient(135deg, #f8fafc, #eef2ff)',
+                                        border: '1px solid #e5e7eb'
                                     }}
                                 >
-                                    <InfoOutlinedIcon color="primary" />
-                                    <Typography fontWeight={600}>
-                                        Conversion Rate:
+                                    {[
+                                        { label: 'Leads', value: summaryCard.totalLeads },
+                                        { label: 'Opportunities', value: summaryCard.totalOpportunites },
+                                        { label: 'Quotations', value: summaryCard.totalQuotations },
+                                        { label: 'Sales Orders', value: summaryCard.totalSalesorder }
+                                    ].map((step, index, arr) => {
+                                        const isActive = step.value > 0;
+
+                                        return (
+                                            <Box
+                                                key={step.label}
+                                                sx={{ display: 'flex', alignItems: 'center' }}
+                                            >
+                                                {/* STEP */}
+                                                <Stack spacing={0.5} alignItems="center">
+                                                    <Box
+                                                        sx={{
+                                                            px: 2,
+                                                            py: 0.75,
+                                                            borderRadius: 20,
+                                                            fontSize: 14,
+                                                            fontWeight: 700,
+                                                            minWidth: 56,
+                                                            textAlign: 'center',
+                                                            bgcolor: isActive ? '#22c55e' : '#e5e7eb',
+                                                            color: isActive ? '#fff' : '#475569'
+                                                        }}
+                                                    >
+                                                        {step.value}
+                                                    </Box>
+                                                    <Typography
+                                                        variant="caption"
+                                                        fontWeight={600}
+                                                        color={isActive ? 'text.primary' : 'text.secondary'}
+                                                    >
+                                                        {step.label}
+                                                    </Typography>
+                                                </Stack>
+
+                                                {/* MODERN CHEVRON */}
+                                                {index < arr.length - 1 && (
+                                                    <Box
+                                                        sx={{
+                                                            mx: 2,
+                                                            width: 18,
+                                                            height: 2,
+                                                            bgcolor: '#cbd5f5',
+                                                            position: 'relative',
+                                                            '&::after': {
+                                                                content: '""',
+                                                                position: 'absolute',
+                                                                right: -5,
+                                                                top: -4,
+                                                                borderTop: '5px solid transparent',
+                                                                borderBottom: '5px solid transparent',
+                                                                borderLeft: '6px solid #cbd5f5'
+                                                            }
+                                                        }}
+                                                    />
+                                                )}
+                                            </Box>
+                                        );
+                                    })}
+                                </Stack>
+
+                                {/* INSIGHT */}
+                                <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    spacing={2}
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: '#f0fdf4',
+                                        border: '1px solid #bbf7d0'
+                                    }}
+                                >
+                                    <Typography variant="body2" color="text.secondary">
+                                        Final Conversion
                                     </Typography>
-                                    <Typography fontWeight={700} color="success.main">
-                                        <Typography variant="h6">{`${summaryCard.percentage}%`}</Typography>
+                                    <Typography variant="h6" fontWeight={800} color="success.main">
+                                        {summaryCard.percentage}%
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
-                                        (Leads to Sales Orders)
+                                        of leads converted into sales orders
                                     </Typography>
                                 </Stack>
+
                             </Stack>
                         </SectionCard>
                     </Grid>

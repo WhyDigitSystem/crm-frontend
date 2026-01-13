@@ -1,8 +1,8 @@
 // assets
 import {
-    IconUsers,
-    IconCurrencyRupee,
-    IconReceipt
+    IconCash,           // Finance folder
+    IconReceipt,        // Expense Claim
+    IconCheckbox        // Expense Approval
 } from '@tabler/icons-react';
 
 // screen access utility
@@ -25,8 +25,8 @@ const FinanceChildren = [
         title: 'Expense Approval',
         type: 'item',
         url: '/Expense/ExpenseApproval',
-        icon: IconReceipt
-    },
+        icon: IconCheckbox
+    }
 ].filter(Boolean);
 
 const FinanceManagement =
@@ -37,9 +37,9 @@ const FinanceManagement =
             children: [
                 {
                     id: 'financeManagement',
-                    title: 'Finance Mgmt',
+                    title: 'Finance',
                     type: 'collapse',
-                    icon: IconCurrencyRupee,
+                    icon: IconCash,
                     children: FinanceChildren
                 }
             ]

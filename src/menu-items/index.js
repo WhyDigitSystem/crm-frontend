@@ -1,20 +1,21 @@
-// getMenuItems.js
-
-import admin from './admin';
 import calendar from './calendar';
-import basicMaster from './basicMaster';
 import Documents from './Documents';
 import companySetup from './companySetup';
-import dashboard from './dashboard';
 import Activities from './Activities';
-import Transaction from './Transaction';
 import rate from './RateManagement';
 import DealerManagement from './DealerManagement';
+
+import dashboard from './dashboard';
+import Transaction from './Transaction';
+import admin from './admin';
 import NominationEnquiries from './NominationEnquiries';
 import Reports from './Reports';
 import Tracking from './Tracking';
 import FinanceManagement from './FinanceManagement';
 import announcement from './announcement';
+import organization from './organization';
+import performance from './performance';
+import Operations from './operations';
 
 
 
@@ -26,19 +27,22 @@ const getMenuItems = () => {
     items: filterValid([
       dashboard,
       announcement,
-      Activities,
       Transaction,
+      Operations,
+      performance,
       FinanceManagement,
-      rate,
-      DealerManagement,
       Tracking,
-      NominationEnquiries,
       Reports,
-      calendar,
-      companySetup,
+      organization,
       admin,
-      basicMaster,
-      Documents,
+      // NominationEnquiries,
+      // calendar,
+      // Activities,
+      // rate,
+      // DealerManagement,
+      // companySetup,
+      // basicMaster,
+      // Documents,
     ])
   };
 };

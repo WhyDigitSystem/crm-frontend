@@ -79,7 +79,7 @@ const Lead = ({ selectedRow }) => {
     probability: '',
     assignTo: '',
     stage: '',
-    remarks:'',
+    remarks: '',
     finYear: finYear,
     orgId: orgId,
     branch: branch,
@@ -642,7 +642,7 @@ const Lead = ({ selectedRow }) => {
       address: '',
       probability: '',
       assignTo: '',
-      remarks:'',
+      remarks: '',
       finYear: finYear,
       orgId: orgId,
       branch: branch,
@@ -1690,15 +1690,15 @@ const Lead = ({ selectedRow }) => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
                                       Designation *
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
+                                    {/* <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
                                       DOB
                                     </th>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
                                       Anniversary
                                     </th>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '140px' }}>
-                                      Workiversary
-                                    </th>
+                                      Work Anniversary
+                                    </th> */}
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1790,7 +1790,7 @@ const Lead = ({ selectedRow }) => {
                                           helperText={contactErrors[index]?.designation}
                                         />
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <DatePicker
                                           format="DD-MM-YYYY"
                                           value={contact.dob ? dayjs(contact.dob, "DD-MM-YYYY") : null}
@@ -1831,7 +1831,7 @@ const Lead = ({ selectedRow }) => {
                                           }
                                           slotProps={{ textField: { size: "small", fullWidth: true } }}
                                         />
-                                      </td>
+                                      </td> */}
                                     </tr>
                                   ))}
                                 </tbody>

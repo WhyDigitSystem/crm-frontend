@@ -1,16 +1,13 @@
 // assets
 import {
   IconArrowsExchange,
-  IconPhone,
-  IconWorld,
-  IconFileText,
-  IconShoppingCart,
-  IconUsers,
-  IconBuildingFactory, // Production Management
-  IconBuildingWarehouse, // Inventory Management
-  IconTruckDelivery, // Supplier Management
-  IconCertificate
+  IconPhoneCall,        // Lead, Activity
+  IconBulb,             // Opportunity
+  IconFileText,         // Quotation
+  IconShoppingCart,     // Sales Order
+  IconCalendarTime      // Schedule
 } from '@tabler/icons-react';
+
 // screen access utility
 const hasScreenAccess = (screenId) => {
   const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
@@ -25,14 +22,14 @@ const transactionChildren = [
     title: 'Lead',
     type: 'item',
     url: '/Transaction/Lead',
-    icon: IconPhone
+    icon: IconPhoneCall
   },
   hasScreenAccess('OPTY') && {
     id: 'Opportunity',
     title: 'Opportunity',
     type: 'item',
     url: '/Transaction/Opportunity',
-    icon: IconWorld
+    icon: IconBulb
   },
   hasScreenAccess('QT') && {
     id: 'Quotation',
@@ -42,64 +39,43 @@ const transactionChildren = [
     icon: IconFileText
   },
   hasScreenAccess('SO') && {
-    id: 'SaleOrder',
+    id: 'SalesOrder',
     title: 'Sales Order',
     type: 'item',
     url: '/Transaction/SaleOrder',
     icon: IconShoppingCart
   },
-  hasScreenAccess('CD') && {
-    id: 'CustomerDetails',
-    title: 'Customer Details',
+  hasScreenAccess('AC') && {
+    id: 'Activity',
+    title: 'Activity',
     type: 'item',
-    url: '/Transaction/CustomerDetails',
-    icon: IconUsers
+    url: '/Activities/Active',
+    icon: IconPhoneCall
   },
-  hasScreenAccess('PM') && {
-    id: 'ProductionManagement',
-    title: 'Production',
+  hasScreenAccess('SD') && {
+    id: 'Schedule',
+    title: 'Schedule',
     type: 'item',
-    url: '/Transaction/ProductionManagement',
-    icon: IconBuildingFactory
-  },
-  hasScreenAccess('IM') && {
-    id: 'InventoryManagement',
-    title: 'Inventory',
-    type: 'item',
-    url: '/Transaction/InventoryManagement',
-    icon: IconBuildingWarehouse
-  },
-  hasScreenAccess('SM') && {
-    id: 'SupplierManagement',
-    title: 'Supplier',
-    type: 'item',
-    url: '/Transaction/SupplierManagement',
-    icon: IconTruckDelivery
-  },
-  hasScreenAccess('QM') && {
-    id: 'QualityManagement',
-    title: 'Quality',
-    type: 'item',
-    url: '/Transaction/QualityManagement',
-    icon: IconCertificate
+    url: '/Activities/Schedule',
+    icon: IconCalendarTime
   }
 ].filter(Boolean);
 
 const Transaction =
   transactionChildren.length > 0
     ? {
-        id: 'Transaction',
-        type: 'group',
-        children: [
-          {
-            id: 'Transaction',
-            title: 'Sales & Distribution',
-            type: 'collapse',
-            icon: IconArrowsExchange,
-            children: transactionChildren
-          }
-        ]
-      }
+      id: 'Transaction',
+      type: 'group',
+      children: [
+        {
+          id: 'SalesDistribution',
+          title: 'Sales & Dist',
+          type: 'collapse',
+          icon: IconArrowsExchange,
+          children: transactionChildren
+        }
+      ]
+    }
     : null;
 
 export default Transaction;

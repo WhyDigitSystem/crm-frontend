@@ -28,24 +28,24 @@ const NavCollapse = ({ menu, level }) => {
     setOpen(!open);
     setSelected(!selected ? menu.id : null);
     if (
-      // menu?.id !== 'authentication' &&
-      // menu?.id !== 'icons' &&
-      // menu?.id !== 'rolesAndResponsibilities' &&
-      menu?.id !== 'calendar' &&
-      menu?.id !== 'rate' &&
-      menu?.id !== 'companySetup' &&
-      menu?.id !== 'rolesAndResponsibilities' &&
-      menu?.id !== 'basicMastersCollapse' &&
-      menu?.id !== 'Documents' &&
-      menu?.id !== 'finance' &&
-      menu?.id !== 'Activities' &&
-      menu?.id !== 'Transaction' &&
-      menu.id !== 'rateCollapse' &&
-      menu.id !== 'dealerCollapse' &&
+      menu?.id !== 'SalesDistribution' &&
+      menu?.id !== 'Operations' &&
+      menu?.id !== 'performanceCollapse' &&
       menu.id !== 'financeManagement' &&
+      menu.id !== 'operationsCollapse' &&
+      menu.id !== 'organizationCollapse' &&
+      menu?.id !== 'Documents' &&
       menu.id !== 'TrackingCollapse' &&
-      menu.id !== 'Reports' &&
-      menu.id !== 'nomination-enquiries-collapse'
+      menu?.id !== 'setup' &&
+      menu?.id !== 'basicMaster' &&
+      menu?.id !== 'documents' &&
+      menu?.id !== 'users' &&
+      menu.id !== 'Reports'
+      // menu?.id !== 'basicMastersCollapse' &&
+      // menu?.id !== 'Activities' &&
+      // menu.id !== 'rateCollapse' &&
+      // menu.id !== 'dealerCollapse' &&
+      // menu.id !== 'nomination-enquiries-collapse' &&
     ) {
       navigate(menu.children[0]?.url);
     }
@@ -133,16 +133,16 @@ const NavCollapse = ({ menu, level }) => {
           }
           secondary={
             menu.caption && (
-              <Typography variant="caption" sx={{ ...theme.typography.subMenuCaption }}  color="black" display="block" gutterBottom>
+              <Typography variant="caption" sx={{ ...theme.typography.subMenuCaption }} color="black" display="block" gutterBottom>
                 {menu.caption}
               </Typography>
             )
           }
         />
         {open ? (
-          <IconChevronUp stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto',color:'black' }} />
+          <IconChevronUp stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto', color: 'black' }} />
         ) : (
-          <IconChevronDown stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto',color:'black' }} />
+          <IconChevronDown stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto', color: 'black' }} />
         )}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
