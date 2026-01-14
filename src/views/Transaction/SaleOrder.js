@@ -1315,7 +1315,7 @@ const SalesOrder = ({ selectedRow }) => {
                                                   productName: newValue.productName || '',
                                                   category: newValue.category || '',
                                                   subCategory: newValue.subCategory || '',
-                                                  sellingPrice: newValue.price || ''
+                                                  sellingPrice: newValue.amount || ''
                                                 };
                                                 updatedOpportunitiesErrors[index] = {
                                                   ...updatedOpportunitiesErrors[index],

@@ -49,9 +49,10 @@ export const Quotation = ({ selectedRow }) => {
   const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [branch] = useState(localStorage.getItem('branch'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
+  const [finYear] = useState(localStorage.getItem('finYear'));
   const [listView, setListView] = useState(true);
   const [listViewData, setListViewData] = useState([]);
-  const [finYear] = useState(new Date().getFullYear().toString());
+  // const [finYear] = useState(new Date().getFullYear().toString());
   const [isDocIdLoading, setIsDocIdLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [pdfData, setPdfData] = useState([]);
@@ -470,31 +471,31 @@ export const Quotation = ({ selectedRow }) => {
       return error;
     }
   };
-  const getSellingPrice = async (productName, index) => {
-    if (!productName || index === undefined) return;
-    try {
-      const response = await apiCalls('get', `/transaction/getSellingPriceFromPriceMaster?orgId=${orgId}&productName=${productName}`);
-      const priceArray = response?.paramObjectsMap?.priceDetails;
+  // const getSellingPrice = async (productName, index) => {
+  //   if (!productName || index === undefined) return;
+  //   try {
+  //     const response = await apiCalls('get', `/transaction/getSellingPriceFromPriceMaster?orgId=${orgId}&productName=${productName}`);
+  //     const priceArray = response?.paramObjectsMap?.priceDetails;
 
-      if (response.status === true && Array.isArray(priceArray) && priceArray.length > 0) {
-        const sellingPrice = priceArray[0]?.sellingPrice;
+  //     if (response.status === true && Array.isArray(priceArray) && priceArray.length > 0) {
+  //       const sellingPrice = priceArray[0]?.sellingPrice;
 
-        // 🔥 FIX: update only `sellingPrice`, keep rest of the row intact
-        setQuotationPrice((prevRows) => {
-          const updatedRows = [...prevRows];
-          updatedRows[index] = {
-            ...updatedRows[index],
-            sellingPrice: sellingPrice
-          };
-          return updatedRows;
-        });
-      } else {
-        console.error('API Error: No valid price data found');
-      }
-    } catch (error) {
-      console.error('Error fetching price:', error);
-    }
-  };
+  //       // 🔥 FIX: update only `sellingPrice`, keep rest of the row intact
+  //       setQuotationPrice((prevRows) => {
+  //         const updatedRows = [...prevRows];
+  //         updatedRows[index] = {
+  //           ...updatedRows[index],
+  //           sellingPrice: sellingPrice
+  //         };
+  //         return updatedRows;
+  //       });
+  //     } else {
+  //       console.error('API Error: No valid price data found');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching price:', error);
+  //   }
+  // };
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
 
@@ -1191,17 +1192,19 @@ export const Quotation = ({ selectedRow }) => {
                                                   ...updatedRows[index],
                                                   productName: newValue.productName || '',
                                                   category: newValue.category || '',
-                                                  subCategory: newValue.subCategory || ''
+                                                  subCategory: newValue.subCategory || '',
+                                                  sellingPrice: newValue.price || ''
                                                 };
                                                 updatedRowsError[index] = {
                                                   ...updatedRowsError[index],
                                                   productName: '',
                                                   category: '',
-                                                  subCategory: ''
+                                                  sellingPrice: '',
+                                                  subCategory: '',
                                                 };
                                                 setQuotationPrice(updatedRows);
                                                 setQuotationPriceErrors(updatedRowsError);
-                                                getSellingPrice(newValue.productName, index);
+                                                // getSellingPrice(newValue.productName, index);
                                               } else {
                                                 updatedRows[index] = {
                                                   ...updatedRows[index],
