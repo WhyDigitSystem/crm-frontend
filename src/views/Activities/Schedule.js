@@ -862,24 +862,20 @@ const Schedule = ({ selectedRow }) => {
               {/* Assign To */}
               <div className="col-md-3 mb-3">
                 <Autocomplete
-                  size="small"
-                  fullWidth
                   options={assignedToOptions}
-                  getOptionLabel={(option) => option.assignedUser || ''}
-                  value={assignedToOptions.find((opt) => opt.assignedTo === formData.assignedTo) || null}
+                  getOptionLabel={(option) => (option?.assignedUser ? `${option.assignedUser} - ${option.assignedTo}` : '')}
+                  value={assignedToOptions.find((item) => item.assignedUser === formData.assignedTo) || null}
                   onChange={(event, newValue) => {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        assignedTo: newValue.assignedTo,
-                        assignedName: newValue.assignedUser
+                        assignedTo: newValue.assignedUser,
+                        assignedName: newValue.assignedTo
                       }));
+                      setFieldErrors((prev) => ({ ...prev, assignedTo: '' }));
                     } else {
-                      setFormData((prev) => ({
-                        ...prev,
-                        assignedTo: '',
-                        assignedName: ''
-                      }));
+                      setFormData((prev) => ({ ...prev, assignedTo: '' }));
+                      setFieldErrors((prev) => ({ ...prev, assignedTo: 'Assigned To is required' }));
                     }
                   }}
                   renderInput={(params) => (
@@ -890,30 +886,14 @@ const Schedule = ({ selectedRow }) => {
                           Assign To <span className="asterisk">*</span>
                         </span>
                       }
-                      variant="outlined"
+                      size="small"
                       error={!!fieldErrors.assignedTo}
                       helperText={fieldErrors.assignedTo}
+                      fullWidth
                     />
                   )}
                 />
               </div>
-
-              {/* Assigned Name */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Assigned Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="assignedName"
-                  value={formData.assignedName}
-                  disabled
-                  InputProps={{
-                    style: { backgroundColor: '#f5f5f5' }
-                  }}
-                />
-              </div>
-
               {/* Image Upload */}
               <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>

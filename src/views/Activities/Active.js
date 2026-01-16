@@ -918,6 +918,7 @@ const Active = ({ selectedRow }) => {
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     label="Start Date"
+                    disablePast
                     value={formData.startDate || null}
                     onChange={(date) => handleDateChange('startDate', date)}
                     slotProps={{
@@ -1072,6 +1073,7 @@ const Active = ({ selectedRow }) => {
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     label="Follow-up Date"
+                    disablePast
                     value={formData.followUpDate || null}
                     onChange={(date) => handleDateChange('followUpDate', date)}
                     slotProps={{ textField: { size: 'small' } }}

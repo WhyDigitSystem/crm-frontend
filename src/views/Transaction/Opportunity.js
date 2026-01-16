@@ -105,7 +105,7 @@ const Opportunity = ({ selectedRow }) => {
       productName: '',
       quantity: 1,
       remarks: '',
-      status: '',
+      status: 'New',
       subCategory: ''
     }
   ]);
@@ -637,9 +637,9 @@ const Opportunity = ({ selectedRow }) => {
         description: '',
         opportunityAmount: 0,
         productName: '',
-        quantity: 1,
+        quantity: 0,
         remarks: '',
-        status: '',
+        status: 'New',
         subCategory: ''
       }
     ]);
@@ -690,7 +690,7 @@ const Opportunity = ({ selectedRow }) => {
         productName: '',
         quantity: 1,
         remarks: '',
-        status: '',
+        status: 'New',
         subCategory: ''
       }
     ]);

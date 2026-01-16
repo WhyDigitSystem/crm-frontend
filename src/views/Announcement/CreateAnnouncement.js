@@ -146,6 +146,7 @@ const CreateAnnouncement = ({ open, onClose, initialData = null, onSaved }) => {
                         <DatePicker
                             label="Valid Till"
                             format="DD-MM-YYYY"
+                            disablePast
                             value={formData.validTill ? dayjs(formData.validTill) : null}
                             onChange={(newValue) => setFormData((prev) => ({ ...prev, validTill: newValue ? newValue.format("YYYY-MM-DD") : "" }))}
                             slotProps={{ textField: { fullWidth: true } }}

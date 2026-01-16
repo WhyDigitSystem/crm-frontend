@@ -815,7 +815,12 @@ function QuotationReport() {
                                 size="small"
                                 clickable
                                 onClick={() => handleIterationClick(doc.docId, doc.count)}
-                                sx={{ fontWeight: 600 }}
+                                sx={{
+                                  fontWeight: 600,
+                                  "&:hover .MuiChip-label": {
+                                    color: "#000",
+                                  },
+                                }}
                               />
                             </TableCell>
                           </>

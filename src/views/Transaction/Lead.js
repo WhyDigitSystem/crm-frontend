@@ -624,6 +624,7 @@ const Lead = ({ selectedRow }) => {
 
   const handleClear = () => {
     setCompanyLogo(null);
+    getLeadDocId();
     setFormData({
       docDate: dayjs(),
       source: '',
@@ -683,7 +684,6 @@ const Lead = ({ selectedRow }) => {
       }
     ]);
     setEditId('');
-    getLeadDocId();
   };
 
   const handleAddBranch = () => {

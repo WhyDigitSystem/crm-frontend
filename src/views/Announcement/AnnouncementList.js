@@ -208,7 +208,8 @@ const AnnouncementList = () => {
                 )}
             </Box>
 
-            <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 2 }}>
+            <Tabs value={tabValue} variant="scrollable" scrollButtons="auto"
+                allowScrollButtonsMobile onChange={(e, v) => setTabValue(v)} sx={{ mb: 2 }}>
                 <Tab label={`All (${getCount("ALL")})`} value="ALL" />
                 {tabData.map((t) => (
                     <Tab

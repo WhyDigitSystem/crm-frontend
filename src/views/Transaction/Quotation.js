@@ -756,7 +756,7 @@ export const Quotation = ({ selectedRow }) => {
                   <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                 </>
               )}
-              {!listView && quotaionById && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />}
+              {!listView && editId && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />}
             </div>
           )}
           {listView && !isLoading ? (

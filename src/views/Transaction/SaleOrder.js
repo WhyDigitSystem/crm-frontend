@@ -37,6 +37,7 @@ const SalesOrder = ({ selectedRow }) => {
   const [clientNameList, setClientNameList] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [quotationList, setQuotationList] = useState([]);
+  const [getByIdSaleOrder, setGetByIdSaleOrder] = useState([]);
   const [value, setValue] = useState(0);
   useEffect(() => {
     if (selectedRow) {
@@ -48,7 +49,7 @@ const SalesOrder = ({ selectedRow }) => {
 
   const [formData, setFormData] = useState({
     address: '',
-    remarks:'',
+    remarks: '',
     salesDate: dayjs(),
     branch: branch,
     branchCode: branchCode,
@@ -341,7 +342,7 @@ const SalesOrder = ({ selectedRow }) => {
       if (response.status) {
         setListView(false);
         const salesOrder = response.paramObjectsMap.salesOrderVO;
-
+        setGetByIdSaleOrder(response.paramObjectsMap.salesOrderVO.status)
         if (!salesOrder) {
           showToast('error', 'Sales order not found');
           return;
@@ -939,6 +940,7 @@ const SalesOrder = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={clientNameList}
+                    disabled={getByIdSaleOrder === 'Completed'}
                     getOptionLabel={(option) => (option?.clientName ? `${option.clientName}` : '')}
                     value={clientNameList.find((item) => item.clientName === formData.clientName) || null}
                     onChange={(event, newValue) => {
@@ -973,6 +975,7 @@ const SalesOrder = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={branchList}
+                    disabled={getByIdSaleOrder === 'Completed'}
                     getOptionLabel={(option) => (option?.branch ? `${option.branch}` : '')}
                     value={branchList.find((item) => item.branch === formData.branchName) || null}
                     onChange={(event, newValue) => {
@@ -1039,6 +1042,7 @@ const SalesOrder = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={quotationList}
+                    disabled={getByIdSaleOrder === 'Completed'}
                     getOptionLabel={(option) => (option?.docId ? `${option.docId}` : '')}
                     value={quotationList.find((item) => item.docId === formData.quotationId) || null}
                     onChange={(event, newValue) => {
@@ -1212,6 +1216,7 @@ const SalesOrder = ({ selectedRow }) => {
                     <Select
                       label="Status"
                       value={formData.status}
+                      disabled={getByIdSaleOrder === 'Completed'}
                       onChange={(e) =>
                         handleInputChange({
                           target: { name: 'status', value: e.target.value }
@@ -1229,6 +1234,7 @@ const SalesOrder = ({ selectedRow }) => {
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     options={remarksList}
+                    disabled={getByIdSaleOrder === 'Completed'}
                     getOptionLabel={(option) => (option?.listOfValues ? `${option.listOfValues}` : '')}
                     value={remarksList.find((item) => item.listOfValues === formData.remarks) || null}
                     onChange={(event, newValue) =>
@@ -1304,6 +1310,7 @@ const SalesOrder = ({ selectedRow }) => {
                                         <Box sx={{ minWidth: 150, flexGrow: 1 }}>
                                           <Autocomplete
                                             options={productList}
+                                            disabled={getByIdSaleOrder === 'Completed'}
                                             getOptionLabel={(option) => option?.productName || ''}
                                             value={productList.find((item) => item.productName === detail.productName) || null}
                                             onChange={(event, newValue) => {
@@ -1374,7 +1381,7 @@ const SalesOrder = ({ selectedRow }) => {
                                           fullWidth
                                           size="small"
                                           type="number"
-                                          // disabled
+                                          disabled={getByIdSaleOrder === 'Completed'}
                                           value={detail.sellingPrice}
                                           onChange={(e) => handleDetailChange(index, 'sellingPrice', e.target.value)}
                                           onBlur={(e) => validateDetailField(index, 'sellingPrice', e.target.value)}
@@ -1390,6 +1397,7 @@ const SalesOrder = ({ selectedRow }) => {
                                           size="small"
                                           type="number"
                                           value={detail.qty}
+                                          disabled={getByIdSaleOrder === 'Completed'}
                                           onChange={(e) => handleDetailChange(index, 'qty', e.target.value)}
                                           onBlur={(e) => validateDetailField(index, 'qty', e.target.value)}
                                           error={!!detailErrors[index]?.qty}
@@ -1402,6 +1410,7 @@ const SalesOrder = ({ selectedRow }) => {
                                           fullWidth
                                           size="small"
                                           type="number"
+                                          disabled={getByIdSaleOrder === 'Completed'}
                                           value={detail.discount}
                                           onChange={(e) => handleDetailChange(index, 'discount', e.target.value)}
                                           onBlur={(e) => validateDetailField(index, 'discount', e.target.value)}
@@ -1475,6 +1484,7 @@ const SalesOrder = ({ selectedRow }) => {
                             fullWidth
                             size="small"
                             label="Narration"
+                            disabled={getByIdSaleOrder === 'Completed'}
                             value={formData.narration}
                             onChange={(e) =>
                               setFormData((prev) => ({
