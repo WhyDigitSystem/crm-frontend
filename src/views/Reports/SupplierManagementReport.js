@@ -108,57 +108,56 @@ function SupplierManagementReport() {
     return 'success'; // Green otherwise
   };
 
-const reportColumns = [
-  {
-    accessorKey: 'docId',
-    header: 'Doc ID',
-    size: 100,
-    Cell: ({ row }) => {
-      const { docId, screenCode } = row.original;
-      return (
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            handleDocClick(docId, screenCode);
-          }}
-          style={{
-            color: '#f59e0b',
-            textDecoration: 'none',
-            cursor: 'pointer',
-            transition: 'color 0.2s'
-          }}
-          onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
-          onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
-        >
-          {docId}
-        </a>
-      );
-    }
-  },
-  { accessorKey: 'docDate', header: 'Date', size: 120 },
-  { accessorKey: 'companyName', header: 'Company Name', size: 220 },
-  { accessorKey: 'contactPerson', header: 'Contact Person', size: 180 },
-  { accessorKey: 'gstNumber', header: 'GST No.', size: 150 },
-  { accessorKey: 'state', header: 'State', size: 120 },
-  { accessorKey: 'address', header: 'Address', size: 220 },
-  { accessorKey: 'phone', header: 'Phone', size: 150 },
-  { accessorKey: 'paymentTerms', header: 'Email', size: 220 },
-  {
-    accessorKey: 'creditLimit',
-    header: 'Credit Limit',
-    size: 150,
-    Cell: ({ cell }) => {
-      const value = parseFloat(cell.getValue() || 0);
-      return value.toLocaleString('en-IN', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    }
-  },
-  { accessorKey: 'paymentTerms', header: 'Payment Terms', size: 150 }
-];
-
+  const reportColumns = [
+    {
+      accessorKey: 'docId',
+      header: 'Doc ID',
+      size: 100,
+      Cell: ({ row }) => {
+        const { docId, screenCode } = row.original;
+        return (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDocClick(docId, screenCode);
+            }}
+            style={{
+              color: '#f59e0b',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
+            onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
+          >
+            {docId}
+          </a>
+        );
+      }
+    },
+    { accessorKey: 'docDate', header: 'Date', size: 120 },
+    { accessorKey: 'companyName', header: 'Company Name', size: 220 },
+    { accessorKey: 'contactPerson', header: 'Contact Person', size: 180 },
+    { accessorKey: 'gstNumber', header: 'GST No.', size: 150 },
+    { accessorKey: 'state', header: 'State', size: 120 },
+    { accessorKey: 'address', header: 'Address', size: 220 },
+    { accessorKey: 'phone', header: 'Phone', size: 150 },
+    { accessorKey: 'paymentTerms', header: 'Email', size: 220 },
+    {
+      accessorKey: 'creditLimit',
+      header: 'Credit Limit',
+      size: 150,
+      Cell: ({ cell }) => {
+        const value = parseFloat(cell.getValue() || 0);
+        return value.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+    },
+    { accessorKey: 'paymentTerms', header: 'Payment Terms', size: 150 }
+  ];
 
   const handleGo = async () => {
     const errors = {};
@@ -515,15 +514,31 @@ const reportColumns = [
             sx: { p: 0, m: 0, borderRadius: 1 }
           }}
         >
-          <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
+          <DialogTitle
+            sx={{
+              cursor: 'move',
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '15px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
+            }}
+            id="draggable-dialog-title"
+          >
             Supplier Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.15)'
+                }
               }}
             >
               <CloseIcon />
@@ -533,7 +548,7 @@ const reportColumns = [
           <DialogContent
             sx={{
               p: 0,
-              backgroundColor: '#0f0f1a'
+              background: 'linear-gradient(180deg, rgba(15,23,42,0.9), rgba(15,23,42,1))'
             }}
           >
             <CommonReportTable
