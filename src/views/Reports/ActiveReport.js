@@ -108,7 +108,10 @@ function ActiveReport() {
   };
   const getBranch = async (clientName) => {
     try {
-      const response = await apiCalls('get', `/transaction/getAllBranchesFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `/transaction/getAllBranchesFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+      );
       setBranchList(response.paramObjectsMap.branches);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -161,11 +164,7 @@ function ActiveReport() {
         if (!value) return '-';
 
         const [hours, minutes] = value.split(':');
-        return (
-          <div style={{ textAlign: 'center', width: '100%' }}>
-            {`${hours}h ${minutes}m`}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', width: '100%' }}>{`${hours}h ${minutes}m`}</div>;
       }
     },
     { accessorKey: 'clientName', header: 'Client Name', size: 80 },
@@ -174,7 +173,7 @@ function ActiveReport() {
     { accessorKey: 'email', header: 'Email', size: 100 },
     // { accessorKey: 'branchName', header: 'Branch', size: 80 },
     { accessorKey: 'assignTo', header: 'Assign To', size: 80 },
-    { accessorKey: 'status', header: 'Status', size: 80 },
+    { accessorKey: 'status', header: 'Status', size: 80 }
   ];
 
   const handleGo = async () => {
@@ -304,7 +303,7 @@ function ActiveReport() {
 
     doc.setFont(undefined, 'normal');
 
-    // xPos = 8; 
+    // xPos = 8;
     doc.text(branch || '', xPos, 45);
     doc.text(clientName || '', xPos + 34, 45);
 
@@ -332,7 +331,7 @@ function ActiveReport() {
       1: { cellWidth: 20 }, // Date
       2: { cellWidth: 20 }, // Customer
       3: { cellWidth: 15 }, // Pro
-      4: { cellWidth: 30 }, // Task Name 
+      4: { cellWidth: 30 }, // Task Name
       5: { cellWidth: 15 }, // Start time
       6: { cellWidth: 18 }, // End Time
       7: { cellWidth: 40 }, // Client name
@@ -531,44 +530,22 @@ function ActiveReport() {
             <div className="row">
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedSections.date}
-                      onChange={handleCheckboxChange}
-                      name="date"
-                      color="secondary"
-                    />
-                  }
+                  control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
-                  
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
-                    <Checkbox
-                      checked={selectedSections.clientName}
-                      onChange={handleCheckboxChange}
-                      name="clientName"
-                      color="secondary"
-                    />
+                    <Checkbox checked={selectedSections.clientName} onChange={handleCheckboxChange} name="clientName" color="secondary" />
                   }
                   label="Client Name"
-                  
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedSections.branch}
-                      onChange={handleCheckboxChange}
-                      name="branch"
-                      color="secondary"
-                    />
-                  }
+                  control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
                   label="Branch"
-                  
                 />
               </div>
             </div>
@@ -650,7 +627,7 @@ function ActiveReport() {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        branch: newValue,
+                        branch: newValue
                       }));
                       setFieldErrors((prev) => ({ ...prev, branch: '' }));
                     } else {
@@ -699,17 +676,30 @@ function ActiveReport() {
           }}
         >
           <DialogTitle
-            style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }}
             id="draggable-dialog-title"
+            sx={{
+              cursor: 'move',
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '15px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
+            }}
           >
             Active Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.15)'
+                }
               }}
             >
               <CloseIcon />
@@ -719,7 +709,7 @@ function ActiveReport() {
           <DialogContent
             sx={{
               p: 0,
-              backgroundColor: '#0f0f1a'
+              background: 'linear-gradient(180deg, rgba(15,23,42,0.9), rgba(15,23,42,1))'
             }}
           >
             <CommonReportTable
@@ -760,15 +750,7 @@ function ActiveReport() {
               </Box>
             </DialogTitle>
             <DialogContent>
-              {fillGridData && (
-                <>
-                  {isLoading ? (
-                    <FullScreenLoader open={true} />
-                  ) : (
-                    <Active selectedRow={fillGridData} />
-                  )}
-                </>
-              )}
+              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <Active selectedRow={fillGridData} />}</>}
             </DialogContent>
           </Dialog>
         </>

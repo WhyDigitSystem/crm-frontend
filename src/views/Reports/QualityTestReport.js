@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  TextField,
-  Checkbox,
-  FormControlLabel,
-  FormControl,
-} from '@mui/material';
+import { TextField, Checkbox, FormControlLabel, FormControl } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton } from '@mui/material';
@@ -112,43 +107,42 @@ function QualityTestReport() {
     return 'success'; // Green otherwise
   };
 
-const reportColumns = [
-  {
-    accessorKey: 'docId',
-    header: 'Doc ID',
-    size: 100,
-    Cell: ({ row }) => {
-      const { docId, screenCode } = row.original;
-      return (
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            handleDocClick(docId, screenCode);
-          }}
-          style={{
-            color: '#f59e0b',
-            textDecoration: 'none',
-            cursor: 'pointer',
-            transition: 'color 0.2s'
-          }}
-          onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
-          onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
-        >
-          {docId}
-        </a>
-      );
-    }
-  },
-  { accessorKey: 'docDate', header: 'Date', size: 120 },
-  { accessorKey: 'product', header: 'Product', size: 150 },
-  { accessorKey: 'batchnumber', header: 'Batch No', size: 150 },
-  { accessorKey: 'testtype', header: 'Test Type', size: 150 },
-  { accessorKey: 'testdate', header: 'Test Date', size: 120 },
-  { accessorKey: 'inspector', header: 'Inspector', size: 150 },
-  { accessorKey: 'result', header: 'Result', size: 100 }
-];
-
+  const reportColumns = [
+    {
+      accessorKey: 'docId',
+      header: 'Doc ID',
+      size: 100,
+      Cell: ({ row }) => {
+        const { docId, screenCode } = row.original;
+        return (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDocClick(docId, screenCode);
+            }}
+            style={{
+              color: '#f59e0b',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => (e.target.style.color = '#fbbf24')}
+            onMouseLeave={(e) => (e.target.style.color = '#f59e0b')}
+          >
+            {docId}
+          </a>
+        );
+      }
+    },
+    { accessorKey: 'docDate', header: 'Date', size: 120 },
+    { accessorKey: 'product', header: 'Product', size: 150 },
+    { accessorKey: 'batchnumber', header: 'Batch No', size: 150 },
+    { accessorKey: 'testtype', header: 'Test Type', size: 150 },
+    { accessorKey: 'testdate', header: 'Test Date', size: 120 },
+    { accessorKey: 'inspector', header: 'Inspector', size: 150 },
+    { accessorKey: 'result', header: 'Result', size: 100 }
+  ];
 
   const handleGo = async () => {
     const errors = {};
@@ -505,15 +499,31 @@ const reportColumns = [
             sx: { p: 0, m: 0, borderRadius: 1 }
           }}
         >
-          <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
+          <DialogTitle
+            id="draggable-dialog-title"
+            sx={{
+              cursor: 'move',
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '15px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
+            }}
+          >
             Quality Test Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.15)'
+                }
               }}
             >
               <CloseIcon />
@@ -523,7 +533,7 @@ const reportColumns = [
           <DialogContent
             sx={{
               p: 0,
-              backgroundColor: '#0f0f1a'
+              background: 'linear-gradient(180deg, rgba(15,23,42,0.9), rgba(15,23,42,1))'
             }}
           >
             <CommonReportTable

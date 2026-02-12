@@ -19,10 +19,10 @@ const CommonReportTable = ({
   handleDownloadPdf,
   sumFields = [],
   headerFields = [],
-  isExcel = true,   // 👈 new prop
+  isExcel = true, // 👈 new prop
   isPdf = true,
   filters = [],
-  onFilterDone = () => { }
+  onFilterDone = () => {}
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const theme = useTheme();
@@ -71,7 +71,6 @@ const CommonReportTable = ({
   };
 
   const customColumns = columns.map((column) => {
-
     if (column.accessorKey?.toLowerCase().includes('date')) {
       return {
         ...column,
@@ -89,20 +88,16 @@ const CommonReportTable = ({
           if (value == null || value === '') return '';
           const formattedValue = Number(value).toLocaleString('en-IN', {
             minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+            maximumFractionDigits: 2
           });
-          return (
-            <div style={{ textAlign: 'right', width: '100%' }}>
-              {formattedValue}
-            </div>
-          );
+          return <div style={{ textAlign: 'right', width: '100%' }}>{formattedValue}</div>;
         },
         muiTableBodyCellProps: {
-          sx: { textAlign: 'right', pr: 2 }, // padding right for spacing
+          sx: { textAlign: 'right', pr: 2 } // padding right for spacing
         },
         muiTableHeadCellProps: {
-          sx: { textAlign: 'right', pr: 2 },
-        },
+          sx: { textAlign: 'right', pr: 2 }
+        }
       };
     }
     if (column.accessorKey === 'active') {
@@ -135,17 +130,32 @@ const CommonReportTable = ({
           data={data}
           columns={customColumns.map((col) => ({
             ...col,
+            // muiTableHeadCellProps: {
+            //   sx: {
+            //     position: 'sticky',
+            //     top: 0,
+            //     zIndex: 10,
+            //     backgroundColor: '#f3f4f6', // light gray
+            //     boxShadow: '0px 2px 6px rgba(0,0,0,0.05)',
+            //     color: '#000000ff',
+            //     fontWeight: '600'
+            //   }
+            // },
             muiTableHeadCellProps: {
               sx: {
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
-                backgroundColor: '#f3f4f6', // light gray
-                boxShadow: '0px 2px 6px rgba(0,0,0,0.05)',
-                color: '#000000ff',
-                fontWeight: '600'
+                background: 'linear-gradient(180deg, #1e3c72, #2a5298)',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                fontSize: '0.75rem',
+                letterSpacing: '0.5px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
               }
             },
+
             muiTableBodyCellProps: {
               sx: {
                 fontSize: '11px',

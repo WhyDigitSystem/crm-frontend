@@ -669,15 +669,31 @@ function ProductionManagementReport() {
             sx: { p: 0, m: 0, borderRadius: 1 }
           }}
         >
-          <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
+          <DialogTitle
+            sx={{
+              cursor: 'move',
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '15px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
+            }}
+            id="draggable-dialog-title"
+          >
             Production Report
             <IconButton
               onClick={() => setListView(false)}
               sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.15)'
+                }
               }}
             >
               <CloseIcon />

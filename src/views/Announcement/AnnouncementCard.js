@@ -30,6 +30,7 @@ const AnnouncementCard = ({ data, onEdit, onDelete }) => {
     const { canRead, canWrite, canDelete } = getPermissions("ANN");
     const [anchorEl, setAnchorEl] = useState(null);
     const [expanded, setExpanded] = useState(false);
+    const userType = localStorage.getItem("userType");
     const open = Boolean(anchorEl);
 
     const handleMenuClick = (e) => setAnchorEl(e.currentTarget);
@@ -80,7 +81,7 @@ const AnnouncementCard = ({ data, onEdit, onDelete }) => {
                         )}
                     </Stack>
 
-                    {(canWrite || canDelete) && <Box>
+                    {/* {(canWrite || canDelete) && <Box>
                         <IconButton size="small" onClick={handleMenuClick}>
                             <MoreVertIcon />
                         </IconButton>
@@ -93,7 +94,30 @@ const AnnouncementCard = ({ data, onEdit, onDelete }) => {
                                 <DeleteIcon sx={{ mr: 1, color: "error.main" }} /> Delete
                             </MenuItem>}
                         </Menu>
-                    </Box>}
+                    </Box>} */}
+                    {(canWrite || canDelete) && (
+  (userType === 'ADMIN' || userType === 'MANAGER') && (
+    <Box>
+      <IconButton size="small" onClick={handleMenuClick}>
+        <MoreVertIcon />
+      </IconButton>
+
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        {canWrite && (
+          <MenuItem onClick={handleEditClick}>
+            <EditIcon sx={{ mr: 1 }} /> Edit
+          </MenuItem>
+        )}
+        {canDelete && (
+          <MenuItem onClick={handleDeleteClick}>
+            <DeleteIcon sx={{ mr: 1, color: "error.main" }} /> Delete
+          </MenuItem>
+        )}
+      </Menu>
+    </Box>
+  )
+)}
+
                 </Stack>
 
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>

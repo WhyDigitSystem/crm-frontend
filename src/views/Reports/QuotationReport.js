@@ -36,6 +36,14 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
+
+const iconBtnStyle = {
+  color: '#ffffff',
+  '&:hover': {
+    backgroundColor: 'rgba(255,255,255,0.18)'
+  }
+};
+
 function QuotationReport() {
   const [listViewData, setListViewData] = useState([]);
   const [orgId] = useState(localStorage.getItem('orgId'));
@@ -736,47 +744,68 @@ function QuotationReport() {
           PaperComponent={PaperComponent}
           aria-labelledby="draggable-dialog-title"
         >
-          <DialogTitle style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }} id="draggable-dialog-title">
-            Quotation Report
-            {/* Close Button */}
-            <IconButton onClick={() => setListView(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
-              <CloseIcon />
-            </IconButton>
-            {/* Excel Download */}
-            <IconButton
-              onClick={() =>
-                handleDownloadExcel({
-                  logo: listViewData[0]?.companyLogo,
-                  fileName: 'Quotation Report',
-                  rowData,
-                  formData,
-                  loginUserName
-                })
-              }
-              sx={{ position: 'absolute', right: 50, top: 8, color: '#217346' }} // ✅ Excel green
-            >
-              <GetAppIcon />
-            </IconButton>
-            {/* PDF Download */}
-            <IconButton
-              onClick={() =>
-                handleDownloadPdf({
-                  logo: listViewData[0]?.companyLogo,
-                  fileName: 'Quotation Report',
-                  loginUserName,
-                  formData,
-                  rowData
-                })
-              }
-              sx={{ position: 'absolute', right: 90, top: 8, color: '#D32F2F' }} // ✅ PDF red
-            >
-              <PictureAsPdfIcon />
-            </IconButton>
+          <DialogTitle
+            id="draggable-dialog-title"
+            sx={{
+              cursor: 'move',
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '16px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.12)'
+            }}
+          >
+            {/* Left : Title */}
+            <Box component="span">Quotation Report</Box>
+
+            {/* Right : Actions */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                onClick={() =>
+                  handleDownloadExcel({
+                    logo: listViewData[0]?.companyLogo,
+                    fileName: 'Quotation Report',
+                    rowData,
+                    formData,
+                    loginUserName
+                  })
+                }
+                sx={iconBtnStyle}
+              >
+                <GetAppIcon />
+              </IconButton>
+
+              <IconButton
+                onClick={() =>
+                  handleDownloadPdf({
+                    logo: listViewData[0]?.companyLogo,
+                    fileName: 'Quotation Report',
+                    loginUserName,
+                    formData,
+                    rowData
+                  })
+                }
+                sx={iconBtnStyle}
+              >
+                <PictureAsPdfIcon />
+              </IconButton>
+
+              <IconButton onClick={() => setListView(false)} sx={iconBtnStyle}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
           </DialogTitle>
+
           <DialogContent sx={{ p: 0 }}>
             <TableContainer>
               <Table size="small" stickyHeader>
-                <TableHead>
+                <TableHead> 
                   <TableRow>
                     <TableCell>Doc Id</TableCell>
                     <TableCell>Date</TableCell>
@@ -817,9 +846,9 @@ function QuotationReport() {
                                 onClick={() => handleIterationClick(doc.docId, doc.count)}
                                 sx={{
                                   fontWeight: 600,
-                                  "&:hover .MuiChip-label": {
-                                    color: "#000",
-                                  },
+                                  '&:hover .MuiChip-label': {
+                                    color: '#000'
+                                  }
                                 }}
                               />
                             </TableCell>

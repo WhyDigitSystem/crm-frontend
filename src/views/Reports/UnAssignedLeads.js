@@ -24,7 +24,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import FullScreenLoader from 'utils/FullScreenLoader';
 import Lead from 'views/Transaction/Lead';
-import { Button } from "@mui/material";
+import { Button } from '@mui/material';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -48,7 +48,7 @@ function UnAssignedLeads() {
   const [assignee, setAssignee] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    clientName: false,
+    clientName: false
     // branch: false
   });
   const handleCheckboxChange = (event) => {
@@ -62,13 +62,13 @@ function UnAssignedLeads() {
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
-    clientName: 'All',
+    clientName: 'All'
     // branch: 'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
-    clientName: '',
+    clientName: ''
     // branch: ''
   });
   const [assignedData, setAssignedData] = useState({
@@ -88,39 +88,43 @@ function UnAssignedLeads() {
     address: '',
     probability: '',
     assignTo: '',
-    stage: '',
+    stage: ''
   });
-  const [leadBranches, setLeadBranches] = useState([{
-    branch: '',
-    gstNo: '',
-    city: '',
-    state: '',
-    country: '',
-    address: '',
-  }]);
-  const [leadContacts, setLeadContacts] = useState([{
-    preferredContact: false,
-    branchName: '',
-    name: '',
-    mobileNo: '',
-    email: '',
-    designation: '',
-    dob: '',
-    workAnniversaryDate: '',
-    anniversaryDate: ''
-  }]);
+  const [leadBranches, setLeadBranches] = useState([
+    {
+      branch: '',
+      gstNo: '',
+      city: '',
+      state: '',
+      country: '',
+      address: ''
+    }
+  ]);
+  const [leadContacts, setLeadContacts] = useState([
+    {
+      preferredContact: false,
+      branchName: '',
+      name: '',
+      mobileNo: '',
+      email: '',
+      designation: '',
+      dob: '',
+      workAnniversaryDate: '',
+      anniversaryDate: ''
+    }
+  ]);
   const handleClear = () => {
     setListView(false);
     setFormData({
       fromDate: null,
       toDate: null,
-      clientName: 'All',
+      clientName: 'All'
       // branch: 'All'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
-      clientName: '',
+      clientName: ''
       // branch: ''
     });
     setRowData([]);
@@ -145,7 +149,10 @@ function UnAssignedLeads() {
   };
   const getBranch = async (clientName) => {
     try {
-      const response = await apiCalls('get', `/transaction/getBranchNameFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `/transaction/getBranchNameFromLead?clientName=${encodeURIComponent(clientName)}&orgId=${orgId}`
+      );
       setBranchList(response.paramObjectsMap.branchName || []);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -167,8 +174,8 @@ function UnAssignedLeads() {
   };
   const reportColumns = [
     {
-      accessorKey: "docId",
-      header: "Doc Id",
+      accessorKey: 'docId',
+      header: 'Doc Id',
       size: 100,
       Cell: ({ row }) => {
         const docId = row.original.docId;
@@ -181,29 +188,29 @@ function UnAssignedLeads() {
               handleDocClick(docId, screenCode);
             }}
             style={{
-              color: "#f59e0b", // Amber
-              textDecoration: "none",
-              cursor: "pointer",
-              transition: "color 0.2s, textShadow 0.2s",
+              color: '#f59e0b', // Amber
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s, textShadow 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.color = "#fbbf24"; // Brighter yellow on hover
+              e.target.style.color = '#fbbf24'; // Brighter yellow on hover
             }}
             onMouseLeave={(e) => {
-              e.target.style.color = "#f59e0b";
+              e.target.style.color = '#f59e0b';
             }}
           >
             {docId}
           </a>
         );
-      },
+      }
     },
-    { accessorKey: "clientName", header: "Client Name", size: 100 },
-    { accessorKey: "clientType", header: "Client Type", size: 100 },
-    { accessorKey: "stage", header: "Status", size: 100 },
-    { accessorKey: "probability", header: "Probability", size: 100 },
+    { accessorKey: 'clientName', header: 'Client Name', size: 100 },
+    { accessorKey: 'clientType', header: 'Client Type', size: 100 },
+    { accessorKey: 'stage', header: 'Status', size: 100 },
+    { accessorKey: 'probability', header: 'Probability', size: 100 },
     {
-      header: "Assign",
+      header: 'Assign',
       size: 300,
       Cell: ({ row }) => {
         const lead = row.original;
@@ -212,7 +219,7 @@ function UnAssignedLeads() {
 
         const handleAssign = async () => {
           if (!selectedAssignee) {
-            showToast("error", "Please select a sales rep");
+            showToast('error', 'Please select a sales rep');
             return;
           }
           const payload = {
@@ -243,52 +250,42 @@ function UnAssignedLeads() {
             assignTo: selectedAssignee.empoyeeCode,
             assignName: selectedAssignee.employeeName,
 
-
             leadBranchDTO: lead.leadBranchVO || [],
-            leadContactDTO: lead.leadContactVO || [],
+            leadContactDTO: lead.leadContactVO || []
           };
 
           try {
-            const response = await apiCalls("put", "/transaction/createUpdateLead", payload);
+            const response = await apiCalls('put', '/transaction/createUpdateLead', payload);
             if (response.status) {
-              showToast("success", "Assigned Successfully");
+              showToast('success', 'Assigned Successfully');
               handleGo();
             } else {
-              showToast("error", response.message || "Assign failed");
+              showToast('error', response.message || 'Assign failed');
             }
           } catch (err) {
-            console.error("Error saving lead:", err);
-            showToast("error", "Failed to assign lead");
+            console.error('Error saving lead:', err);
+            showToast('error', 'Failed to assign lead');
           }
         };
 
         return (
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <Autocomplete
               options={assignee}
               sx={{ minWidth: 250 }}
               getOptionLabel={(option) =>
-                option?.empoyeeCode && option?.employeeName
-                  ? `${option.empoyeeCode} - ${option.employeeName}`
-                  : ""
+                option?.empoyeeCode && option?.employeeName ? `${option.empoyeeCode} - ${option.employeeName}` : ''
               }
               value={selectedAssignee}
               onChange={(e, newValue) => setSelectedAssignee(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} size="small" placeholder="Select Rep" />
-              )}
+              renderInput={(params) => <TextField {...params} size="small" placeholder="Select Rep" />}
             />
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleAssign}
-              disabled={!selectedAssignee}
-            >
+            <Button variant="contained" size="small" onClick={handleAssign} disabled={!selectedAssignee}>
               Assign
             </Button>
           </div>
         );
-      },
+      }
     }
   ];
   const handleGo = async () => {
@@ -331,7 +328,7 @@ function UnAssignedLeads() {
     const payload = {
       ...(editId && { id: editId }),
       ...rowData,
-      assignTo: assignedData.assignTo || '',
+      assignTo: assignedData.assignTo || ''
     };
 
     try {
@@ -439,7 +436,7 @@ function UnAssignedLeads() {
 
     doc.setFont(undefined, 'normal');
 
-    // xPos = 8; 
+    // xPos = 8;
     // doc.text(branch || '', xPos, 45);
     doc.text(clientName || '', xPos, 45);
 
@@ -469,7 +466,7 @@ function UnAssignedLeads() {
       3: { cellWidth: 25 },
       4: { cellWidth: 25 },
       5: { cellWidth: 30 },
-      6: { cellWidth: 25 },
+      6: { cellWidth: 25 }
     };
 
     // 7) Draw Table
@@ -558,7 +555,6 @@ function UnAssignedLeads() {
       metadata.push({ label: 'Generated By', value: localStorage.getItem('userName') || 'System' });
       metadata.push({ label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') });
 
-
       metadata.forEach((meta, index) => {
         const rowIndex = (index % 4) + 2;
         const colGroup = Math.floor(index / 4);
@@ -572,14 +568,7 @@ function UnAssignedLeads() {
       // ====== HEADERS ======
       const headerRowIndex = 6;
       const headerRow = sheet.getRow(headerRowIndex);
-      const headers = [
-        'Doc Id',
-        'Client Type',
-        'Client Name',
-        'Status',
-        'Probability',
-        'Assign',
-      ];
+      const headers = ['Doc Id', 'Client Type', 'Client Name', 'Status', 'Probability', 'Assign'];
       headers.forEach((header, index) => {
         const cell = headerRow.getCell(index + 1);
         cell.value = header;
@@ -605,7 +594,7 @@ function UnAssignedLeads() {
           item.clientName || '-',
           item.stage || '-',
           item.probability || '-',
-          item.assignTo || 'Not Assigned',
+          item.assignTo || 'Not Assigned'
         ]);
 
         row.eachCell({ includeEmpty: true }, (cell) => {
@@ -655,7 +644,6 @@ function UnAssignedLeads() {
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
-
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -664,7 +652,6 @@ function UnAssignedLeads() {
                     <Checkbox checked={selectedSections.clientName} onChange={handleCheckboxChange} name="clientName" color="secondary" />
                   }
                   label="Client Name"
-
                 />
               </div>
             </div>
@@ -749,60 +736,149 @@ function UnAssignedLeads() {
             )}
           </div>
         </>
-        <Dialog
-          open={listView}
-          onClose={() => setListView(false)}
-          fullWidth
-          maxWidth="xl"
-          PaperComponent={PaperComponent}
-          aria-labelledby="draggable-dialog-title"
-          PaperProps={{
-            sx: { p: 0, m: 0, borderRadius: 1 }
-          }}
-        >
-          <DialogTitle
-            style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }}
-            id="draggable-dialog-title"
-          >
-            UnAssigned Report
-            <IconButton
-              onClick={() => setListView(false)}
-              sx={{
-                position: 'absolute',
-                right: 2,
-                top: 2,
-                color: 'white'
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-
-          <DialogContent
-            sx={{
-              p: 0,
-              backgroundColor: '#0f0f1a'
+          {/* <Dialog
+            open={listView}
+            onClose={() => setListView(false)}
+            fullWidth
+            maxWidth="xl"
+            PaperComponent={PaperComponent}
+            aria-labelledby="draggable-dialog-title"
+            PaperProps={{
+              sx: { p: 0, m: 0, borderRadius: 1 }
             }}
           >
-            <CommonReportTable
-              data={rowData}
-              columns={reportColumns}
-              isListView={listView}
-              fileName={'UnAssigned Report'}
-              handleDownloadPdf={() =>
-                handleDownloadPdf({
-                  logo: listViewData[0]?.companyLogo,
-                  columns: reportColumns,
-                  data: rowData,
-                  formData,
-                  fileName: 'UnAssigned Report',
-                  loginUserName
-                })
-              }
-              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
-            />
-          </DialogContent>
-        </Dialog>
+            <DialogTitle
+              // style={{ cursor: 'move', backgroundColor: '#0f0f1a', color: 'white' }}
+              sx={{
+                cursor: 'move',
+                background: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+                color: '#ffffff',
+                fontWeight: 600,
+                fontSize: '1rem',
+                letterSpacing: '0.5px',
+                position: 'relative'
+              }}
+              id="draggable-dialog-title"
+            >
+              UnAssigned Report
+              <IconButton
+                onClick={() => setListView(false)}
+                sx={{
+                  position: 'absolute',
+                  right: 2,
+                  top: 2,
+                  color: 'white'
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+
+            <DialogContent
+              sx={{
+                p: 0,
+                backgroundColor: '#0f0f1a'
+              }}
+            >
+              <CommonReportTable
+                data={rowData}
+                columns={reportColumns}
+                isListView={listView}
+                fileName={'UnAssigned Report'}
+                handleDownloadPdf={() =>
+                  handleDownloadPdf({
+                    logo: listViewData[0]?.companyLogo,
+                    columns: reportColumns,
+                    data: rowData,
+                    formData,
+                    fileName: 'UnAssigned Report',
+                    loginUserName
+                  })
+                }
+                handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+              />
+            </DialogContent>
+          </Dialog> */}
+
+          <Dialog
+  open={listView}
+  onClose={() => setListView(false)}
+  fullWidth
+  maxWidth="xl"
+  PaperComponent={PaperComponent}
+  aria-labelledby="draggable-dialog-title"
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      overflow: 'hidden',
+      backgroundColor: '#0b1220',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.6)'
+    }
+  }}
+>
+  {/* ===== Header ===== */}
+  <DialogTitle
+    id="draggable-dialog-title"
+    sx={{
+      cursor: 'move',
+      background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+      color: '#ffffff',
+      fontWeight: 600,
+      fontSize: '15px',
+      letterSpacing: '0.4px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      px: 3,
+      py: 0.5,
+      borderBottom: '1px solid rgba(255,255,255,0.08)'
+    }}
+  >
+    UnAssigned Report
+
+    <IconButton
+      onClick={() => setListView(false)}
+      sx={{
+        color: '#ffffff',
+        '&:hover': {
+          backgroundColor: 'rgba(255,255,255,0.15)'
+        }
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+
+  {/* ===== Content ===== */}
+  <DialogContent
+    sx={{
+      p: 0,
+      background:
+        'linear-gradient(180deg, rgba(15,23,42,0.9), rgba(15,23,42,1))'
+    }}
+  >
+    <CommonReportTable
+      data={rowData}
+      columns={reportColumns}
+      isListView={listView}
+      fileName="UnAssigned Report"
+      handleDownloadPdf={() =>
+        handleDownloadPdf({
+          logo: listViewData[0]?.companyLogo,
+          columns: reportColumns,
+          data: rowData,
+          formData,
+          fileName: 'UnAssigned Report',
+          loginUserName
+        })
+      }
+      handleDownloadExcel={() =>
+        handleDownloadExcel({ logo: listViewData[0]?.companyLogo })
+      }
+    />
+  </DialogContent>
+</Dialog>
+
         <>
           <Dialog
             open={modalOpen}
@@ -821,15 +897,7 @@ function UnAssignedLeads() {
               </Box>
             </DialogTitle>
             <DialogContent>
-              {fillGridData && (
-                <>
-                  {isLoading ? (
-                    <FullScreenLoader open={true} />
-                  ) : (
-                    <Lead selectedRow={fillGridData} />
-                  )}
-                </>
-              )}
+              {fillGridData && <>{isLoading ? <FullScreenLoader open={true} /> : <Lead selectedRow={fillGridData} />}</>}
             </DialogContent>
           </Dialog>
         </>

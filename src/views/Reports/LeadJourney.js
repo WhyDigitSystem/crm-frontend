@@ -25,8 +25,8 @@ function PaperComponent(props) {
 function LeadJourney() {
   const [listViewData, setListViewData] = useState([]);
   const [orgId] = useState(localStorage.getItem('orgId'));
-  const [finYear] = useState(localStorage.getItem('finYear')); 
-  const [branchCode] = useState(localStorage.getItem('branchcode')); 
+  const [finYear] = useState(localStorage.getItem('finYear'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [loginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [clientNameList, setClientNameList] = useState([]);
@@ -75,7 +75,10 @@ function LeadJourney() {
       setIsLoading(true);
       setListView(false);
       try {
-        let response = await apiCalls('get', `/transaction/getAllClientNameBasedHistory?clientName=${formData.clientName}&orgId=${orgId}&branchCode=${branchCode}`);
+        let response = await apiCalls(
+          'get',
+          `/transaction/getAllClientNameBasedHistory?clientName=${formData.clientName}&orgId=${orgId}&branchCode=${branchCode}`
+        );
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.clientInformation || []);
@@ -184,16 +187,32 @@ function LeadJourney() {
           PaperProps={{ sx: { p: 0, m: 0, borderRadius: 2 } }}
         >
           <DialogTitle
-            style={{
+            sx={{
               cursor: 'move',
-              background: '#0f0f1a',
-              color: 'white',
-              fontWeight: '600'
+              background: 'linear-gradient(135deg, #1e3c72, #2a5298)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '15px',
+              letterSpacing: '0.4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 3,
+              py: 0.5,
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
             }}
             id="draggable-dialog-title"
           >
             Lead Journey Report
-            <IconButton onClick={() => setListView(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
+            <IconButton
+              onClick={() => setListView(false)}
+              sx={{
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.15)'
+                }
+              }}
+            >
               <CloseIcon />
             </IconButton>
           </DialogTitle>
