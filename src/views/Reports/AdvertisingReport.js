@@ -221,6 +221,9 @@ export default function AdvertisingReport() {
                     return formatDate(value);
                 },
             },
+            { accessorKey: "status", header: "Status" },
+
+           
         ],
         []
     );

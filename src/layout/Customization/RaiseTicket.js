@@ -49,7 +49,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
     }
 }));
 
-const RaiseTicketTab = ({ ticket, handleChange, handleSubmit }) => {
+const RaiseTicketTab = ({ ticket, handleChange, handleSubmit,isLoading }) => {
     return (
         <StyledPaper elevation={4}>
             <Grid container spacing={3}>
@@ -117,8 +117,8 @@ const RaiseTicketTab = ({ ticket, handleChange, handleSubmit }) => {
                             )}
                         </Box>
 
-                        <SubmitButton variant="contained" endIcon={<IconSend size={18} />} onClick={handleSubmit}>
-                            Submit Ticket
+                        <SubmitButton variant="contained" endIcon={<IconSend size={18} />} onClick={handleSubmit} disabled={isLoading}>
+                           {isLoading?'...Loading':'Submit Ticket'}
                         </SubmitButton>
                     </Box>
                 </Grid>

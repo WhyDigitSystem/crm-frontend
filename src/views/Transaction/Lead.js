@@ -76,7 +76,7 @@ const Lead = ({ selectedRow }) => {
     pinCode: '',
     customer: '',
     address: '',
-    probability: '',
+    probability: '10',
     assignTo: '',
     stage: '',
     remarks: '',
@@ -641,7 +641,7 @@ const Lead = ({ selectedRow }) => {
       pinCode: '',
       customer: '',
       address: '',
-      probability: '',
+      probability: '10',
       assignTo: '',
       remarks: '',
       finYear: finYear,
@@ -1317,6 +1317,7 @@ const Lead = ({ selectedRow }) => {
                       type="number"
                       size="small"
                       fullWidth
+                      disabled
                       name="probability"
                       value={formData.probability}
                       onChange={handleInputChange}
@@ -1356,13 +1357,13 @@ const Lead = ({ selectedRow }) => {
                         onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
                         label="Stage"
                       >
-                        <MenuItem value="Progressing">Progressing</MenuItem>
+                        <MenuItem value="PROGESSING">Progressing</MenuItem>
                         {/* <MenuItem value="Prospecting">Prospecting</MenuItem> */}
                         {/* <MenuItem value="Qualification">Qualification</MenuItem> */}
-                        <MenuItem value="Proposal">Proposal</MenuItem>
-                        <MenuItem value="Negotiation">Negotiation</MenuItem>
-                        <MenuItem value="Closed Won">Closed Won</MenuItem>
-                        <MenuItem value="Closed Lost">Closed Lost</MenuItem>
+                        <MenuItem value="PROPOSAL">Proposal</MenuItem>
+                        <MenuItem value="NEGOTIATION">Negotiation</MenuItem>
+                        <MenuItem value="CLOSED WON">Closed Won</MenuItem>
+                        <MenuItem value="CLOSED LOST">Closed Lost</MenuItem>
                       </Select>
                     </FormControl>
                   </div>

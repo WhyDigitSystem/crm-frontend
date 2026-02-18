@@ -3,9 +3,10 @@ import { IconCheck, IconClock, IconHelp, IconListCheck, IconPlus, IconUser } fro
 import apiCalls from 'apicall';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
 import AllTicketsTab from './AllTicketsTab';
 import RaiseTicketTab from './RaiseTicket';
+import { CircularProgress } from '@mui/material';
 // import RaiseTicketTab from './RaiseTicketTab';
 
 const getStatusChip = (status) => {
@@ -219,6 +220,7 @@ const SupportTickets = () => {
 
   return (
     <>
+    <ToastComponent />
       <Tooltip title="Need help? Raise a support ticket">
         <Fab
           color="secondary"
@@ -275,7 +277,7 @@ const SupportTickets = () => {
         </Tabs>
         <DialogContent>
           {/* Raise Ticket Tab */}
-          {tab === 0 && <RaiseTicketTab ticket={ticket} handleChange={handleChange} handleSubmit={handleSubmit} />}
+          {tab === 0 && <RaiseTicketTab ticket={ticket} handleChange={handleChange} handleSubmit={handleSubmit} isLoading={isLoading} />}
           {tab === 1 && (
             <AllTicketsTab
               tickets={loginUserName === 'WDS002' ? adminTickets : tickets}
@@ -306,6 +308,8 @@ const SupportTickets = () => {
           )}
         </DialogActions>
       </Dialog>
+
+     
 
       {/* Ticket Details Dialog */}
     </>

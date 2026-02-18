@@ -103,7 +103,8 @@ export const Quotation = ({ selectedRow }) => {
     discount: '',
     netAmt: '',
     amtInWords: '',
-    narration: ''
+    narration: '',
+    termsConditions:'',
   });
 
   const [quotationPrice, setQuotationPrice] = useState([
@@ -291,6 +292,7 @@ export const Quotation = ({ selectedRow }) => {
           discount: lead.discount,
           netAmount: lead.netAmount,
           narration: lead.narration,
+          termsConditions:lead.termsConditions,
           amtInWords: lead.amountInWords,
           finYear: finYear,
           branch: branch,
@@ -396,6 +398,7 @@ export const Quotation = ({ selectedRow }) => {
       iterations: formData.iterations,
       mobileNumber: parseInt(formData.mobileNumber),
       narration: formData.narration,
+      termsConditions:formData.termsConditions,
       oppurtunityId: formData.oppurtunityId,
       // oppurtunityName: formData.oppurtunityName,
       orgId: orgId,
@@ -558,7 +561,8 @@ export const Quotation = ({ selectedRow }) => {
       discount: '',
       netAmt: '',
       amtInWords: '',
-      narration: ''
+      narration: '',
+      termsConditions:'',
     });
     setQuotationPrice([
       {
@@ -1475,6 +1479,19 @@ export const Quotation = ({ selectedRow }) => {
                           multiline
                           name="narration"
                           value={formData.narration}
+                          onChange={handleInputChange}
+                          disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
+                        />
+                      </div>
+                       <div className="col-md-6 mb-3">
+                        <TextField
+                          label="Terms & Conditions"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          multiline
+                          name="termsConditions"
+                          value={formData.termsConditions}
                           onChange={handleInputChange}
                           disabled={quotaionById.status === 'APPROVED' || quotaionById.status === 'REJECTED'}
                         />

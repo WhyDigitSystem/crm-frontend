@@ -67,7 +67,7 @@ const Opportunity = ({ selectedRow }) => {
 
   // Static options
   const statusOptions = ['Open', 'Closed', 'Lost', 'Won', 'In Progress'];
-  const productStatusOptions = ['New', 'Assigned', 'Open', 'In-Progress', 'Recycled', 'Dead', 'Completed'];
+  const productStatusOptions = ['New', 'Assigned', 'Open', 'InProgress', 'Recycled', 'Dead', 'Completed'];
 
   // Form data
   const [formData, setFormData] = useState({
