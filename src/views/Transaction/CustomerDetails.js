@@ -5,6 +5,8 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
 import {
   Avatar,
   Typography,
@@ -22,7 +24,7 @@ import {
   MenuItem,
   Select,
   Checkbox,
-  FormControlLabel,
+  FormControlLabel
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
@@ -34,8 +36,11 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
 import FullScreenLoader from 'utils/FullScreenLoader';
+import CommonExcelUpload from 'views/utilities/CommonExcelUpload';
+import cd from '../../../src/assets/sample-files/cd.xlsx'
 
 export const CustomerDetails = () => {
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [orgId] = useState(parseInt(localStorage.getItem('orgId')));
   const [createdBy] = useState(localStorage.getItem('userName'));
   const [branch] = useState(localStorage.getItem('branch'));
@@ -201,7 +206,7 @@ export const CustomerDetails = () => {
           customer: customerDetails.customer || '',
           assignTo: customerDetails.assignTo || '',
           stage: customerDetails.stage || '',
-          probability: customerDetails.probability || '',
+          probability: customerDetails.probability || ''
           // do NOT include: docId, docDate, clientName
         }));
 
@@ -215,7 +220,7 @@ export const CustomerDetails = () => {
             gstNo: row.gstNo || '',
             state: row.state || '',
             country: row.country || '',
-            address: row.address || '',
+            address: row.address || ''
           }))
         );
 
@@ -231,7 +236,7 @@ export const CustomerDetails = () => {
             designation: row.designation || '',
             dob: row.dob || '',
             anniversaryDate: row.aniversary || '',
-            workAnniversaryDate: row.workAniversaryDate || '',
+            workAnniversaryDate: row.workAniversaryDate || ''
           }))
         );
       } else {
@@ -581,7 +586,7 @@ export const CustomerDetails = () => {
     { accessorKey: 'clientName', header: 'Client', size: 180 },
     { accessorKey: 'mobileNumber', header: 'Contact No', size: 150 },
     { accessorKey: 'email', header: 'Email', size: 200 },
-    { accessorKey: 'industry', header: 'Industry', size: 120 },
+    { accessorKey: 'industry', header: 'Industry', size: 120 }
     // { accessorKey: 'website', header: 'Website', size: 150 }
   ];
   const handleShareLink = (customer) => {
@@ -590,14 +595,62 @@ export const CustomerDetails = () => {
     const link = `${process.env.REACT_APP_FRONT_URL}/feedback?name=${encodedName}&mobile=${customer.mobileNumber}`;
 
     const whatsappMessage =
-      `Hello ${customer.clientName},\n\n` +
-      `We value your feedback. Please submit your Feedback / Complaints here:\n${link}`;
+      `Hello ${customer.clientName},\n\n` + `We value your feedback. Please submit your Feedback / Complaints here:\n${link}`;
 
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${customer.mobileNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 
-    window.open(whatsappUrl, "_blank");
+    window.open(whatsappUrl, '_blank');
   };
 
+
+// const handleCustomerUpload = async (file) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append("file", file);
+
+//     const response = await apiCalls(
+//       "post",
+//       `transaction/uploadCustomerDetails?branch=${branch}&branchCode=${branchCode}&createdBy=${createdBy}&finYear=${finYear}&orgId=${orgId}`,
+//       formData
+//     );
+
+//     if (response?.status === true) {
+//       showToast("success", "Customer Uploaded Successfully");
+//     } else {
+//       showToast("error", response?.message || "Upload Failed");
+//     }
+
+//   } catch (error) {
+//     showToast("error", "Server Error");
+//   }
+// };
+
+const handleCustomerUpload = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/transaction/uploadCustomerDetails?branch=${branch}&branchCode=${branchCode}&createdBy=${createdBy}&finYear=${finYear}&orgId=${orgId}`,
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showToast("success", "Customer Uploaded Successfully");
+    } else {
+      showToast("error", result.message || "Upload Failed");
+    }
+
+  } catch (error) {
+    console.error(error);
+    showToast("error", "Server Error");
+  }
+};
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       {isLoading && (
@@ -614,6 +667,7 @@ export const CustomerDetails = () => {
                 <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
                 <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                 <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                <ActionButton title="Upload Excel" icon={CloudUploadIcon} onClick={() => setUploadOpen(true)}/>
               </>
             )}
           </div>
@@ -870,6 +924,15 @@ export const CustomerDetails = () => {
                     <div className="mb-1">
                       <ActionButton title="Add Branch" icon={AddCircleOutlineIcon} onClick={handleAddBranchDetails} />
                     </div>
+
+                    <CommonExcelUpload
+                      open={uploadOpen}
+                      handleClose={() => setUploadOpen(false)}
+                      dialogTitle="Customer Bulk Upload"
+                      onSubmit={handleCustomerUpload}
+                      sampleFileDownload={cd}
+                    />
+
                     <div className="row mt-2">
                       <div className="col-lg-12">
                         <div className="table-responsive">
@@ -927,7 +990,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={branch.branchName}
                                       onChange={(e) => handleBranchChange(index, 'branchName', e.target.value)}
-                                    // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
+                                      // onBlur={(e) => validateBranchField(index, 'branch', e.target.value)}
                                     />
                                   </td>
                                   <td>
@@ -1107,7 +1170,7 @@ export const CustomerDetails = () => {
                                       size="small"
                                       value={contact.branchName}
                                       onChange={(e) => handleContactChange(index, 'branchName', e.target.value)}
-                                    // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
+                                      // onBlur={(e) => validateContactField(index, 'name', e.target.value)}
                                     />
                                   </td>
 
