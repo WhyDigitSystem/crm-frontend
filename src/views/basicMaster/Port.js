@@ -107,24 +107,39 @@ const Port = () => {
     }
   };
   const handleInputChange = (e) => {
-    const { name, value, selectionStart, selectionEnd, type } = e.target;
+    const { name, value } = e.target;
 
-    let errorMessage = '';
+    let regex;
 
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      setFormData({ ...formData, [name]: value });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
-      if (type === 'text' || type === 'textarea') {
-        setTimeout(() => {
-          const inputElement = document.getElementsByName(name)[0];
-          if (inputElement && inputElement.setSelectionRange) {
-            inputElement.setSelectionRange(selectionStart, selectionEnd);
-          }
-        }, 0);
-      }
+    switch (name) {
+      case 'type':
+        regex = /^[a-zA-Z\s]*$/; // Only letters and space
+        if (!regex.test(value)) return;
+        break;
+
+      case 'portName':
+        regex = /^[a-zA-Z\s]*$/; // Only letters and space
+        if (!regex.test(value)) return;
+        break;
+
+      case 'portCode':
+        regex = /^[A-Za-z0-9]*$/; // Only letters and numbers
+        if (!regex.test(value)) return;
+        break;
+
+      default:
+        break;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: ''
+    }));
   };
   const handleClear = () => {
     setFormData({
@@ -146,14 +161,24 @@ const Port = () => {
   const handleSave = async () => {
     setLoading(true);
     const errors = {};
-    if (!formData.portName) {
+    if (!formData.type.trim()) {
+      errors.type = 'Type is required';
+    }
+
+    if (!formData.portName.trim()) {
       errors.portName = 'Port Name is required';
     }
-    if (!formData.countryName) {
-      errors.countryName = 'Country Name is required';
+
+    if (!formData.portCode.trim()) {
+      errors.portCode = 'Port Code is required';
     }
-    if (!formData.type) {
-      errors.type = 'Type is required';
+
+    if (!/^[a-zA-Z\s]+$/.test(formData.portName)) {
+      errors.portName = 'Port Name should contain only alphabets';
+    }
+
+    if (!/^[a-zA-Z0-9]+$/.test(formData.portCode)) {
+      errors.portCode = 'Port Code should not contain special characters';
     }
     setFieldErrors(errors);
 
@@ -234,6 +259,8 @@ const Port = () => {
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.type}
+                    helperText={fieldErrors.type}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -246,6 +273,8 @@ const Port = () => {
                     name="portName"
                     value={formData.portName}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.portName}
+                    helperText={fieldErrors.portName}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -258,6 +287,8 @@ const Port = () => {
                     name="portCode"
                     value={formData.portCode}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.portCode}
+                    helperText={fieldErrors.portCode}
                   />
                 </div>
                 <div className="col-md-3 mb-3">

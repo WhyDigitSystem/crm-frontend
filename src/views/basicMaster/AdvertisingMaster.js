@@ -152,6 +152,7 @@ export default function AdvertisingMaster() {
 
         const { name, value, files } = e.target;
 
+        // File upload
         if (files && files.length) {
             const file = files[0];
             if (!file.type.startsWith("image/")) {
@@ -159,9 +160,18 @@ export default function AdvertisingMaster() {
                 return;
             }
             setFormData((prev) => ({ ...prev, [name]: file }));
-        } else {
-            setFormData((prev) => ({ ...prev, [name]: value }));
+            return;
         }
+
+        // Prevent negative values for numeric fields
+        if (["quantity", "estimatedCost", "actualCost"].includes(name)) {
+            if (value < 0) return; // block negative typing
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const handlePhotoUpload = (field, file) => {
@@ -329,6 +339,21 @@ export default function AdvertisingMaster() {
 
     const handleSave = async () => {
         setIsLoading(true);
+
+        if (formData.quantity < 0) {
+            showToast("error", "Quantity cannot be negative");
+            return;
+        }
+
+        if (formData.estimatedCost < 0) {
+            showToast("error", "Estimated cost cannot be negative");
+            return;
+        }
+
+        if (formData.actualCost < 0) {
+            showToast("error", "Actual cost cannot be negative");
+            return;
+        }
 
         const formatDate = (date) => (date ? dayjs(date).format("YYYY-MM-DD") : null);
 
@@ -642,7 +667,16 @@ export default function AdvertisingMaster() {
 
                             {/* Quantity */}
                             <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" disabled={approveStatus === 'Approved' || approveStatus === 'reject'} label="Quantity" type="number" name="quantity" value={formData.quantity} onChange={handleChange} />
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Quantity"
+                                    type="number"
+                                    name="quantity"
+                                    value={formData.quantity}
+                                    onChange={handleChange}
+                                    inputProps={{ min: 0 }}
+                                />
                             </Grid>
 
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -673,11 +707,29 @@ export default function AdvertisingMaster() {
 
                             {/* Costs */}
                             <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" disabled={approveStatus === 'Approved' || approveStatus === 'reject'} label="Estimated Cost" type="number" name="estimatedCost" value={formData.estimatedCost} onChange={handleChange} />
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Estimated Cost"
+                                    type="number"
+                                    name="estimatedCost"
+                                    value={formData.estimatedCost}
+                                    onChange={handleChange}
+                                    inputProps={{ min: 0 }}
+                                />
                             </Grid>
 
                             <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" disabled={approveStatus === 'Approved' || approveStatus === 'reject'} label="Actual Cost" type="number" name="actualCost" value={formData.actualCost} onChange={handleChange} />
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Actual Cost"
+                                    type="number"
+                                    name="actualCost"
+                                    value={formData.actualCost}
+                                    onChange={handleChange}
+                                    inputProps={{ min: 0 }}
+                                />
                             </Grid>
 
                             {/* Vendor */}

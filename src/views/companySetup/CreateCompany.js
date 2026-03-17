@@ -104,42 +104,57 @@ const CreateCompany = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+
     const nameRegex = /^[A-Za-z ]*$/;
     const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
     const companyCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
     if (name === 'companyName' && !companyNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters and @*_- are allowed' });
-    } else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else {
-      let updatedValue = value;
+      return;
+    }
 
-      if (name !== 'companyAdminEmail') {
-        updatedValue = value.toUpperCase();
-      }
+    if (name === 'companyCode' && !companyCodeRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      return;
+    }
 
-      if (type === 'checkbox') {
-        setFormData({ ...formData, [name]: checked });
+    if (name === 'companyAdminName' && !nameRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only alphabets allowed' });
+      return;
+    }
+
+    if (name === 'companyAdminEmail') {
+      if (value && !emailRegex.test(value)) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Invalid Email Format' });
       } else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: updatedValue
-        }));
+        setFieldErrors({ ...fieldErrors, [name]: '' });
       }
+    }
 
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+    let updatedValue = value;
 
-      // Update the cursor position after the input change only for text inputs
-      if (type === 'text' || type === 'email' || type === 'textarea') {
-        setTimeout(() => {
-          const inputElement = document.getElementsByName(name)[0];
+    if (name !== 'companyAdminEmail') {
+      updatedValue = value.toUpperCase();
+    }
+
+    if (type === 'checkbox') {
+      setFormData({ ...formData, [name]: checked });
+    } else {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: updatedValue
+      }));
+    }
+
+    if (type === 'text' || type === 'textarea') {
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement && inputElement.setSelectionRange) {
           inputElement.setSelectionRange(selectionStart, selectionEnd);
-        }, 0);
-      }
+        }
+      }, 0);
     }
   };
 
@@ -299,7 +314,7 @@ const CreateCompany = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.companyName}
                   helperText={fieldErrors.companyName}
-                  // inputRef={companyNameRef}
+                // inputRef={companyNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -321,6 +336,7 @@ const CreateCompany = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  type="email"
                   name="companyAdminEmail"
                   value={formData.companyAdminEmail}
                   onChange={handleInputChange}

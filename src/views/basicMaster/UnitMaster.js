@@ -78,7 +78,7 @@ export const UnitMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const codeRegex = /^[a-zA-Z0-9_-]*$/;
     const descRegex = /^[A-Za-z0-9 ]*$/;
 
     if (name === 'unitCode' && !codeRegex.test(value)) {

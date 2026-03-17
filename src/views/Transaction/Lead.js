@@ -149,6 +149,7 @@ const Lead = ({ selectedRow }) => {
     { accessorKey: 'clientName', header: 'Name', size: 140 },
     { accessorKey: 'clientType', header: 'Type', size: 140 },
     { accessorKey: 'contactNo', header: 'Contact No', size: 140 },
+    { accessorKey: 'stage', header: 'Stage', size: 140 },
     { accessorKey: 'mail', header: 'Email', size: 140 },
     { accessorKey: 'industry', header: 'Industry', size: 140 },
     { accessorKey: 'source', header: 'Source', size: 140 },
@@ -391,26 +392,41 @@ const Lead = ({ selectedRow }) => {
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
 
-    let errorMessage = '';
-    if (name === 'mobileNo' && value && !/^\d{10}$/.test(value)) {
-      errorMessage = 'Invalid mobile number (10 digits required)';
-    }
-    if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      errorMessage = 'Invalid email format';
-    }
-    if (name === 'pinCode' && value && !/^\d{6}$/.test(value)) {
-      errorMessage = 'Invalid pin code (6 digits required)';
+    let errorMessage = "";
+
+    // Email - allow only valid email characters
+    if (name === "email") {
+      const emailAllowedRegex = /^[a-zA-Z0-9@._%+-]*$/;
+
+      if (!emailAllowedRegex.test(value)) {
+        return; // block typing invalid characters like []{}()
+      }
+
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        errorMessage = "Invalid email format";
+      }
     }
 
-    if (errorMessage) {
-      setFieldErrors((prev) => ({ ...prev, [name]: errorMessage }));
-    } else {
-      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    // Contact number
+    if (name === "contactNo") {
+      if (!/^\d*$/.test(value)) return; // block non-numeric
+      if (value.length > 10) return;
     }
+
+    // Pincode
+    if (name === "pinCode") {
+      if (!/^\d*$/.test(value)) return;
+      if (value.length > 6) return;
+    }
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: errorMessage
+    }));
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value
     }));
   };
   // const handleInputChange = (e) => {
@@ -848,7 +864,7 @@ const Lead = ({ selectedRow }) => {
       }
     } catch (error) {
       console.error('Logo Upload Error:', error);
-      showToast('error', 'Failed to upload Logo');
+      showToast('error', 'Failed to upload Attachment');
     }
   };
   useEffect(() => {

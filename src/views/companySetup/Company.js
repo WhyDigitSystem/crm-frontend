@@ -142,75 +142,65 @@ const Company = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, checked, type } = e.target || e;
+    const { name, value, checked, type } = e.target;
 
-    // Regular expressions for validation
     const nameRegex = /^[A-Za-z ]*$/;
     const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
+    const gstRegex = /^[0-9A-Z]*$/;
+    const websiteRegex = /^[a-zA-Z0-9:/._-]*$/;
 
     let newValue = value;
-    let error = '';
+    let error = "";
 
-    // Validation logic
-    if (name === 'ceo') {
-      if (!nameRegex.test(value)) {
-        error = 'Only alphabetic characters are allowed';
-      }
-    } else if (name === 'pincode') {
-      if (!numericRegex.test(value)) {
-        error = 'Only numeric characters are allowed';
-      } else if (value.length > 6) {
-        error = 'Only 6 digits are allowed';
-      }
-    } else if (name === 'mobileNo') {
-      if (!alphanumericRegex.test(value)) {
-        error = 'Special characters are not allowed';
-      } else if (value.length > 10) {
-        error = 'Only 10 characters are allowed';
-      }
+    // CEO validation (only alphabets)
+    if (name === "ceo") {
+      if (!nameRegex.test(value)) return;
     }
 
-    // Update error state
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: error
-    }));
-
-    // Only update form data if there's no error
-    if (!error) {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: newValue
-      }));
+    // Pincode validation
+    if (name === "pincode") {
+      if (!numericRegex.test(value)) return;
+      if (value.length > 6) return;
     }
 
-    if (type === 'checkbox') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: checked
-      }));
-      return; // Exit here to avoid further processing for checkboxes
+    // Mobile validation
+    if (name === "mobileNo") {
+      if (!numericRegex.test(value)) return;
+      if (value.length > 10) return;
     }
 
-   
+    // GST validation
+    if (name === "gst") {
+      const upperValue = value.toUpperCase();
 
-    // Handle dropdowns separately
-    if (type === 'select-one') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value
+      if (!gstRegex.test(upperValue)) return;
+      if (upperValue.length > 15) return;
+
+      newValue = upperValue;
+    }
+
+    // Website validation
+    if (name === "webSite") {
+      if (!websiteRegex.test(value)) return;
+    }
+
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked,
       }));
       return;
     }
 
-    // If it's not a checkbox or dropdown, process the input normally
-    if (type !== 'checkbox' && type !== 'select-one') {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: newValue
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
   };
 
   const getCompanyById = async (row) => {
@@ -226,7 +216,7 @@ const Company = () => {
         const particularCompany = response.paramObjectsMap.companyVO[0];
         console.log('PARTICULAR COMPANY IS:', particularCompany);
         setLogo(response.paramObjectsMap.companyVO[0].companyLogo);
-        
+
         setFormData({
           companyCode: particularCompany.companyCode,
           companyName: particularCompany.companyName,
@@ -443,7 +433,7 @@ const Company = () => {
   const handleView = () => {
     console.log('LIST VIEW DATAS ARE:', listViewData);
 
-    setListView(!listView); 
+    setListView(!listView);
   };
 
   const handleDateChange = (field, newValue) => {
@@ -609,6 +599,7 @@ const Company = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.pincode}
                   helperText={fieldErrors.pincode}
+                  inputProps={{ maxLength: 6 }}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -622,6 +613,7 @@ const Company = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.mobileNo}
                   helperText={fieldErrors.mobileNo}
+                  inputProps={{ maxLength: 10 }}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -635,6 +627,7 @@ const Company = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.gst}
                   helperText={fieldErrors.gst}
+                  inputProps={{ maxLength: 15 }}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -650,8 +643,8 @@ const Company = () => {
                   helperText={fieldErrors.webSite}
                 />
               </div>
-             
-           
+
+
               <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>
                   <Button

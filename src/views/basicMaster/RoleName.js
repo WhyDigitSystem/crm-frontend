@@ -77,24 +77,29 @@ const RoleName = () => {
     }
   };
   const handleInputChange = (e) => {
-    const { name, value, selectionStart, selectionEnd, type } = e.target;
+    const { name, value } = e.target;
 
-    let errorMessage = '';
+    let regex;
 
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      setFormData({ ...formData, [name]: value });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
-      if (type === 'text' || type === 'textarea') {
-        setTimeout(() => {
-          const inputElement = document.getElementsByName(name)[0];
-          if (inputElement && inputElement.setSelectionRange) {
-            inputElement.setSelectionRange(selectionStart, selectionEnd);
-          }
-        }, 0);
-      }
+    switch (name) {
+      case 'roleName':
+        regex = /^[a-zA-Z\s]*$/; // only alphabets and space
+        if (!regex.test(value)) return;
+        break;
+
+      default:
+        break;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: ''
+    }));
   };
   const handleClear = () => {
     setFormData({
@@ -112,9 +117,13 @@ const RoleName = () => {
   const handleSave = async () => {
     setLoading(true);
     const errors = {};
-    if (!formData.roleName) {
+
+    if (!formData.roleName.trim()) {
       errors.roleName = 'Role Name is required';
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.roleName)) {
+      errors.roleName = 'Role Name should contain only alphabets';
     }
+
     setFieldErrors(errors);
 
     if (Object.keys(errors).length === 0) {
@@ -187,6 +196,8 @@ const RoleName = () => {
                     name="roleName"
                     value={formData.roleName}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.roleName}
+                    helperText={fieldErrors.roleName}
                   />
                 </div>
                 <div className="col-md-3 mb-3">

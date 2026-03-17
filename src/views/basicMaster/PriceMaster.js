@@ -104,18 +104,29 @@ export const PriceMaster = () => {
   };
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
-    const updatedValue = name === 'active' ? checked : value;
+
+    // Prevent negative discount
+    if (name === "discount" && value < 0) {
+      setFieldErrors({ ...fieldErrors, discount: "Discount cannot be negative" });
+      return;
+    }
+
+    const updatedValue = name === "active" ? checked : value;
+
     const updatedFormData = {
       ...formData,
       [name]: updatedValue
     };
+
     const price = parseFloat(updatedFormData.price) || 0;
     const discount = parseFloat(updatedFormData.discount) || 0;
+
     if (price && discount >= 0) {
       updatedFormData.sellingPrice = price - (discount / 100) * price;
     }
+
     setFormData(updatedFormData);
-    setFieldErrors({ ...fieldErrors, [name]: '' });
+    setFieldErrors({ ...fieldErrors, [name]: "" });
   };
 
   const handleClear = () => {
@@ -325,6 +336,7 @@ export const PriceMaster = () => {
                   onChange={handleInputChange}
                   size="small"
                   fullWidth
+                  inputProps={{ min: 0 }}
                 />
               </div>
               <div className="col-md-3 mb-3">
