@@ -26,7 +26,7 @@ const LoseGraph = () => {
         try {
             const res = await apiCalls(
                 'get',
-                `/userdashboard/getLoseDealsDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&type=monthly`
+                `/userdashboard/getLoseDealsDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&type=monthly`
             );
 
             if (res?.status) {

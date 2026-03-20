@@ -34,7 +34,7 @@ const LeadSource = () => {
         try {
             const res = await apiCalls(
                 'get',
-                `/userdashboard/getSourceCountDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&type=monthly`
+                `/userdashboard/getSourceCountDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&type=monthly`
             );
 
             if (res?.status) {

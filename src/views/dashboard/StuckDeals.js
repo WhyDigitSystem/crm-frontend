@@ -56,156 +56,147 @@ export default function StuckDeals() {
     }, []);
 
     const fetchStuckDeals = async () => {
-        const res = await apiCalls('get', `/userdashboard/getStuckDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
-        // const res = await axios.get(
-        //     `/userdashboard/getStuckDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`,
-            //   {
-            //     params: {
-            //       branchCode: branchCode,
-            //       finYear: finYear,
-            //       orgId: orgId
-            //     }
-            //   }
-    const list =
-        res.data?.paramObjectsMap?.stuckDetailsInformation || [];
+        const res = await apiCalls('get', `/userdashboard/getStuckDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}`);
 
-    setStuckData(list);
+        const list = res.data?.paramObjectsMap?.stuckDetailsInformation || [];
 
-    setSummary({
-        opportunity:
-            list.find(i => i.Head.includes('Opportunity'))?.Details.length || 0,
-        quotation:
-            list.find(i => i.Head.includes('Quotation'))?.Details.length || 0,
-        salesorder:
-            list.find(i => i.Head.includes('Salesorder'))?.Details.length || 0
-    });
-};
+        setStuckData(list);
 
-const navigateTo = (item) => {
-    navigate(`${routeMap[item.screenCode]}?docid=${item.docid}`);
-};
+        setSummary({
+            opportunity:
+                list.find(i => i.Head.includes('Opportunity'))?.Details.length || 0,
+            quotation:
+                list.find(i => i.Head.includes('Quotation'))?.Details.length || 0,
+            salesorder:
+                list.find(i => i.Head.includes('Salesorder'))?.Details.length || 0
+        });
+    };
 
-/* ================== UI ================== */
+    const navigateTo = (item) => {
+        navigate(`${routeMap[item.screenCode]}?docid=${item.docid}`);
+    };
 
-return (
-    <Card>
-        <CardContent>
-            {/* ===== HEADER ===== */}
-            <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-            >
-                <Typography fontWeight={600}>
-                    ⏳ Stuck Deals
-                </Typography>
-                <Chip
-                    label="Needs Attention"
-                    color="warning"
+    /* ================== UI ================== */
+
+    return (
+        <Card>
+            <CardContent>
+                {/* ===== HEADER ===== */}
+                <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                >
+                    <Typography fontWeight={600}>
+                        ⏳ Stuck Deals
+                    </Typography>
+                    <Chip
+                        label="Needs Attention"
+                        color="warning"
+                        size="small"
+                    />
+                </Stack>
+
+                {/* ===== SUMMARY ===== */}
+                <Stack spacing={1.5} mt={2}>
+                    <SummaryRow
+                        label="Opportunities"
+                        value={summary.opportunity}
+                        color="error"
+                    />
+                    <SummaryRow
+                        label="Quotations"
+                        value={summary.quotation}
+                        color="warning"
+                    />
+                    <SummaryRow
+                        label="Sales Orders"
+                        value={summary.salesorder}
+                        color="error"
+                    />
+                </Stack>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* ===== DETAILS ===== */}
+                {stuckData.map((group, idx) => (
+                    <Accordion key={idx} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                                <Typography fontWeight={600}>
+                                    {group.Head}
+                                </Typography>
+                                <Chip
+                                    label={group.Details.length}
+                                    size="small"
+                                    color="error"
+                                />
+                            </Stack>
+                        </AccordionSummary>
+
+                        <AccordionDetails>
+                            <Stack spacing={1}>
+                                {group.Details.map((item, i) => {
+                                    const aging = getAging(item.createdon);
+
+                                    return (
+                                        <Stack
+                                            key={i}
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                            sx={{
+                                                p: 1.2,
+                                                borderRadius: 1,
+                                                bgcolor: 'grey.50',
+                                                cursor: 'pointer',
+                                                '&:hover': {
+                                                    bgcolor: 'grey.100'
+                                                }
+                                            }}
+                                            onClick={() => navigateTo(item)}
+                                        >
+                                            {/* LEFT */}
+                                            <Stack>
+                                                <Typography fontWeight={600}>
+                                                    {item.clientName}
+                                                </Typography>
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                >
+                                                    {item.docid} • {item.contactName}
+                                                </Typography>
+                                            </Stack>
+
+                                            {/* RIGHT */}
+                                            <Stack alignItems="flex-end" spacing={0.5}>
+                                                <Chip
+                                                    label={aging.label}
+                                                    color={aging.color}
+                                                    size="small"
+                                                />
+                                                <Typography variant="caption">
+                                                    {item.createdon}
+                                                </Typography>
+                                            </Stack>
+                                        </Stack>
+                                    );
+                                })}
+                            </Stack>
+                        </AccordionDetails>
+                    </Accordion>
+                ))}
+
+                <Button
                     size="small"
-                />
-            </Stack>
-
-            {/* ===== SUMMARY ===== */}
-            <Stack spacing={1.5} mt={2}>
-                <SummaryRow
-                    label="Opportunities"
-                    value={summary.opportunity}
-                    color="error"
-                />
-                <SummaryRow
-                    label="Quotations"
-                    value={summary.quotation}
-                    color="warning"
-                />
-                <SummaryRow
-                    label="Sales Orders"
-                    value={summary.salesorder}
-                    color="error"
-                />
-            </Stack>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* ===== DETAILS ===== */}
-            {stuckData.map((group, idx) => (
-                <Accordion key={idx} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                            <Typography fontWeight={600}>
-                                {group.Head}
-                            </Typography>
-                            <Chip
-                                label={group.Details.length}
-                                size="small"
-                                color="error"
-                            />
-                        </Stack>
-                    </AccordionSummary>
-
-                    <AccordionDetails>
-                        <Stack spacing={1}>
-                            {group.Details.map((item, i) => {
-                                const aging = getAging(item.createdon);
-
-                                return (
-                                    <Stack
-                                        key={i}
-                                        direction="row"
-                                        justifyContent="space-between"
-                                        alignItems="center"
-                                        sx={{
-                                            p: 1.2,
-                                            borderRadius: 1,
-                                            bgcolor: 'grey.50',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                bgcolor: 'grey.100'
-                                            }
-                                        }}
-                                        onClick={() => navigateTo(item)}
-                                    >
-                                        {/* LEFT */}
-                                        <Stack>
-                                            <Typography fontWeight={600}>
-                                                {item.clientName}
-                                            </Typography>
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                            >
-                                                {item.docid} • {item.contactName}
-                                            </Typography>
-                                        </Stack>
-
-                                        {/* RIGHT */}
-                                        <Stack alignItems="flex-end" spacing={0.5}>
-                                            <Chip
-                                                label={aging.label}
-                                                color={aging.color}
-                                                size="small"
-                                            />
-                                            <Typography variant="caption">
-                                                {item.createdon}
-                                            </Typography>
-                                        </Stack>
-                                    </Stack>
-                                );
-                            })}
-                        </Stack>
-                    </AccordionDetails>
-                </Accordion>
-            ))}
-
-            <Button
-                size="small"
-                sx={{ mt: 1, px: 0 }}
-            >
-                View All Deals
-            </Button>
-        </CardContent>
-    </Card>
-);
+                    sx={{ mt: 1, px: 0 }}
+                >
+                    View All Deals
+                </Button>
+            </CardContent>
+        </Card>
+    );
 }
 
 /* ================== SUB COMPONENT ================== */

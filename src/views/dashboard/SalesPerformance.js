@@ -68,7 +68,7 @@ const SalesPerformance = () => {
   const getCompanyTarget = async () => {
     const res = await apiCalls(
       'get',
-      `/commonmaster/getCompanyTargetDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&periodType=monthly&type=${targetBasis}`
+      `/commonmaster/getCompanyTargetDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&periodType=monthly&type=${targetBasis}`
     );
 
     if (res?.status) {
@@ -84,7 +84,7 @@ const SalesPerformance = () => {
   const getEmployeePerformance = async () => {
     const res = await apiCalls(
       'get',
-      `/commonmaster/getEmployeePerformanceDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&performance=${performanceType}&periodType=monthly&type=${targetBasis}`
+      `/commonmaster/getEmployeePerformanceDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&performance=${performanceType}&periodType=monthly&type=${targetBasis}`
     );
 
     if (res?.status) {

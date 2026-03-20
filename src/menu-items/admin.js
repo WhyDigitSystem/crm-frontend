@@ -30,15 +30,25 @@ import {
 } from '@tabler/icons-react';
 
 /* ---------- Screen Access Utility ---------- */
+
+const userType = localStorage.getItem('userType');
+
 const hasScreenAccess = (screenId) => {
+
+  if (userType === 'SADMIN' || userType === 'ADMIN') {
+    return true;
+  }
+
   const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
   const access = screenAccess?.[screenId];
+
   return access?.canRead || access?.canWrite || access?.canDelete;
 };
 
 /* ================= SETUP ================= */
 
 const setupChildren = [
+  userType === 'SADMIN' &&
   hasScreenAccess('CC') && {
     id: 'createCompany',
     title: 'Create Company',
@@ -46,6 +56,7 @@ const setupChildren = [
     url: '/companysetup/createcompany',
     icon: IconBuilding
   },
+  userType === 'ADMIN' &&
   hasScreenAccess('CS') && {
     id: 'companySetup',
     title: 'Company Setup',
@@ -129,6 +140,7 @@ const admin =
               icon: IconSettings,
               children: setupChildren
             },
+            userType === 'ADMIN' &&
             basicMasterChildren.length && {
               id: 'basicMaster',
               title: 'Basic Master',
@@ -136,6 +148,7 @@ const admin =
               icon: IconDatabase,
               children: basicMasterChildren
             },
+            userType === 'ADMIN' &&
             documentChildren.length && {
               id: 'documents',
               title: 'Documents',
@@ -143,6 +156,7 @@ const admin =
               icon: IconFileDescription,
               children: documentChildren
             },
+            userType === 'ADMIN' &&
             userChildren.length && {
               id: 'users',
               title: 'User Management',

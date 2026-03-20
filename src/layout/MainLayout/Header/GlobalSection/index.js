@@ -52,6 +52,8 @@ const GlobalSection = () => {
   const [globalParameter, setGlobalParameter] = useState([]);
   const [branchName, setBranchName] = useState('');
 
+  const [branchList, setBranchList] = useState([]);
+
   const anchorRef = useRef(null);
 
   useEffect(() => {
@@ -74,37 +76,43 @@ const GlobalSection = () => {
   const [selectedBranch, setSelectedBranch] = useState({ branch: '', branchcode: '' });
 
   const handleBranchChange = (event) => {
-    const branchcode = event.target.value;
-    const branch = branchVO.find((option) => option.branchcode === branchcode);
+    const selectedCode = event.target.value;
 
-    if (branch) {
-      setSelectedBranch({ branch: branch.branch, branchcode: branchcode });
-      setBranchName(branch.branch); // Set the branchName state
+    const selectedBranch = branchList.find(
+      (item) => item.value === selectedCode
+    );
+
+    console.log("Selected Branch:", selectedBranch); // DEBUG
+
+    if (selectedBranch) {
+      setBranchValue(selectedCode);
+      setBranchName(selectedBranch.label);
     }
-
-    setBranchValue(branchcode);
-
-    // getCustomer(branchcode);
   };
+
   const getAccessBranch = async () => {
     try {
-      const result = await apiCalls('get', `/GlobalParam/globalparamBranchByUserName?orgid=${orgId}&userName=${userName}`);
-      setBranchVO(result.paramObjectsMap.GlopalParameters || []);
-      console.log('Test', result);
+      const result = await apiCalls(
+        'get',
+        `/GlobalParam/globalparam/username?orgid=${orgId}&userid=${userId}`
+      );
+
+      const rawBranches = result.paramObjectsMap.globalParam || [];
+
+      const formattedBranches = rawBranches.map((item) => ({
+        label: item.branch,
+        value: item.branchcode
+      }));
+
+      setBranchVO(rawBranches);
+      setBranchList(formattedBranches);
+
+      console.log('Formatted Branches:', formattedBranches);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  // const getFinYear = async () => {
-  //   try {
-  //     const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
-  //     setFinVO(result.paramObjectsMap.financialYearVOs || []);
-  //     console.log('Test', result);
-  //   } catch (err) {
-  //     console.log('error', err);
-  //   }
-  // };
   const getFinYear = async () => {
     try {
       const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
@@ -119,50 +127,59 @@ const GlobalSection = () => {
 
   const getGlobalParameter = async () => {
     try {
-      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userid=${userId}`);
-      const globalParameterVO = result.paramObjectsMap.globalParam;
-      setGlobalParameter(globalParameterVO);
-      // setCustomerValue(globalParameterVO.customer);
-      // setClientValue(globalParameterVO.client);
-      setFinYearValue(globalParameterVO.finYear);
-      // setWarehouseValue(globalParameterVO.warehouse);
-      setBranchValue(globalParameterVO.branchcode);
-      setBranchName(globalParameterVO.branch);
-      console.log('Test', result);
+      const result = await apiCalls(
+        'get',
+        `GlobalParam/getGlobalParamByOrgId?orgId=${orgId}&userId=${userId}`
+      );
 
-      // localStorage.setItem('customer', globalParameterVO.customer);
-      // localStorage.setItem('client', globalParameterVO.client);
-      localStorage.setItem('finYear', globalParameterVO.finYear);
-      // localStorage.setItem('warehouse', globalParameterVO.warehouse);
-      localStorage.setItem('branchcode', globalParameterVO.branchcode);
-      localStorage.setItem('branch', globalParameterVO.branch);
+      const globalParameterVO = result.paramObjectsMap.globalParameterVO || {};
 
-      // getCustomer(globalParameterVO.branchcode);
-      // getClient(globalParameterVO.customer, globalParameterVO.branchcode);
-      // getWareHouse(globalParameterVO.branchcode);
+      console.log('Saved Global Param:', globalParameterVO);
+
+      // ✅ Restore values into state
+      setFinYearValue(globalParameterVO.finYear || '');
+      setBranchValue(globalParameterVO.branchcode || '');
+      setBranchName(globalParameterVO.branch || '');
+
+      // optional localStorage
+      localStorage.setItem('finYear', globalParameterVO.finYear || '');
+      localStorage.setItem('branchcode', globalParameterVO.branchcode || '');
+      localStorage.setItem('branch', globalParameterVO.branch || '');
+
     } catch (err) {
       console.log('error', err);
     }
   };
 
   const handleSubmit = async () => {
+    console.log("branchValue:", branchValue);
+    console.log("branchName:", branchName);
+    console.log("finYearValue:", finYearValue);
+
+    if (!branchValue || !finYearValue) {
+      showToast('error', 'Please select Branch and Financial Year');
+      return;
+    }
+
     const formData = {
       branch: branchName,
       branchcode: branchValue,
-      finYear: finYearValue,
-      // warehouse: warehouseValue,
-      userid: parseInt(userId),
+      finYear: Number(finYearValue),
+      userid: Number(userId),
       orgId
     };
+
+    console.log("FINAL PAYLOAD:", formData); // 🔥 CHECK THIS
+
     try {
       const result = await apiCalls('put', `GlobalParam/globalparam`, formData);
       showToast('success', 'Global Parameter updated successfully');
       setTimeout(() => {
         window.location.reload();
       }, 400);
-      console.log('Test', result);
     } catch (err) {
       console.log('error', err);
+      showToast('error', 'Failed to update Global Parameter');
     }
   };
 
@@ -202,16 +219,16 @@ const GlobalSection = () => {
               transition: 'all .2s ease-in-out',
               // background: theme.palette.primary.light, 
               // color: theme.palette.primary.main, 
-               backgroundColor: '#3B82F6',
-               color: 'white',
+              backgroundColor: '#3B82F6',
+              color: 'white',
               '&[aria-controls="menu-list-grow"],&:hover': {
                 // background: theme.palette.primary.main, 
                 // color: theme.palette.primary.contrastText 
-                 backgroundColor: "#1D4ED8",
+                backgroundColor: "#1D4ED8",
               },
-               '&:hover .menu-icon': {
-                      transform: 'rotate(360deg)',
-                    }
+              '&:hover .menu-icon': {
+                transform: 'rotate(360deg)',
+              }
             }}
             ref={anchorRef}
             aria-controls={open ? 'menu-list-grow' : undefined}
@@ -219,9 +236,9 @@ const GlobalSection = () => {
             onClick={handleToggle}
             color="inherit"
           >
-            <IconWorld  className="menu-icon" stroke={1.5} size="1.3rem"   style={{
-        transition: 'transform 0.3s ease'
-      }} />
+            <IconWorld className="menu-icon" stroke={1.5} size="1.3rem" style={{
+              transition: 'transform 0.3s ease'
+            }} />
           </Avatar>
         </ButtonBase>
       </Box>
@@ -288,7 +305,7 @@ const GlobalSection = () => {
                                 {/* Select FinYear */}
                               </option>
                               {finVO?.map((option) => (
-                                <option key={option.id} value={option.finYear}>
+                                <option key={option.id} value={Number(option.finYear)}>
                                   {option.finYear}
                                 </option>
                               ))}
@@ -314,9 +331,9 @@ const GlobalSection = () => {
                               <option value="" disabled>
                                 {/* Select Branch */}
                               </option>
-                              {branchVO.map((option) => (
-                                <option key={option.branchcode} value={option.branchcode}>
-                                  {option.branch}
+                              {branchList.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
                                 </option>
                               ))}
                             </TextField>
@@ -331,7 +348,12 @@ const GlobalSection = () => {
                   </Grid>
                   <Divider />
                   <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
-                    <Button size="small" disableElevation onClick={handleSubmit}>
+                    <Button
+                      size="small"
+                      disableElevation
+                      onClick={handleSubmit}
+                      disabled={!branchValue || !finYearValue}
+                    >
                       change
                     </Button>
                   </CardActions>

@@ -62,7 +62,7 @@ const KPICardsDashboard = () => {
         try {
             const response = await apiCalls(
                 'get',
-                `/userdashboard/getFollowUpDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&userName=${employeeCode}`
+                `/userdashboard/getFollowUpDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&userName=${employeeCode}`
             );
 
             if (
@@ -90,7 +90,7 @@ const KPICardsDashboard = () => {
     };
     const getKPIDetails = async () => {
         try {
-            const response = await apiCalls('get', `/userdashboard/getDashboardDetailsBasedUserName?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&userName=${employeeCode}`);
+            const response = await apiCalls('get', `/userdashboard/getDashboardDetailsBasedUserName?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&userName=${employeeCode}`);
             if (response.status === true) {
                 const quality = response.paramObjectsMap.clientInformation[0];
                 setSummaryCard({

@@ -165,7 +165,12 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('screens', JSON.stringify(allScreensVO));
         dispatch(setUserRole(userRole));
         resetForm();
-        navigate('/dashboard/default');
+        {
+          userType === 'SADMIN' ?
+          navigate('/companysetup/createcompany') :
+          navigate('/dashboard/default');
+        }
+        // navigate('/dashboard/default');
         setTimeout(() => {
           window.location.reload();
         }, 500);

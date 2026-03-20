@@ -693,7 +693,6 @@ const EmployeeDetails = () => {
                 />
               </div>
 
-              {/* Employee Code */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Code"
@@ -701,11 +700,14 @@ const EmployeeDetails = () => {
                   size="small"
                   fullWidth
                   name="employeeCode"
+                  disabled
                   value={formData.employeeCode}
                   onChange={handleInputChange}
                   error={!!fieldErrors.employeeCode}
                   helperText={fieldErrors.employeeCode}
-                  disabled
+                  InputLabelProps={{
+                    shrink: !!formData.employeeCode   // ✅ ONLY shrink when value exists
+                  }}
                 />
               </div>
 
@@ -949,7 +951,9 @@ const EmployeeDetails = () => {
                   error={!!fieldErrors.reportingDesignation}
                   helperText={fieldErrors.reportingDesignation}
                   disabled
-                  InputLabelProps={{ shrink: true }}
+                  InputLabelProps={{
+                    shrink: !!formData.employeeCode   // ✅ ONLY shrink when value exists
+                  }}
                 />
               </div>
               {/* Employee Address */}

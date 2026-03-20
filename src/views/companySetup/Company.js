@@ -31,6 +31,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 const Company = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
@@ -92,9 +93,15 @@ const Company = () => {
   const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
     getAllCountries();
-    getCompanyDetails();
     getAllCurrency();
+    getCompanyDetails();
   }, []); // Run only once on mount
+
+  // useEffect(() => {
+  //   if (userType === 'SADMIN') {
+  //     getCompanyDetails();
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (formData.country) {
@@ -230,6 +237,7 @@ const Company = () => {
           mobileNo: particularCompany.phone,
           gst: particularCompany.gst,
           webSite: particularCompany.webSite,
+          active: particularCompany.active === 'Active'
         });
 
       } else {
@@ -333,7 +341,7 @@ const Company = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         id: orgId,
-        active: formData.active,
+        active: !!formData.active,
         address: formData.address,
         cancel: true,
         ceo: formData.ceo,
@@ -464,7 +472,12 @@ const Company = () => {
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            {
+              userType === 'SADMIN' ? (
+                <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              ) : null
+            }
+
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
           </div>
         </div>

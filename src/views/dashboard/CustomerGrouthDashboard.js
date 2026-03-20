@@ -38,7 +38,7 @@ const CustomerGrowthDashboard = () => {
         try {
             const res = await apiCalls(
                 'get',
-                `/userdashboard/getCustomerGrowthDetails?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}&type=${view}`
+                `/userdashboard/getCustomerGrowthDetails?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&type=${view}`
             );
 
             if (res?.status) {
