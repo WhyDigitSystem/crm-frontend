@@ -34,7 +34,7 @@ import {
 const userType = localStorage.getItem('userType');
 
 const hasScreenAccess = (screenId) => {
-
+  // Full access for admins
   if (userType === 'SADMIN' || userType === 'ADMIN') {
     return true;
   }
@@ -49,14 +49,14 @@ const hasScreenAccess = (screenId) => {
 
 const setupChildren = [
   userType === 'SADMIN' &&
-  hasScreenAccess('CC') && {
-    id: 'createCompany',
-    title: 'Create Company',
-    type: 'item',
-    url: '/companysetup/createcompany',
-    icon: IconBuilding
-  },
-  userType === 'ADMIN' &&
+    hasScreenAccess('CC') && {
+      id: 'createCompany',
+      title: 'Create Company',
+      type: 'item',
+      url: '/companysetup/createcompany',
+      icon: IconBuilding
+    },
+
   hasScreenAccess('CS') && {
     id: 'companySetup',
     title: 'Company Setup',
@@ -120,54 +120,54 @@ const userChildren = [
 
 const admin =
   setupChildren.length ||
-    basicMasterChildren.length ||
-    documentChildren.length ||
-    userChildren.length
+  basicMasterChildren.length ||
+  documentChildren.length ||
+  userChildren.length
     ? {
-      id: 'admin',
-      type: 'group',
-      children: [
-        {
-          id: 'adminCollapse',
-          title: 'Admin',
-          type: 'collapse',
-          icon: IconUsers,
-          children: [
-            setupChildren.length && {
-              id: 'setup',
-              title: 'Setup',
-              type: 'collapse',
-              icon: IconSettings,
-              children: setupChildren
-            },
-            userType === 'ADMIN' &&
-            basicMasterChildren.length && {
-              id: 'basicMaster',
-              title: 'Basic Master',
-              type: 'collapse',
-              icon: IconDatabase,
-              children: basicMasterChildren
-            },
-            userType === 'ADMIN' &&
-            documentChildren.length && {
-              id: 'documents',
-              title: 'Documents',
-              type: 'collapse',
-              icon: IconFileDescription,
-              children: documentChildren
-            },
-            userType === 'ADMIN' &&
-            userChildren.length && {
-              id: 'users',
-              title: 'User Management',
-              type: 'collapse',
-              icon: IconUser,
-              children: userChildren
-            }
-          ].filter(Boolean)
-        }
-      ]
-    }
+        id: 'admin',
+        type: 'group',
+        children: [
+          {
+            id: 'adminCollapse',
+            title: 'Admin',
+            type: 'collapse',
+            icon: IconUsers,
+            children: [
+              setupChildren.length && {
+                id: 'setup',
+                title: 'Setup',
+                type: 'collapse',
+                icon: IconSettings,
+                children: setupChildren
+              },
+
+              basicMasterChildren.length && {
+                id: 'basicMaster',
+                title: 'Basic Master',
+                type: 'collapse',
+                icon: IconDatabase,
+                children: basicMasterChildren
+              },
+
+              documentChildren.length && {
+                id: 'documents',
+                title: 'Documents',
+                type: 'collapse',
+                icon: IconFileDescription,
+                children: documentChildren
+              },
+
+              userChildren.length && {
+                id: 'users',
+                title: 'User Management',
+                type: 'collapse',
+                icon: IconUser,
+                children: userChildren
+              }
+            ].filter(Boolean)
+          }
+        ]
+      }
     : null;
 
 export default admin;

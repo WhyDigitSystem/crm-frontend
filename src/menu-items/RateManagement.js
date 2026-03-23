@@ -3,8 +3,15 @@ import { IconCurrencyRupee } from '@tabler/icons-react';
 
 // screen access utility
 const hasScreenAccess = (screenId) => {
+    const userType = localStorage.getItem('userType');
+
+    if (userType === 'ADMIN') {
+        return true;
+    }
+
     const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
     const access = screenAccess?.[screenId];
+
     return access?.canRead || access?.canWrite || access?.canDelete;
 };
 
@@ -35,7 +42,7 @@ const rate =
                     id: 'rateCollapse',
                     title: 'Rate Mgmt',
                     type: 'collapse',
-                    icon: icons.IconCurrencyRupee, 
+                    icon: icons.IconCurrencyRupee,
                     children: rateChildren
                 }
             ]

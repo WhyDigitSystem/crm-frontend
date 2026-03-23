@@ -4,8 +4,15 @@ import { IconSquareRoundedPlus, IconSettingsPlus } from '@tabler/icons-react';
 
 // screen access utility
 const hasScreenAccess = (screenId) => {
+  const userType = localStorage.getItem('userType');
+
+  if (userType === 'ADMIN') {
+    return true;
+  }
+
   const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
   const access = screenAccess?.[screenId];
+
   return access?.canRead || access?.canWrite || access?.canDelete;
 };
 
@@ -46,18 +53,18 @@ const setupChildren = [
 const companySetup =
   setupChildren.length > 0
     ? {
-        id: 'companySetup',
-        type: 'group',
-        children: [
-          {
-            id: 'companySetup',
-            title: 'Setup',
-            type: 'collapse',
-            icon: icons.IconCopyright,
-            children: setupChildren
-          }
-        ]
-      }
+      id: 'companySetup',
+      type: 'group',
+      children: [
+        {
+          id: 'companySetup',
+          title: 'Setup',
+          type: 'collapse',
+          icon: icons.IconCopyright,
+          children: setupChildren
+        }
+      ]
+    }
     : null;
 
 export default companySetup;
