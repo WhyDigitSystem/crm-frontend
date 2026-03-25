@@ -31,6 +31,8 @@ const StaticReport2 = Loadable(lazy(() => import('views/Reports/StaticReport2'))
 const BulkEmail = Loadable(lazy(() => import('views/BulkEmail/BulkEmail')));
 // import { element } from 'prop-types';
 //Report
+const CheckInOutReport = Loadable(lazy(() => import('views/Reports/CheckInOutReport')));
+const AttendanceReport = Loadable(lazy(() => import('views/Reports/AttendanceReport')));
 const LeadReport = Loadable(lazy(() => import('views/Reports/LeadReport')));
 const OpportunityReport = Loadable(lazy(() => import('views/Reports/OpportunityReport')));
 const QuotationReport = Loadable(lazy(() => import('views/Reports/QuotationReport')));
@@ -333,6 +335,14 @@ const FinanceRoute = {
     {
       path: '/Report/AdvertisingReport',
       element: <AdvertisingReport />
+    },
+    {
+      path: '/Report/CheckInOutReport',
+      element: <CheckInOutReport />
+    },
+    {
+      path: '/Report/AttendanceReport',
+      element: <AttendanceReport />
     },
     {
       path: '/Report/LeadReport',

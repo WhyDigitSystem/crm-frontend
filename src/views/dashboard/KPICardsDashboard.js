@@ -8,11 +8,9 @@ import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import CallOutlinedIcon from '@mui/icons-material/CallOutlined';
-import CircularProgress from '@mui/material/CircularProgress';
-import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import LinearProgress from '@mui/material/LinearProgress';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 import {
     Stack,
     Chip,
@@ -25,18 +23,30 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    Box
+    Box,
+    Card,
+    CardContent,
+    TextField
 } from '@mui/material';
 import apiCalls from 'apicall';
 import SectionCard from './Default/SectionCard';
+
 const KPICardsDashboard = () => {
     const [orgId] = useState(localStorage.getItem('orgId'));
     const [branch] = useState(localStorage.getItem('branch'));
     const [branchCode] = useState(localStorage.getItem('branchcode'));
     const [finYear] = useState(localStorage.getItem('finYear'));
     const [employeeCode] = useState(localStorage.getItem('employeeCode'));
+    const [employeeName] = useState(localStorage.getItem('employeeName'));
+    // const [designation] = useState(localStorage.getItem('designation'));
+    const designation = 'Software Developer'
 
     const [openTaskDialog, setOpenTaskDialog] = useState(false);
+    const [checkInStatus, setCheckInStatus] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    const [checkInTime, setCheckInTime] = useState(null);
+    const [checkOutTime, setCheckOutTime] = useState(null);
 
     const [summaryCard, setSummaryCard] = useState({
         totalLeads: 0,
@@ -54,10 +64,151 @@ const KPICardsDashboard = () => {
         type: '',
         direction: '',
     }])
+
     useEffect(() => {
         getKPIDetails();
         getTodaysTask();
+        checkExistingAttendance();
+        getCheckInOutTimeDetails();
+
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+
+        return () => clearInterval(timer);
     }, [])
+
+    const checkExistingAttendance = async () => {
+        try {
+            const response = await apiCalls(
+                'get',
+                `/attendance/getTodayAttendance?branchCode=${branchCode}&orgId=${orgId}&userName=${employeeCode}`
+            );
+
+            if (response?.status === true && response?.paramObjectsMap?.attendance) {
+                const attendance = response.paramObjectsMap.attendance;
+                if (attendance.checkInTime) {
+                    setCheckInStatus(true);
+                    setCheckInTime(attendance.checkInTime);
+                }
+            }
+        } catch (error) {
+            console.error('Error checking attendance:', error);
+        }
+    };
+
+    const getCheckInOutTimeDetails = async () => {
+        try {
+            const response = await apiCalls(
+                'get',
+                `/checkin/getCheckinDetailsByLatest?branchCode=${branchCode}&employeeCode=${employeeCode}&orgId=${orgId}`
+            );
+
+            if (response?.status && response?.paramObjectsMap?.checkInVO) {
+                const data = response.paramObjectsMap.checkInVO;
+
+                const formatTime = (time) => {
+                    if (!time) return null;
+                    const [h, m] = time.split(':');
+                    const date = new Date();
+                    date.setHours(h, m);
+                    return date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                };
+
+                if (data.checkType === 'IN') {
+                    setCheckInStatus(true);
+                    setCheckInTime(formatTime(data.checkInTime));
+                }
+
+                if (data.checkType === 'OUT') {
+                    setCheckInStatus(false);
+
+                    setCheckOutTime(formatTime(data.checkInTime));
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleCheckIn = async () => {
+        try {
+            const payload = {
+                branch,
+                branchCode,
+                checkType: 'IN',
+                createdBy: employeeCode,
+                employeeCode,
+                employeeName,
+                finYear,
+                latitude: 0,
+                longitude: 0,
+                orgId
+            };
+
+            const response = await apiCalls(
+                'post',
+                '/checkin/createUpdateCheckInAndOut',
+                payload
+            );
+
+            if (response?.status === true) {
+                const time = new Date().toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                setCheckInStatus(true);
+                setCheckInTime(time);
+                setCheckOutTime(null);
+            }
+        } catch (error) {
+            console.error('Error checking in:', error);
+        }
+    };
+
+    const handleCheckOut = async () => {
+        try {
+            const payload = {
+                branch,
+                branchCode,
+                checkType: 'OUT',
+                createdBy: employeeCode,
+                employeeCode,
+                employeeName,
+                finYear,
+                latitude: 0,
+                longitude: 0,
+                orgId
+            };
+
+            const response = await apiCalls(
+                'post',
+                '/checkin/createUpdateCheckInAndOut',
+                payload
+            );
+
+            if (response?.status === true) {
+                const time = new Date().toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                setCheckInStatus(false);
+                setCheckOutTime(time);
+                setCheckInTime(null);
+            }
+        } catch (error) {
+            console.error('Error checking out:', error);
+        }
+    };
+
     const getTodaysTask = async () => {
         try {
             const response = await apiCalls(
@@ -78,6 +229,7 @@ const KPICardsDashboard = () => {
             setTodaysTask([]);
         }
     };
+
     const getTaskIcon = (type) => {
         switch (type) {
             case 'Call':
@@ -88,6 +240,7 @@ const KPICardsDashboard = () => {
                 return <TaskOutlinedIcon color="action" />;
         }
     };
+
     const getKPIDetails = async () => {
         try {
             const response = await apiCalls('get', `/userdashboard/getDashboardDetailsBasedUserName?branchCode=${branchCode}&finYear=${finYear || 0}&orgId=${orgId}&userName=${employeeCode}`);
@@ -111,13 +264,11 @@ const KPICardsDashboard = () => {
                     percentage: 0,
                 });
             }
-
-            // setIsLoading(false);
         } catch (error) {
             console.error('Error fetching leads:', error);
-            // setIsLoading(false);
         }
     };
+
     return (
         <>
             <ScreenGate screen="KPIF">
@@ -164,193 +315,208 @@ const KPICardsDashboard = () => {
                     </Grid>
                 </Grid>
             </ScreenGate>
+
             <Grid container spacing={2} mt={2}>
-                <ScreenGate screen="KPIF">
-                    <Grid item xs={12} md={8}>
-                        <SectionCard title="Lead Journey Overview">
-                            <Stack spacing={2}>
+                {/* Check-In/Check-Out Section - Left Side */}
+                <Grid item xs={12} md={5}>
+                    <Card
+                        sx={{
+                            borderRadius: '20px',
+                            p: 3,
+                            color: '#fff',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
 
-                                {/* JOURNEY STRIP */}
-                                <Stack
-                                    direction="row"
-                                    alignItems="center"
-                                    justifyContent="space-between"
+                            // ✅ Premium gradient
+                            background: 'linear-gradient(135deg, #2c5364, #203a43, #0f2027)',
+                            // background: 'linear-gradient(135deg, #2c5364, #203a43, #0f2027)',
+
+                            // ✅ Soft shadow + glow
+                            boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+
+                            // ✅ subtle border glow
+                            border: '1px solid rgba(255,255,255,0.08)'
+                        }}
+                    >
+                        {/* 🔹 TOP SECTION */}
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+
+                            {/* 🔹 LEFT SIDE (Avatar + Details) */}
+                            <Stack direction="row" spacing={2} alignItems="center">
+                                <Avatar
                                     sx={{
-                                        px: 3,
-                                        py: 2,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, #f8fafc, #eef2ff)',
-                                        border: '1px solid #e5e7eb'
+                                        width: 64,
+                                        height: 64,
+                                        bgcolor: 'rgba(255,255,255,0.15)',
+                                        backdropFilter: 'blur(6px)',
+                                        border: '2px solid rgba(255,255,255,0.3)',
+                                        fontWeight: 'bold',
+                                        fontSize: 22
                                     }}
                                 >
-                                    {[
-                                        { label: 'Leads', value: summaryCard.totalLeads },
-                                        { label: 'Opportunities', value: summaryCard.totalOpportunites },
-                                        { label: 'Quotations', value: summaryCard.totalQuotations },
-                                        { label: 'Sales Orders', value: summaryCard.totalSalesorder }
-                                    ].map((step, index, arr) => {
-                                        const isActive = step.value > 0;
+                                    {employeeName?.charAt(0)}
+                                </Avatar>
 
-                                        return (
-                                            <Box
-                                                key={step.label}
-                                                sx={{ display: 'flex', alignItems: 'center' }}
-                                            >
-                                                {/* STEP */}
-                                                <Stack spacing={0.5} alignItems="center">
-                                                    <Box
-                                                        sx={{
-                                                            px: 2,
-                                                            py: 0.75,
-                                                            borderRadius: 20,
-                                                            fontSize: 14,
-                                                            fontWeight: 700,
-                                                            minWidth: 56,
-                                                            textAlign: 'center',
-                                                            bgcolor: isActive ? '#22c55e' : '#e5e7eb',
-                                                            color: isActive ? '#fff' : '#475569'
-                                                        }}
-                                                    >
-                                                        {step.value}
-                                                    </Box>
-                                                    <Typography
-                                                        variant="caption"
-                                                        fontWeight={600}
-                                                        color={isActive ? 'text.primary' : 'text.secondary'}
-                                                    >
-                                                        {step.label}
-                                                    </Typography>
-                                                </Stack>
-
-                                                {/* MODERN CHEVRON */}
-                                                {index < arr.length - 1 && (
-                                                    <Box
-                                                        sx={{
-                                                            mx: 2,
-                                                            width: 18,
-                                                            height: 2,
-                                                            bgcolor: '#cbd5f5',
-                                                            position: 'relative',
-                                                            '&::after': {
-                                                                content: '""',
-                                                                position: 'absolute',
-                                                                right: -5,
-                                                                top: -4,
-                                                                borderTop: '5px solid transparent',
-                                                                borderBottom: '5px solid transparent',
-                                                                borderLeft: '6px solid #cbd5f5'
-                                                            }
-                                                        }}
-                                                    />
-                                                )}
-                                            </Box>
-                                        );
-                                    })}
-                                </Stack>
-
-                                {/* INSIGHT */}
-                                <Stack
-                                    direction="row"
-                                    alignItems="center"
-                                    spacing={2}
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                        bgcolor: '#f0fdf4',
-                                        border: '1px solid #bbf7d0'
-                                    }}
-                                >
-                                    <Typography variant="body2" color="text.secondary">
-                                        Final Conversion
+                                <Box>
+                                    <Typography fontWeight={700} fontSize={18}>
+                                        {employeeName}
                                     </Typography>
-                                    <Typography variant="h6" fontWeight={800} color="success.main">
-                                        {summaryCard.percentage}%
+                                    <Typography fontSize={14} sx={{ opacity: 0.75 }}>
+                                        {employeeCode}
                                     </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        of leads converted into sales orders
-                                    </Typography>
-                                </Stack>
-
+                                </Box>
                             </Stack>
-                        </SectionCard>
-                    </Grid>
-                </ScreenGate>
-                {/* TODAY'S TASKS */}
-                <ScreenGate screen="KPIF">
-                    <Grid item xs={12} md={4}>
-                        <SectionCard
-                            title={
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                    <Typography fontWeight={600}>
-                                        Today’s Focus
-                                    </Typography>
 
-                                    <Chip
-                                        label={todaystask.length}
-                                        size="small"
-                                        color="primary"
+                            {/* 🔹 RIGHT SIDE (STATUS CHIP) */}
+                            <Chip
+                                icon={
+                                    <Box
+                                        sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: '50%',
+                                            bgcolor: checkInStatus ? '#22c55e' : '#f87171'
+                                        }}
                                     />
-                                </Stack>
-                            }
-                        >
-                            <Stack spacing={2}>
-                                {todaystask.length > 0 ? (
-                                    todaystask.slice(0, 1).map((task, index) => (
-                                        <Stack key={index} spacing={1}>
+                                }
+                                label={checkInStatus ? 'Checked In' : 'Checked Out'}
+                                size="small"
+                                sx={{
+                                    bgcolor: checkInStatus
+                                        ? 'rgba(34,197,94,0.2)'
+                                        : 'rgba(248,113,113,0.2)',
+                                    color: checkInStatus ? '#22c55e' : '#f87171',
+                                    fontWeight: 600,
+                                    padding: 1
+                                }}
+                            />
+                        </Stack>
 
-                                            <Stack direction="row" spacing={2} alignItems="center">
+                        {/* 🔹 BUTTONS */}
+                        <Stack direction="row" spacing={2} mt={4}>
+                            {/* CHECK-IN */}
+                            <Button
+                                fullWidth
+                                onClick={handleCheckIn}
+                                startIcon={<LoginIcon />}
+                                disabled={checkInStatus}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.9)',
+                                    color: '#111827',
+                                    borderRadius: '14px',
+                                    px: 1,
+                                    py: 1.5,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
 
-                                                <Avatar sx={{ bgcolor: '#e3f2fd' }}>
-                                                    {getTaskIcon(task.type)}
-                                                </Avatar>
+                                    // glass effect
+                                    backdropFilter: 'blur(6px)',
 
-                                                <Stack flex={1}>
-                                                    <Typography fontWeight={600}>
-                                                        Follow up with {task.clientName}
-                                                    </Typography>
+                                    '&:hover': {
+                                        bgcolor: '#ffffff'
+                                    }
+                                }}
+                            >
+                                {checkInTime ? `In at ${checkInTime}` : 'Check-In'}
+                            </Button>
 
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        {task.startTime} · {task.type}
-                                                        {task.direction ? ` · ${task.direction}` : ''}
-                                                    </Typography>
-                                                </Stack>
+                            {/* CHECK-OUT */}
+                            <Button
+                                fullWidth
+                                onClick={handleCheckOut}
+                                disabled={!checkInStatus}
+                                startIcon={<LogoutIcon />}
+                                sx={{
+                                    borderRadius: '14px',
+                                    px: 1,
+                                    py: 1.5,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
 
-                                                <Chip
-                                                    label="Pending"
-                                                    color="warning"
-                                                    size="small"
-                                                />
+                                    // 🔥 gradient red button
+                                    background: 'linear-gradient(135deg, #ff4d4f, #d9363e)',
+                                    color: '#fff',
 
-                                            </Stack>
+                                    boxShadow: '0 6px 18px rgba(255,77,79,0.4)',
 
-                                            {index < todaystask.length - 1 && <Divider />}
-                                        </Stack>
-                                    ))
-                                ) : (
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        align="center"
-                                    >
-                                        No follow-ups scheduled for today 🎉
-                                    </Typography>
-                                )}
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #e53935, #b71c1c)'
+                                    }
+                                }}
+                            >
+                                {checkOutTime ? `Out at ${checkOutTime}` : 'Check-Out'}
+                            </Button>
+                        </Stack>
+                    </Card>
+                </Grid>
 
-                                {/* Footer */}
-                                <Button
-                                    variant="text"
-                                    size="small"
-                                    sx={{ alignSelf: 'flex-end', mt: 1 }}
-                                    onClick={() => setOpenTaskDialog(true)}
-                                >
-                                    View All Tasks
-                                </Button>
+                {/* Lead Journey Overview - Right Side with Reduced Width */}
+                <Grid item xs={12} md={7}>
+                    <Card
+                        sx={{
+                            borderRadius: 4,
+                            p: 2,
+                            background: '#fff',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                            height: '100%'
+                        }}
+                    >
+                        <Stack spacing={2}>
+                            <Typography fontWeight={700} fontSize={16}>
+                                Lead Journey
+                            </Typography>
 
+                            <Stack direction="row" justifyContent="space-between">
+                                {[
+                                    { label: 'Leads', value: summaryCard.totalLeads },
+                                    { label: 'Opportunities', value: summaryCard.totalOpportunites },
+                                    { label: 'Quotes', value: summaryCard.totalQuotations },
+                                    { label: 'Orders', value: summaryCard.totalSalesorder }
+                                ].map((item, index) => (
+                                    <Stack key={index} alignItems="center" flex={1}>
+                                        <Box
+                                            sx={{
+                                                bgcolor: item.value > 0 ? '#22c55e' : '#e5e7eb',
+                                                color: item.value > 0 ? '#fff' : '#64748b',
+                                                px: 1.5,
+                                                py: 0.5,
+                                                borderRadius: 2,
+                                                fontWeight: 700,
+                                                fontSize: 13
+                                            }}
+                                        >
+                                            {item.value}
+                                        </Box>
+
+                                        <Typography fontSize={12} mt={1}>
+                                            {item.label}
+                                        </Typography>
+                                    </Stack>
+                                ))}
                             </Stack>
-                        </SectionCard>
-                    </Grid>
-                </ScreenGate>
+
+                            <Box
+                                sx={{
+                                    p: 1,
+                                    borderRadius: 2,
+                                    bgcolor: '#f0fdf4',
+                                    border: '1px solid #bbf7d0'
+                                }}
+                            >
+                                <Typography fontSize={13} color="text.secondary">
+                                    Conversion Rate
+                                </Typography>
+                                <Typography fontWeight={700} fontSize={18} color="success.main">
+                                    {summaryCard.percentage}%
+                                </Typography>
+                            </Box>
+                        </Stack>
+                    </Card>
+                </Grid>
             </Grid>
+
             <Dialog
                 open={openTaskDialog}
                 onClose={() => setOpenTaskDialog(false)}
@@ -363,34 +529,26 @@ const KPICardsDashboard = () => {
 
                 <DialogContent dividers>
                     <Stack spacing={2}>
-
                         {todaystask.map((task, index) => (
                             <Stack key={index} spacing={1}>
-
                                 <Stack direction="row" spacing={2} alignItems="center">
-
                                     <Avatar sx={{ bgcolor: '#e3f2fd' }}>
                                         {getTaskIcon(task.type)}
                                     </Avatar>
-
                                     <Stack flex={1}>
                                         <Typography fontWeight={600}>
                                             Follow up with {task.clientName}
                                         </Typography>
-
                                         <Typography variant="caption" color="text.secondary">
                                             {task.startTime} · {task.type}
                                             {task.direction ? ` · ${task.direction}` : ''}
                                         </Typography>
                                     </Stack>
-
                                     <Chip label="Pending" color="warning" size="small" />
                                 </Stack>
-
                                 {index < todaystask.length - 1 && <Divider />}
                             </Stack>
                         ))}
-
                     </Stack>
                 </DialogContent>
 

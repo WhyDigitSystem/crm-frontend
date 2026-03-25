@@ -128,6 +128,8 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
         localStorage.setItem('employeeCode', response.data.paramObjectsMap.userVO.employeeCode);
         localStorage.setItem('employeeName', response.data.paramObjectsMap.userVO.employeeName);
+        localStorage.setItem('designation', response.data.paramObjectsMap.userVO.designation);
+        localStorage.setItem('department', response.data.paramObjectsMap.userVO.department);
         localStorage.setItem('branch', response.data.paramObjectsMap.userVO.branch);
         localStorage.setItem('companyName', response.data.paramObjectsMap.userVO.companyName);
         localStorage.setItem('email', response.data.paramObjectsMap.userVO.email);
@@ -167,10 +169,10 @@ const FirebaseLogin = ({ ...others }) => {
         resetForm();
         {
           userType === 'SADMIN' ?
-          navigate('/companysetup/createcompany') :
-          navigate('/dashboard/default');
+            navigate('/companysetup/createcompany') :
+            navigate('/dashboard/default');
         }
-        // navigate('/dashboard/default');
+        navigate('/dashboard/default');
         setTimeout(() => {
           window.location.reload();
         }, 500);

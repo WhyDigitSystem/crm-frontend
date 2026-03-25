@@ -15,7 +15,9 @@ import {
   IconUsers,
   IconReportMoney,
   IconRoute,
-  IconAward
+  IconAward,
+  IconLogin,
+  IconCalendarCheck
 } from '@tabler/icons-react';
 
 // screen access utility
@@ -162,10 +164,24 @@ const reportChildren = [
   },
   hasScreenAccess('AR') && {
     id: 'AdvertisingReport',
-    title: 'Advertising Report',
+    title: 'Advertising',
     type: 'item',
     url: '/Report/AdvertisingReport',
     icon: () => <IconAward />
+  },
+  hasScreenAccess('INOUT') && {
+    id: 'CheckInOutReport',
+    title: 'Check-IN/OUt',
+    type: 'item',
+    url: '/Report/CheckInOutReport',
+    icon: () => <IconLogin />
+  },
+  hasScreenAccess('ATTREP') && {
+    id: 'AttendanceReport',
+    title: 'Attendance',
+    type: 'item',
+    url: '/Report/AttendanceReport',
+    icon: () => <IconCalendarCheck />
   },
   // hasScreenAccess('RR') && {
   //   id: 'RewardReport',
