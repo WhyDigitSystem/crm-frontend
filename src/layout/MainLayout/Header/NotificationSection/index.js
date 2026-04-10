@@ -1,116 +1,98 @@
 import { useEffect, useRef, useState } from 'react';
-
-// material-ui
 import {
   Avatar,
   Badge,
   Box,
   Button,
   ButtonBase,
-  CardActions,
   ClickAwayListener,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Divider,
-  Grid,
   Paper,
   Popper,
-  Stack,
   Typography,
-  useMediaQuery,
-  Tooltip
+  useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-// third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { motion } from 'framer-motion';
 
-// project imports
-import MainCard from 'ui-component/cards/MainCard';
 import NotificationList from './NotificationList';
 import Transitions from 'ui-component/extended/Transitions';
 
-// icons
-import { IconBell, IconListCheck } from '@tabler/icons-react';
+import { IconBell } from '@tabler/icons-react';
+import ClearIcon from '@mui/icons-material/Clear';
 
-// mock notifications
-const notifications = [
-  {
-    name: 'John Doe',
-    expenceId: 'EXP123',
-    docDate: '2024-11-12',
-    amount: 2500.5,
-    currency: 'USD',
-    heading: 'TAX INVOICE'
-  },
-  {
-    name: 'Jane Smith',
-    expenceId: 'EXP124',
-    docDate: '2024-11-13',
-    amount: 1500.0,
-    currency: 'USD',
-    heading: 'PURCHASE ORDER'
-  }
-];
+import apiCalls from 'apicall';
 
 const NotificationSection = () => {
   const theme = useTheme();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
 
+  const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
-  const [viewAllOpen, setViewAllOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
+  const handleToggle = () => setOpen((prev) => !prev);
 
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
+    if (anchorRef.current?.contains(event.target)) return;
     setOpen(false);
   };
 
-  const handleViewAll = () => {
-    setViewAllOpen(true);
-  };
 
-  const handleModalClose = () => {
-    setViewAllOpen(false);
-  };
+  const employeeCode = localStorage.getItem('employeeCode');
+  const orgId = localStorage.getItem('orgId');
 
-  const handleApprove = (item) => {
-    console.log('Approved:', item);
-  };
-
-  const handleReject = (item) => {
-    console.log('Rejected:', item);
-  };
-
-  const handleCardClick = (item) => {
-    console.log('Card Clicked:', item);
-  };
-
-  const prevOpen = useRef(open);
-  useEffect(() => {
-    if (prevOpen.current && !open) {
-      anchorRef.current.focus();
+  const fetchNotifications = async () => {
+    try {
+      const res = await apiCalls(
+        'get',
+        `notification/getNotifictionByEmployeeCode?employeeCode=${employeeCode}&orgId=${orgId}`
+      );
+      setNotifications(res?.paramObjectsMap?.notificationVO || []);
+    } catch (err) {
+      setNotifications([]);
     }
-    prevOpen.current = open;
-  }, [open]);
+  };
+
+  // useEffect(() => {
+  //   fetchNotifications();
+  // }, []);
+
+  useEffect(() => {
+  // first call immediately
+  fetchNotifications();
+  const interval = setInterval(() => {
+    fetchNotifications();
+  }, 60000);
+  return () => clearInterval(interval);
+}, []);
+
+ 
+  const handleClearAll = async () => {
+    try{
+    const response = await apiCalls('put',`/notification/clearNotification?employeeCode=${employeeCode}&orgId=${orgId}&status=ClearALL`);
+    if(response?.status === true){
+     console.log(response.paramObjectsMap.message)
+    }
+    setNotifications([]);   
+    fetchNotifications();
+    }catch(error){
+      console.log(error)
+    }
+  };
 
   return (
     <>
-      {/* <Box sx={{ ml: 2, [theme.breakpoints.down('md')]: { mr: 2 } }}> */}
+      {/* 🔔 Notification Icon */}
       <Box>
-
-        <Tooltip title="Notifications">
-          <ButtonBase sx={{ borderRadius: '12px' }}>
-            <Badge badgeContent={notifications.length} color="error">
-              <Avatar
-                variant="rounded"
-                sx={{
+        <ButtonBase>
+          <Badge badgeContent={notifications?.length || 0} color="error">
+            <Avatar
+              ref={anchorRef}
+              onClick={handleToggle}
+             sx={{
                   ...theme.typography.commonAvatar,
                   ...theme.typography.mediumAvatar,
                   transition: 'all .3s ease-in-out',
@@ -127,147 +109,106 @@ const NotificationSection = () => {
                     transform: 'rotate(360deg)',
       }
                 }}
-                ref={anchorRef}
-                aria-controls={open ? 'menu-list-grow' : undefined}
-                aria-haspopup="true"
-                onClick={handleToggle}
-                color="inherit"
-              >
-                <IconBell  className="menu-icon" stroke={1.5} size="1.3rem"   style={{
+            >
+              <IconBell  className="menu-icon" stroke={1.5} size="1.3rem"   style={{
                 transition: 'transform 0.3s ease'
       }} />
-              </Avatar>
-            </Badge>
-          </ButtonBase>
-        </Tooltip>
+            </Avatar>
+          </Badge>
+        </ButtonBase>
       </Box>
 
+      {/* 🔽 Dropdown */}
       <Popper
-        placement={matchesXs ? 'bottom' : 'bottom-end'}
         open={open}
         anchorEl={anchorRef.current}
-        role={undefined}
+        placement={matchesXs ? 'bottom' : 'bottom-end'}
         transition
         disablePortal
         popperOptions={{
           modifiers: [{ name: 'offset', options: { offset: [0, 16] } }]
         }}
+
       >
         {({ TransitionProps }) => (
-          <Transitions position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
+          <Transitions in={open} {...TransitionProps}>
             <Paper
               component={motion.div}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              elevation={16}
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.25 }}
+              sx={{
+                width: 320,
+                borderRadius: 4,
+                // overflow: 'hidden',
+                backdropFilter: 'blur(16px)',
+                background: 'rgba(255,255,255,0.9)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                borderTop: `4px solid ${theme.palette.primary.main}`
+              }}
             >
               <ClickAwayListener onClickAway={handleClose}>
-                <MainCard
-                  border={false}
-                  elevation={0}
-                  content={false}
-                  boxShadow
-                  shadow={theme.shadows[16]}
-                  sx={{ borderTop: `4px solid ${theme.palette.primary.main}` }}
-                >
-                  <Grid container direction="column" spacing={2}>
-                    <Grid item xs={12}>
-                      <Grid container alignItems="center" justifyContent="space-between" sx={{ pt: 2, px: 2 }}>
-                        <Typography variant="subtitle1" sx={{ color: 'black' }}>
-                          Notifications
-                        </Typography>
-                        <Button
-                          size="small"
-                          startIcon={<IconListCheck size="1rem" />}
-                          onClick={() => console.log('Mark all as read')}
-                          sx={{
-                            textTransform: 'none',
-                            fontSize: '0.75rem',
-                            padding: '2px 6px',
-                            borderRadius: '6px',
-                            backgroundColor: theme.palette.grey[100],
-                            color: 'black',
-                            '&:hover': {
-                              backgroundColor: theme.palette.grey[300]
-                            }
-                          }}
-                        >
-                          Mark all as read
-                        </Button>
-                      </Grid>
-                    </Grid>
+                <Box>
+                  {/* Header */}
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 0.5,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography fontWeight={700} fontSize={14}>
+                      Notifications
+                    </Typography>
 
-                    <Grid item xs={12}>
-                      <PerfectScrollbar style={{ maxHeight: 250, overflowX: 'hidden' }}>
-                        <Grid container direction="column" spacing={2}>
-                          <Grid item xs={12}>
-                            <Divider sx={{ my: 0 }} />
-                          </Grid>
-                        </Grid>
-
-                        {notifications.length === 0 ? (
-                          <Typography variant="body2" align="center" sx={{ p: 2, color: 'black' }}>
-                            No new notifications
-                          </Typography>
-                        ) : (
-                          <NotificationList
-                            notifications={[notifications[0]]}
-                            handleApprove={handleApprove}
-                            handleReject={handleReject}
-                            handleCardClick={handleCardClick}
-                          />
-                        )}
-                      </PerfectScrollbar>
-                    </Grid>
-                  </Grid>
-
-                  <Divider />
-
-                  <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
                     <Button
                       size="small"
-                      onClick={handleViewAll}
-                      disableElevation
+                      startIcon={<ClearIcon fontSize="small" />}
+                      onClick={handleClearAll}
                       sx={{
-                        transition: 'all 0.2s ease-in-out',
-                        color: 'white',
+                        textTransform: 'none',
+                        fontSize: 12,
+                        color: '#ef4444',
+                        borderRadius: 2,
+                        background: '#fef2f2',
                         '&:hover': {
-                          transform: 'scale(1.05)',
-                          backgroundColor: theme.palette.primary.light
+                          background: '#fee2e2'
                         }
                       }}
                     >
-                      View All
+                      Clear
                     </Button>
-                  </CardActions>
-                </MainCard>
+                  </Box>
+
+                  <Divider />
+
+                  {/* List */}
+                  <PerfectScrollbar style={{ maxHeight: 300, overflowY: 'auto', }}>
+                    {!notifications?.length ? (
+                      <Box
+                        sx={{
+                          p: 4,
+                          textAlign: 'center',
+                          color: '#94a3b8'
+                        }}
+                      >
+                        <IconBell size={28} />
+                        <Typography mt={1} fontSize={13}>
+                          No notifications
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <NotificationList notifications={notifications} />
+                    )}
+                  </PerfectScrollbar>
+                </Box>
               </ClickAwayListener>
             </Paper>
           </Transitions>
         )}
       </Popper>
-
-      {/* Modal for "View All" */}
-      <Dialog open={viewAllOpen} onClose={handleModalClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: 'black' }}>All Notifications</DialogTitle>
-        <DialogContent dividers>
-          <PerfectScrollbar style={{ maxHeight: '400px' }}>
-            {notifications.length === 0 ? (
-              <Typography variant="body2" align="center" sx={{ p: 2, color: 'black' }}>
-                No notifications available.
-              </Typography>
-            ) : (
-              <NotificationList
-                notifications={notifications}
-                handleApprove={handleApprove}
-                handleReject={handleReject}
-                handleCardClick={handleCardClick}
-              />
-            )}
-          </PerfectScrollbar>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

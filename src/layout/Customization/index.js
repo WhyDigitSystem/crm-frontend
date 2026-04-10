@@ -137,6 +137,7 @@ const SupportTickets = () => {
     }
 
     const payload = {
+      companyName:localStorage.getItem('companyName'),
       subject: ticket.subject,
       description: ticket.description,
       status: ticket.status,
@@ -178,6 +179,7 @@ const SupportTickets = () => {
 
         // Clear form
         setTicket({
+          
           subject: '',
           description: '',
           image: null,
