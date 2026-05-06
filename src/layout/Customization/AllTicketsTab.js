@@ -91,53 +91,71 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
     setComment('');
   };
 
- const getComments = async (id) => {
+ const getComments = async (ticketId) => {
   try {
     setIsLoading(true);
 
-    const response = await apiCalls(
-      'get',
-      `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`
-    );
+    const [myRes, otherRes] = await Promise.all([
+      apiCalls(
+        'get',
+        `ticketcontroller/getAllCommentsMyServer?ticketId=${ticketId}`
+      ),
+      apiCalls(
+        'get',
+        `ticketcontroller/getAllCommentsAnotherServer?ticketId=${ticketId}`
+      )
+    ]);
 
-    if (
-      response.status === true &&
-      Array.isArray(response.paramObjectsMap?.commentsVO)
-    ) {
-      
-      const safeComments = response.paramObjectsMap.commentsVO.filter(
-        (c) => c && typeof c === "object"
-      );
+    const myComments =
+      myRes?.status && Array.isArray(myRes.paramObjectsMap?.commentsVO)
+        ? myRes.paramObjectsMap.commentsVO
+        : [];
 
-      if (safeComments.length === 0) {
-  setComments([]); 
-} else {
-  setComments(safeComments);
-}
-    } else {
-      setComments([]); //  NEVER leave undefined
-      showToast('error', 'No comments found or invalid response');
-    }
+    const otherComments =
+      otherRes?.status && Array.isArray(otherRes.paramObjectsMap?.commentsVO)
+        ? otherRes.paramObjectsMap.commentsVO
+        : [];
+
+    const normalizedMy = myComments.map((c) => ({
+      ...c,
+      displayName: c.createdBy || c.userName,
+      source: 'MY'
+    }));
+
+  const normalizedOther = otherComments.map((c) => ({
+  ...c,
+  displayName: c.sourceUserName
+    ? c.sourceUserName.split('@')[0]
+    : 'External',
+  source: 'OTHER'
+}));
+
+    const merged = [...normalizedMy, ...normalizedOther].sort((a, b) => {
+      const dateA = dayjs(a.commonDate?.createdon, 'DD-MM-YYYY hh:mm:ss A');
+      const dateB = dayjs(b.commonDate?.createdon, 'DD-MM-YYYY hh:mm:ss A');
+      return dateB.valueOf() - dateA.valueOf();
+    });
+
+    setComments(merged);
   } catch (error) {
     console.error('Error fetching comments:', error);
-    setComments([]); //  fallback
+    setComments([]);
     showToast('error', 'Failed to fetch comments');
   } finally {
     setIsLoading(false);
   }
 };
 
- const handleSubmitComment = async (comment, editingId) => {
+const handleSubmitComment = async (comment, editingId) => {
   if (!comment.trim()) {
     showToast('error', 'Please enter a comment');
     return;
   }
 
-  const payload = {
+  const basePayload = {
     comments: comment,
     ticketId: selectedTicket?.id,
     createdBy: loginUserName,
-    ...(editingId && { id: editingId }),
     orgId: orgId,
     userName: loginUserName
   };
@@ -145,43 +163,62 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   try {
     setIsLoading(true);
 
-    const response = await apiCalls(
-      'put',
-      'ticketcontroller/updateCreateComments',
-      payload
-    );
+    let response;
+
+    if (editingId) {
+      // ✏️ UPDATE COMMENT
+      response = await apiCalls(
+        'put',
+        'ticketcontroller/updateComments', // 🔥 use correct update API
+        {
+          ...basePayload,
+          id: editingId
+        }
+      );
+    } else {
+      // ➕ CREATE COMMENT
+      response = await apiCalls(
+        'post',
+        'ticketcontroller/createComments', // 🔥 correct API
+        basePayload
+      );
+    }
 
     if (response.status === true) {
       const updatedComment = response?.paramObjectsMap?.commentVO;
 
- if (!updatedComment || typeof updatedComment !== "object") {
-  await getComments(selectedTicket?.id);
+      // fallback if backend doesn't return object properly
+      if (!updatedComment || typeof updatedComment !== "object") {
+        await getComments(selectedTicket?.id);
 
-  showToast(
-    'success',
-    editingId
-      ? 'Comment updated successfully'
-      : 'Comment added successfully'
-  );
-
-  return;
-}
+        showToast(
+          'success',
+          editingId
+            ? 'Comment updated successfully'
+            : 'Comment added successfully'
+        );
+        return;
+      }
 
       if (editingId) {
-        // ✏️ UPDATE
+        // ✏️ UPDATE UI
         setComments((prev) =>
           prev.map((c) =>
             c?.id === editingId ? updatedComment : c
           )
         );
       } else {
-        // ➕ ADD
-        setComments((prev) =>
-          [...prev, updatedComment].filter(Boolean) //  remove undefined
-        );
+        // ➕ ADD UI
+        setComments((prev) => [...prev, updatedComment]);
       }
 
-      showToast('success', getCommentSuccessMessage(!!editingId));
+      showToast(
+        'success',
+        editingId
+          ? 'Comment updated successfully'
+          : 'Comment added successfully'
+      );
+
       setComment('');
     } else {
       showToast(
@@ -190,13 +227,13 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
       );
     }
   } catch (error) {
-  console.error('Comment submit error:', error);
+    console.error('Comment submit error:', error);
 
-  showToast(
-    'error',
-    error?.response?.data?.message || 'Failed to submit comment'
-  );
-} finally {
+    showToast(
+      'error',
+      error?.response?.data?.message || 'Failed to submit comment'
+    );
+  } finally {
     setIsLoading(false);
   }
 };

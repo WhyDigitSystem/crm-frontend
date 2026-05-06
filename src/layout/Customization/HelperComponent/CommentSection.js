@@ -65,9 +65,10 @@ const CommentSection = ({
         time: timeAgo(c.commonDate?.createdon),
         user: (c.userName || c.createdBy || "").toLowerCase(),
         display:
-          c.userName?.split("@")[0] ||
-          c.createdBy ||
-          "User"
+  c.displayName ||   // 🔥 use value from parent (already cleaned)
+  c.userName?.split("@")[0] ||
+  c.createdBy ||
+  "User"
       }))
       .sort((a, b) => {
         const parse = (d) =>
@@ -199,7 +200,7 @@ const CommentSection = ({
                       alignItems="center"
                       justifyContent="space-between"
                       mb={0.5}
-                      width={130}
+                      width={150}
                     >
                       <Typography
                         fontSize={11}
