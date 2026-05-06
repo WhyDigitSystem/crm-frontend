@@ -10,7 +10,7 @@ const hasScreenAccess = (screenId) => {
   }
 
   const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
-  const access = screenAccess?.[screenId];
+  const access = screenAccess?.[  screenId];
 
   return access?.canRead || access?.canWrite || access?.canDelete;
 };

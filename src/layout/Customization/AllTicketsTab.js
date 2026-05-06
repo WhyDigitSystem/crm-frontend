@@ -70,6 +70,9 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
 
   const [isSearchExpanded, setSearchExpanded] = useState(false);
 
+  const getCommentSuccessMessage = (isEdit) =>
+  isEdit ? "Comment updated successfully" : "Comment added successfully";
+
   const handleOpenDialog = (ticket) => {
     setSelectedTicket(ticket);
     getComments(ticket.id);
@@ -88,63 +91,115 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
     setComment('');
   };
 
-  const getComments = async (id) => {
-    try {
-      setIsLoading(true);
+ const getComments = async (id) => {
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('get', `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`);
+    const response = await apiCalls(
+      'get',
+      `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`
+    );
 
-      if (response.status === true && Array.isArray(response.paramObjectsMap?.commentsVO)) {
-        const transformedComments = response.paramObjectsMap.commentsVO;
+    if (
+      response.status === true &&
+      Array.isArray(response.paramObjectsMap?.commentsVO)
+    ) {
+      
+      const safeComments = response.paramObjectsMap.commentsVO.filter(
+        (c) => c && typeof c === "object"
+      );
 
-        setComments(transformedComments);
-      } else {
-        showToast('error', 'No comments found or error in response');
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+      if (safeComments.length === 0) {
+  setComments([]); 
+} else {
+  setComments(safeComments);
+}
+    } else {
+      setComments([]); //  NEVER leave undefined
+      showToast('error', 'No comments found or invalid response');
     }
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    setComments([]); //  fallback
+    showToast('error', 'Failed to fetch comments');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+ const handleSubmitComment = async (comment, editingId) => {
+  if (!comment.trim()) {
+    showToast('error', 'Please enter a comment');
+    return;
+  }
+
+  const payload = {
+    comments: comment,
+    ticketId: selectedTicket?.id,
+    createdBy: loginUserName,
+    ...(editingId && { id: editingId }),
+    orgId: orgId,
+    userName: loginUserName
   };
 
-  const handleSubmitComment = async (comment, editingId) => {
-    if (!comment.trim()) {
-      showToast('error', 'Please enter a comment');
-      return;
-    }
+  try {
+    setIsLoading(true);
 
-    console.log('Testing==<<', selectedTicket);
+    const response = await apiCalls(
+      'put',
+      'ticketcontroller/updateCreateComments',
+      payload
+    );
 
-    const payload = {
-      comments: comment,
-      ticketId: selectedTicket?.id,
-      createdBy: loginUserName,
-      ...(editingId && { id: editingId }),
-      orgId: orgId,
-      userName: loginUserName
-    };
+    if (response.status === true) {
+      const updatedComment = response?.paramObjectsMap?.commentVO;
 
-    try {
-      setIsLoading(true);
+ if (!updatedComment || typeof updatedComment !== "object") {
+  await getComments(selectedTicket?.id);
 
-      const response = await apiCalls('put', 'ticketcontroller/updateCreateComments', payload);
+  showToast(
+    'success',
+    editingId
+      ? 'Comment updated successfully'
+      : 'Comment added successfully'
+  );
 
-      if (response.status === true) {
-        showToast('success', editingId ? 'Comment updated' : 'Comment added');
-        getComments(selectedTicket?.id);
-        setComment('');
+  return;
+}
+
+      if (editingId) {
+        // ✏️ UPDATE
+        setComments((prev) =>
+          prev.map((c) =>
+            c?.id === editingId ? updatedComment : c
+          )
+        );
       } else {
-        showToast('error', response.paramObjectsMap?.errorMessage || 'Failed to save comment');
+        // ➕ ADD
+        setComments((prev) =>
+          [...prev, updatedComment].filter(Boolean) //  remove undefined
+        );
       }
-    } catch (error) {
-      console.error('Comment submit error:', error);
-      // showToast('error', 'Something went wrong while submitting the comment');
-    } finally {
-      setIsLoading(false);
+
+      showToast('success', getCommentSuccessMessage(!!editingId));
+      setComment('');
+    } else {
+      showToast(
+        'error',
+        response.paramObjectsMap?.errorMessage || 'Failed to save comment'
+      );
     }
-  };
+  } catch (error) {
+  console.error('Comment submit error:', error);
+
+  showToast(
+    'error',
+    error?.response?.data?.message || 'Failed to submit comment'
+  );
+} finally {
+    setIsLoading(false);
+  }
+};
 
   const handleStatusChange = async (newStatus, rowData) => {
     console.log('Testing==>', rowData);
@@ -171,22 +226,28 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   };
 
   const handleDeleteComment = async (id) => {
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('delete', `ticketcontroller/deleteCommentsById?id=${id}`);
+    const response = await apiCalls(
+      'delete',
+      `ticketcontroller/deleteCommentsById?id=${id}`
+    );
 
-      if (response.status) {
-        getComments(selectedTicket?.id);
-      } else {
-        showToast('error', 'error in response');
-      }
-    } catch (error) {
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+    if (response.status) {
+      //  REMOVE LOCALLY INSTEAD OF REFETCH
+      setComments((prev) => prev.filter((c) => c?.id !== id));
+      showToast('success', 'Comment deleted');
+    } else {
+      showToast('error', 'Delete failed');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    showToast('error', 'Failed to delete comment');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const transformedTickets = tickets.map((t) => ({
     ...t,

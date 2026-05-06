@@ -87,25 +87,36 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   };
 
   const getComments = async (id) => {
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('get', `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`);
+    const response = await apiCalls(
+      'get',
+      `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`
+    );
 
-      if (response.status === true && Array.isArray(response.paramObjectsMap?.commentsVO)) {
-        const transformedComments = response.paramObjectsMap.commentsVO;
+    if (
+      response.status === true &&
+      Array.isArray(response.paramObjectsMap?.commentsVO)
+    ) {
+      // ✅ REMOVE undefined/null/bad objects
+      const safeComments = response.paramObjectsMap.commentsVO.filter(
+        (c) => c && typeof c === "object" && c.id
+      );
 
-        setComments(transformedComments);
-      } else {
-        showToast('error', 'No comments found or error in response');
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+      setComments(safeComments);
+    } else {
+      setComments([]); // ✅ prevent undefined state
+      showToast('error', 'No comments found or invalid response');
     }
-  };
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    setComments([]); // ✅ fallback safety
+    showToast('error', 'Failed to fetch comments');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSubmitComment = async (comment, editingId) => {
     if (!comment.trim()) {
@@ -166,22 +177,28 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   };
 
   const handleDeleteComment = async (id) => {
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('delete', `ticketcontroller/deleteCommentsById?id=${id}`);
+    const response = await apiCalls(
+      'delete',
+      `ticketcontroller/deleteCommentsById?id=${id}`
+    );
 
-      if (response.status) {
-        getComments(selectedTicket?.id);
-      } else {
-        showToast('error', 'error in response');
-      }
-    } catch (error) {
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+    if (response.status) {
+      // ✅ update UI instantly (no flicker)
+      setComments((prev) => prev.filter((c) => c?.id !== id));
+      showToast('success', 'Comment deleted');
+    } else {
+      showToast('error', 'Error deleting comment');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    showToast('error', 'Failed to delete comment');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const transformedTickets = tickets.map((t) => ({
     ...t,
