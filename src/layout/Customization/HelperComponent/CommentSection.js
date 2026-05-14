@@ -83,18 +83,24 @@ const CommentSection = ({
     currentUser?.toLowerCase()?.trim() === c.user;
 
   /* ---------- ACTIONS ---------- */
-  const handleSend = async () => {
-    if (!text.trim()) return;
+ const handleSend = async () => {
+  if (!text.trim()) return;
 
+  const latestText = text;
+
+  setText("");
+
+  try {
     if (editing) {
-      await onEditComment(text, editing.id);
+      await onEditComment(latestText, editing.id);
       setEditing(null);
     } else {
-      await onSubmitComment(text);
+      await onSubmitComment(latestText);
     }
-
-    setText("");
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleMenuOpen = (e, c) => {
     setAnchorEl(e.currentTarget);

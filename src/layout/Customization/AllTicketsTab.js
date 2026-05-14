@@ -19,7 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import apiCalls from 'apicall';
@@ -65,7 +65,7 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState([]);
-  const [comment, setComment] = useState([]);
+  const [comment, setComment] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // Default to Open & InProgress
 
   const [isSearchExpanded, setSearchExpanded] = useState(false);
@@ -146,14 +146,15 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   }
 };
 
-const handleSubmitComment = async (comment, editingId) => {
-  if (!comment.trim()) {
+
+const handleSubmitComment = async (commentText, editingId) => {
+  if (!commentText.trim()) {
     showToast('error', 'Please enter a comment');
     return;
   }
 
   const basePayload = {
-    comments: comment,
+    comments: commentText,
     ticketId: selectedTicket?.id,
     createdBy: loginUserName,
     orgId: orgId,
@@ -165,51 +166,51 @@ const handleSubmitComment = async (comment, editingId) => {
 
     let response;
 
+    // ✏️ UPDATE COMMENT
     if (editingId) {
-      // ✏️ UPDATE COMMENT
       response = await apiCalls(
         'put',
-        'ticketcontroller/updateComments', // 🔥 use correct update API
+        'ticketcontroller/updateComments',
         {
           ...basePayload,
           id: editingId
         }
       );
-    } else {
-      // ➕ CREATE COMMENT
+    } 
+    
+    // ➕ CREATE COMMENT
+    else {
       response = await apiCalls(
         'post',
-        'ticketcontroller/createComments', // 🔥 correct API
+        'ticketcontroller/createComments',
         basePayload
       );
     }
 
-    if (response.status === true) {
-      const updatedComment = response?.paramObjectsMap?.commentVO;
+    console.log('COMMENT RESPONSE =>', response);
 
-      // fallback if backend doesn't return object properly
-      if (!updatedComment || typeof updatedComment !== "object") {
-        await getComments(selectedTicket?.id);
+    // ✅ SUCCESS CHECK
+    if (response) {
 
-        showToast(
-          'success',
-          editingId
-            ? 'Comment updated successfully'
-            : 'Comment added successfully'
-        );
-        return;
-      }
-
+      // 🔥 INSTANT UI UPDATE FOR EDIT
       if (editingId) {
-        // ✏️ UPDATE UI
+
         setComments((prev) =>
           prev.map((c) =>
-            c?.id === editingId ? updatedComment : c
+            c.id === editingId
+              ? {
+                  ...c,
+                  comments: commentText
+                }
+              : c
           )
         );
+
       } else {
-        // ➕ ADD UI
-        setComments((prev) => [...prev, updatedComment]);
+
+        // 🔥 REFRESH COMMENTS AFTER NEW COMMENT
+        await getComments(selectedTicket?.id);
+
       }
 
       showToast(
@@ -220,21 +221,27 @@ const handleSubmitComment = async (comment, editingId) => {
       );
 
       setComment('');
+
     } else {
-      showToast(
-        'error',
-        response.paramObjectsMap?.errorMessage || 'Failed to save comment'
-      );
+
+      showToast('error', 'Operation failed');
+
     }
+
   } catch (error) {
+
     console.error('Comment submit error:', error);
 
     showToast(
       'error',
-      error?.response?.data?.message || 'Failed to submit comment'
+      error?.response?.data?.message ||
+      'Failed to submit comment'
     );
+
   } finally {
+
     setIsLoading(false);
+
   }
 };
 
@@ -268,7 +275,7 @@ const handleSubmitComment = async (comment, editingId) => {
 
     const response = await apiCalls(
       'delete',
-      `ticketcontroller/deleteCommentsById?id=${id}`
+      `ticketcontroller/deleteComments?id=${id}&sourceId=${id}`
     );
 
     if (response.status) {
