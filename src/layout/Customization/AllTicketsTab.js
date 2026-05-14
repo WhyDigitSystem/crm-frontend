@@ -146,6 +146,85 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   }
 };
 
+useEffect(() => {
+  if (!openDialog || !selectedTicket?.id) return;
+
+  // initial load
+  getComments(selectedTicket.id);
+
+  const interval = setInterval(async () => {
+    try {
+      const [myRes, otherRes] = await Promise.all([
+        apiCalls(
+          'get',
+          `ticketcontroller/getAllCommentsMyServer?ticketId=${selectedTicket.id}`
+        ),
+        apiCalls(
+          'get',
+          `ticketcontroller/getAllCommentsAnotherServer?ticketId=${selectedTicket.id}`
+        )
+      ]);
+
+      const myComments =
+        myRes?.status &&
+        Array.isArray(myRes.paramObjectsMap?.commentsVO)
+          ? myRes.paramObjectsMap.commentsVO
+          : [];
+
+      const otherComments =
+        otherRes?.status &&
+        Array.isArray(otherRes.paramObjectsMap?.commentsVO)
+          ? otherRes.paramObjectsMap.commentsVO
+          : [];
+
+      const normalizedMy = myComments.map((c) => ({
+        ...c,
+        displayName: c.createdBy || c.userName,
+        source: 'MY'
+      }));
+
+      const normalizedOther = otherComments.map((c) => ({
+        ...c,
+        displayName: c.sourceUserName
+          ? c.sourceUserName.split('@')[0]
+          : 'External',
+        source: 'OTHER'
+      }));
+
+      const merged = [...normalizedMy, ...normalizedOther].sort((a, b) => {
+        const dateA = dayjs(
+          a.commonDate?.createdon,
+          'DD-MM-YYYY hh:mm:ss A'
+        );
+
+        const dateB = dayjs(
+          b.commonDate?.createdon,
+          'DD-MM-YYYY hh:mm:ss A'
+        );
+
+        return dateB.valueOf() - dateA.valueOf();
+      });
+
+      setComments((prev) => {
+        const prevString = JSON.stringify(prev);
+        const newString = JSON.stringify(merged);
+
+        if (prevString === newString) {
+          return prev;
+        }
+
+        return merged;
+      });
+    } catch (error) {
+      console.error('Auto refresh comments error:', error);
+    }
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [openDialog, selectedTicket?.id]);
+
+
+
 
 const handleSubmitComment = async (commentText, editingId) => {
   if (!commentText.trim()) {
