@@ -1698,7 +1698,7 @@ export const Quotation = ({ selectedRow }) => {
                     <span>₹ {formatINR(pdfRowData.grossAmount)}</span>
                     <Typography>Discount % </Typography>
                     <span>:</span>
-                    <span>₹ {formatINR(pdfRowData.discount)}</span>
+                    <span>₹ {formatINR(pdfRowData.discountAmount)}</span>
                     <Typography>Net Amt</Typography>
                     <span>:</span>
                     <span>₹ {formatINR(pdfRowData.netAmount)}</span>

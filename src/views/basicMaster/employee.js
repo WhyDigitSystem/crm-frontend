@@ -99,7 +99,12 @@ const EmployeeDetails = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [logo, setLogo] = useState(null);
-  const handleRemoveLogo = () => setLogo(null);
+  const [logoName,setLogoName] = useState('');
+  // const handleRemoveLogo = () => setLogo(null);
+  const handleRemoveLogo = () => {
+  setLogo(null);
+  setLogoName('');
+};
   const genderList = [
     { label: 'MALE', value: 'MALE' },
     { label: 'FEMALE', value: 'FEMALE' }
@@ -221,7 +226,9 @@ const EmployeeDetails = () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const accountRegex = /^\d{9,18}$/;
     const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
+    // const mobileRegex = /^[6-9]\d{9}$/;
+    const mobileRegex = /^\d{10}$/;
+  
 
     let errorMessage = '';
     let inputValue = value;
@@ -253,11 +260,27 @@ const EmployeeDetails = () => {
     }
 
     // ✅ Validation rules
-    if (name === 'aadhaarNumber') {
-      if (inputValue.length === 12 && !aadhaarRegex.test(inputValue)) {
-        errorMessage = 'Aadhaar must be 12 digits';
-      }
+    // if (name === 'aadhaarNumber') {
+    //   if (inputValue.length === 12 && !aadhaarRegex.test(inputValue)) {
+    //     errorMessage = 'Aadhaar must be 12 digits';
+    //   }
+    // }
+    if (name === 'aadhaarNumber' ) {
+
+  if (/[^0-9]/.test(value)) {
+    errorMessage = 'Only numbers are allowed';
+  }
+  inputValue = value.replace(/[^0-9]/g, '');
+  inputValue = inputValue.slice(0, 12);
+  if (!errorMessage) {
+    if (inputValue.length > 0 && inputValue.length < 12) {
+      errorMessage = 'Aadhaar No must be 12 digits';
     }
+    if (inputValue.length === 12 && !aadhaarRegex.test(inputValue)) {
+      errorMessage = 'Invalid Aadhaar No';
+    }
+  }
+}
 
     if (name === 'panNo') {
       if (inputValue.length === 10 && !panRegex.test(inputValue)) {
@@ -277,11 +300,28 @@ const EmployeeDetails = () => {
       }
     }
 
-    if (name === 'mobileNumber' || name === 'altMobileNo') {
-      if (inputValue.length === 10 && !mobileRegex.test(inputValue)) {
-        errorMessage = 'Invalid Mobile Number';
-      }
+    // if (name === 'mobileNumber' || name === 'altMobileNo') {
+    //   if (inputValue.length === 10 && !mobileRegex.test(inputValue)) {
+    //     errorMessage = 'Invalid Mobile Number';
+    //   }
+    // }
+
+if (name === 'mobileNumber' || name === 'emergencyMobileNumber') {
+
+  if (/[^0-9]/.test(value)) {
+    errorMessage = 'Only numbers are allowed';
+  }
+  inputValue = value.replace(/[^0-9]/g, '');
+  inputValue = inputValue.slice(0, 10);
+  if (!errorMessage) {
+    if (inputValue.length > 0 && inputValue.length < 10) {
+      errorMessage = 'Mobile Number must be 10 digits';
     }
+    if (inputValue.length === 10 && !mobileRegex.test(inputValue)) {
+      errorMessage = 'Invalid Mobile Number';
+    }
+  }
+}
 
     if (name === 'uanNo') {
       if (inputValue.length > 12) {
@@ -534,6 +574,7 @@ const EmployeeDetails = () => {
     const file = e.target.files[0];
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
       setLogo(file);
+      setLogoName(file.name);
     } else {
       showToast('error', 'Please upload a valid image (PNG or JPEG).');
     }
@@ -1055,7 +1096,7 @@ const EmployeeDetails = () => {
                         color: '#374151'
                       }}
                     >
-                      Emp Img
+                      {logoName}
                     </Typography>
                     {logo ? (
                       <Box>

@@ -528,6 +528,7 @@ const Lead = ({ selectedRow }) => {
     const errors = leadContacts.map((contact) => {
       const error = {};
       if (!contact.branchName.trim()) error.branchName = 'Branch Name is required';
+      if (!contact.preferredContact) error.preferredContact = 'Pref Cont is required';
       if (!contact.name.trim()) error.name = 'Name is required';
       if (!contact.mobileNo.trim()) error.mobileNo = 'Mob No is required';
       if (!contact.email.trim()) error.email = 'Email is required';
@@ -1726,16 +1727,22 @@ const Lead = ({ selectedRow }) => {
                                       </td>
                                       <td className="text-center pt-3">{index + 1}</td>
 
-                                      <td style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
+                                      <td style={{ display: 'block', justifyContent: 'center', alignItems: 'center', width: '90px' }}>
                                         <FormControlLabel
                                           sx={{ m: 0 }}
                                           control={
                                             <Checkbox
                                               checked={contact.preferredContact}
                                               onChange={(e) => handleContactChange(index, 'preferredContact', e.target.checked)}
+                                              
                                             />
                                           }
                                         />
+                                         {contactErrors[index]?.preferredContact && (
+                                         <p style={{ color: 'red', fontSize: '12px' }}>
+                                          {contactErrors[index]?.preferredContact}
+                                          </p>
+                                         )}
                                       </td>
                                       <td>
                                         <Box sx={{ minWidth: 150, flexGrow: 1 }}>

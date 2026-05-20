@@ -646,7 +646,7 @@ const SalesOrder = ({ selectedRow }) => {
       active: true,
       salesOrderDetailsDTO: salesOrderDetails.map((detail) => ({
         ...(detail.id && { id: detail.id }),
-        produtName: detail.productName,
+        productName: detail.productName,
         category: detail.category,
         subCategory: detail.subCategory,
         sellingPrice: parseFloat(detail.sellingPrice) || 0,
@@ -794,7 +794,8 @@ const SalesOrder = ({ selectedRow }) => {
   });
   const getKPIDetails = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getSalesOrderCount?branchCode=${branchCode}&orgId=${orgId}`);
+      // const response = await apiCalls('get', `/transaction/getSalesOrderCount?branchCode=${branchCode}&orgId=${orgId}`);
+      const response = await apiCalls('get', `transaction/getSalesOrderCount?branchCode=${branchCode}&finyear=${finYear}&orgId=${orgId}`);
       if (response.status === true) {
         const quality = response.paramObjectsMap.salesOrderCounts[0];
         setSummaryCounts({
