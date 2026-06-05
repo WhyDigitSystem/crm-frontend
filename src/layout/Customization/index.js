@@ -1,10 +1,11 @@
 import { Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Tab, Tabs, Tooltip, Typography } from '@mui/material';
-import { IconCheck, IconClock, IconHelp, IconListCheck, IconPlus, IconUser } from '@tabler/icons-react';
+import { IconCheck, IconClock, IconHelp, IconListCheck, IconFileReport, IconPlus, IconUser } from '@tabler/icons-react';
 import apiCalls from 'apicall';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import AllTicketsTab from './AllTicketsTab';
+import TicketReport from './HelperComponent/TicketReport ';
 import RaiseTicketTab from './RaiseTicket';
 import { CircularProgress } from '@mui/material';
 // import RaiseTicketTab from './RaiseTicketTab';
@@ -137,14 +138,14 @@ const SupportTickets = () => {
     }
 
     const payload = {
-      companyName:localStorage.getItem('companyName'),
+      companyName: localStorage.getItem('companyName'),
       subject: ticket.subject,
       description: ticket.description,
       status: ticket.status,
       userName: loginUserName,
       orgId: parseInt(orgId),
       createdBy: loginUserName,
-      email: email,
+      email: email
     };
 
     try {
@@ -179,7 +180,6 @@ const SupportTickets = () => {
 
         // Clear form
         setTicket({
-          
           subject: '',
           description: '',
           image: null,
@@ -210,6 +210,10 @@ const SupportTickets = () => {
     {
       label: 'All Tickets',
       icon: <IconListCheck size={18} /> // Blue color
+    },
+    {
+      label: 'Report',
+      icon: <IconFileReport size={18} /> // Blue color
     }
   ];
 
@@ -222,7 +226,7 @@ const SupportTickets = () => {
 
   return (
     <>
-    <ToastComponent />
+      <ToastComponent />
       <Tooltip title="Need help? Raise a support ticket">
         <Fab
           color="secondary"
@@ -287,6 +291,7 @@ const SupportTickets = () => {
               getAllTickets={getTicketsByOrgId}
             />
           )}
+          {tab === 2 && loginUserName === 'WDS002' && <TicketReport />}
           {/* {isAdmin && tab === 2 && (
             <AdminTicketsTab
               tickets={adminTickets}
@@ -310,8 +315,6 @@ const SupportTickets = () => {
           )}
         </DialogActions>
       </Dialog>
-
-     
 
       {/* Ticket Details Dialog */}
     </>
