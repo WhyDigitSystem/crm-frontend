@@ -413,6 +413,7 @@ const handleSubmitComment = async (commentText, editingId) => {
                   <MenuItem value="All">All</MenuItem>
                   <MenuItem value="Open">Open</MenuItem>
                   <MenuItem value="InProgress">In Progress</MenuItem>
+                
                   <MenuItem value="Closed">Closed</MenuItem>
                 </Select>
               </FormControl>
@@ -506,6 +507,7 @@ const handleSubmitComment = async (commentText, editingId) => {
                     <Select value={params.value} onChange={(e) => handleStatusChange(e.target.value, params.row)} size="small" fullWidth>
                       <MenuItem value="Open">Open</MenuItem>
                       <MenuItem value="InProgress">In Progress</MenuItem>
+                      <MenuItem value="Completed">Completed</MenuItem>
                       <MenuItem value="Closed">Closed</MenuItem>
                     </Select>
                   );
